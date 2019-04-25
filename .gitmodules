@@ -1,3 +1,6 @@
 [submodule "tmk"]
 	path = tmk
 	url = https://github.com/tmk/tmk_keyboard
+[submodule "SDK/external/micro-ecc/micro-ecc"]
+	path = SDK/external/micro-ecc/micro-ecc
+	url = https://github.com/kmackay/micro-ecc
