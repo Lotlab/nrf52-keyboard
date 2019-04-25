@@ -132,8 +132,7 @@ $(if $(shell $(CC) --version),,$(info Cannot find: $(CC).) \
   $(error Cannot continue))
 
 # Use ccache on linux if available
-CCACHE := $(if $(filter Windows%,$(OS)),, \
-               $(if $(wildcard /usr/bin/ccache),ccache))
+CCACHE := $(if $(wildcard /usr/bin/ccache),ccache)
 CC     := $(CCACHE) $(CC)
 
 endif # ifndef PROGRESS
