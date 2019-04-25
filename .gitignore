@@ -6,6 +6,9 @@ JLinkLog.txt
 JLinkSettings.ini
 EventRecorderStub.scvd
 
+# ignore sdk
+/SDK
+
 # Created by https://www.gitignore.io/api/code
 # Edit at https://www.gitignore.io/?templates=code
 
