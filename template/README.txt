@@ -1,0 +1,1 @@
+根据你的运行环境，将Makefile.[platform].template重命名为Makefile.[platform]，并修改相关的变量

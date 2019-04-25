@@ -78,3 +78,5 @@ EventRecorderStub.scvd
 
 
 # End of https://www.gitignore.io/api/keil
+/template/Makefile.windows
+/template/Makefile.posix
