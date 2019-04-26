@@ -84,10 +84,6 @@
 #include "nrf_pwr_mgmt.h"
 #include "peer_manager_handler.h"
 
-#include "nrf_log.h"
-#include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
-
 
 #define SHIFT_BUTTON_ID                     1                                          /**< Button used as 'SHIFT' Key. */
 
@@ -247,27 +243,6 @@ static uint8_t m_sample_key_press_scan_str[] = /**< Key pattern to be sent when 
     0x28        /* Key Return */
 };
 
-static uint8_t m_caps_on_key_scan_str[] = /**< Key pattern to be sent when the output report has been written with the CAPS LOCK bit set. */
-{
-    0x06,       /* Key C */
-    0x04,       /* Key a */
-    0x13,       /* Key p */
-    0x16,       /* Key s */
-    0x12,       /* Key o */
-    0x11,       /* Key n */
-};
-
-static uint8_t m_caps_off_key_scan_str[] = /**< Key pattern to be sent when the output report has been written with the CAPS LOCK bit cleared. */
-{
-    0x06,       /* Key C */
-    0x04,       /* Key a */
-    0x13,       /* Key p */
-    0x16,       /* Key s */
-    0x12,       /* Key o */
-    0x09,       /* Key f */
-};
-
-
 
 static void on_hids_evt(ble_hids_t * p_hids, ble_hids_evt_t * p_evt);
 
@@ -300,10 +275,6 @@ static void whitelist_set(pm_peer_id_list_skip_t skip)
     ret_code_t err_code = pm_peer_id_list(peer_ids, &peer_id_count, PM_PEER_ID_INVALID, skip);
     APP_ERROR_CHECK(err_code);
 
-    NRF_LOG_INFO("\tm_whitelist_peer_cnt %d, MAX_PEERS_WLIST %d",
-                   peer_id_count + 1,
-                   BLE_GAP_WHITELIST_ADDR_MAX_COUNT);
-
     err_code = pm_whitelist_set(peer_ids, peer_id_count);
     APP_ERROR_CHECK(err_code);
 }
@@ -331,8 +302,6 @@ static void identities_set(pm_peer_id_list_skip_t skip)
 static void delete_bonds(void)
 {
     ret_code_t err_code;
-
-    NRF_LOG_INFO("Erase bonds!");
 
     err_code = pm_peers_delete();
     APP_ERROR_CHECK(err_code);
@@ -377,7 +346,6 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             if (     p_evt->params.peer_data_update_succeeded.flash_changed
                  && (p_evt->params.peer_data_update_succeeded.data_id == PM_PEER_DATA_ID_BONDING))
             {
-                NRF_LOG_INFO("New Bond, add the peer to the whitelist if possible");
                 // Note: You should check on what kind of white list policy your application should use.
 
                 whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
@@ -1080,30 +1048,6 @@ static void on_hid_rep_char_write(ble_hids_evt_t * p_evt)
                                              &report_val);
             APP_ERROR_CHECK(err_code);
 
-            if (!m_caps_on && ((report_val & OUTPUT_REPORT_BIT_MASK_CAPS_LOCK) != 0))
-            {
-                // Caps Lock is turned On.
-                NRF_LOG_INFO("Caps Lock is turned On!");
-                err_code = bsp_indication_set(BSP_INDICATE_ALERT_3);
-                APP_ERROR_CHECK(err_code);
-
-                keys_send(sizeof(m_caps_on_key_scan_str), m_caps_on_key_scan_str);
-                m_caps_on = true;
-            }
-            else if (m_caps_on && ((report_val & OUTPUT_REPORT_BIT_MASK_CAPS_LOCK) == 0))
-            {
-                // Caps Lock is turned Off .
-                NRF_LOG_INFO("Caps Lock is turned Off!");
-                err_code = bsp_indication_set(BSP_INDICATE_ALERT_OFF);
-                APP_ERROR_CHECK(err_code);
-
-                keys_send(sizeof(m_caps_off_key_scan_str), m_caps_off_key_scan_str);
-                m_caps_on = false;
-            }
-            else
-            {
-                // The report received is not supported by this application. Do nothing.
-            }
         }
     }
 }
@@ -1176,37 +1120,31 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     switch (ble_adv_evt)
     {
         case BLE_ADV_EVT_DIRECTED_HIGH_DUTY:
-            NRF_LOG_INFO("High Duty Directed advertising.");
             err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_DIRECTED);
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_ADV_EVT_DIRECTED:
-            NRF_LOG_INFO("Directed advertising.");
             err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_DIRECTED);
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_ADV_EVT_FAST:
-            NRF_LOG_INFO("Fast advertising.");
             err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING);
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_ADV_EVT_SLOW:
-            NRF_LOG_INFO("Slow advertising.");
             err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_SLOW);
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_ADV_EVT_FAST_WHITELIST:
-            NRF_LOG_INFO("Fast advertising with whitelist.");
             err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_WHITELIST);
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_ADV_EVT_SLOW_WHITELIST:
-            NRF_LOG_INFO("Slow advertising with whitelist.");
             err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_WHITELIST);
             APP_ERROR_CHECK(err_code);
             break;
@@ -1225,8 +1163,6 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
             err_code = pm_whitelist_get(whitelist_addrs, &addr_cnt,
                                         whitelist_irks,  &irk_cnt);
             APP_ERROR_CHECK(err_code);
-            NRF_LOG_DEBUG("pm_whitelist_get returns %d addr in whitelist and %d irk whitelist",
-                          addr_cnt, irk_cnt);
 
             // Set the correct identities list (no excluding peers with no Central Address Resolution).
             identities_set(PM_PEER_ID_LIST_SKIP_NO_IRK);
@@ -1280,7 +1216,6 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
-            NRF_LOG_INFO("Connected");
             err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
             APP_ERROR_CHECK(err_code);
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
@@ -1289,7 +1224,6 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
-            NRF_LOG_INFO("Disconnected");
             // Dequeue all keys without transmission.
             (void) buffer_dequeue(false);
 
@@ -1306,7 +1240,6 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
         {
-            NRF_LOG_DEBUG("PHY update request.");
             ble_gap_phys_t const phys =
             {
                 .rx_phys = BLE_GAP_PHY_AUTO,
@@ -1323,7 +1256,6 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GATTC_EVT_TIMEOUT:
             // Disconnect on GATT Client timeout event.
-            NRF_LOG_DEBUG("GATT Client Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
@@ -1331,7 +1263,6 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GATTS_EVT_TIMEOUT:
             // Disconnect on GATT Server timeout event.
-            NRF_LOG_DEBUG("GATT Server Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
@@ -1526,17 +1457,6 @@ static void buttons_leds_init(bool * p_erase_bonds)
 }
 
 
-/**@brief Function for initializing the nrf log module.
- */
-static void log_init(void)
-{
-    ret_code_t err_code = NRF_LOG_INIT(NULL);
-    APP_ERROR_CHECK(err_code);
-
-    NRF_LOG_DEFAULT_BACKENDS_INIT();
-}
-
-
 /**@brief Function for initializing power management.
  */
 static void power_management_init(void)
@@ -1554,10 +1474,7 @@ static void power_management_init(void)
 static void idle_state_handle(void)
 {
     app_sched_execute();
-    if (NRF_LOG_PROCESS() == false)
-    {
-        nrf_pwr_mgmt_run();
-    }
+    nrf_pwr_mgmt_run();
 }
 
 
@@ -1568,7 +1485,6 @@ int main(void)
     bool erase_bonds;
 
     // Initialize.
-    log_init();
     timers_init();
     buttons_leds_init(&erase_bonds);
     power_management_init();
@@ -1584,7 +1500,6 @@ int main(void)
     peer_manager_init();
 
     // Start execution.
-    NRF_LOG_INFO("HID Keyboard example started.");
     timers_start();
     advertising_start(erase_bonds);
 
