@@ -10,7 +10,8 @@ extern uint16_t m_conn_handle;
 enum user_ble_event {
     USER_BLE_IDLE,
     USER_BLE_DISCONNECT,
-    USER_BLE_GATTS_TX_COMPLETE
+    USER_BLE_GATTS_TX_COMPLETE,
+    USER_BLE_CONNECTED
 };
 
 typedef void (*evt_handler) (enum user_ble_event arg);
