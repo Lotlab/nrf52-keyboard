@@ -6,11 +6,15 @@
 #include "ble_srv_common.h"
 #include "ble_advertising.h"
 #include "ble_advdata.h"
+#include "ble_dfu.h"
 #include "nrf_sdh.h"
 #include "nrf_sdh_soc.h"
 #include "nrf_sdh_ble.h"
 #include "nrf_ble_gatt.h"
 #include "nrf_ble_qwr.h"
+#include "nrf_bootloader_info.h"
+#include "nrf_power.h"
+#include "nrf_pwr_mgmt.h"
 #include "ble_dis.h"
 #include "ble_conn_state.h"
 #include "ble_conn_params.h"
@@ -108,6 +112,25 @@ void delete_bonds(void)
 }
 
 
+static void buttonless_dfu_sdh_state_observer(nrf_sdh_state_evt_t state, void * p_context)
+{
+    if (state == NRF_SDH_EVT_STATE_DISABLED)
+    {
+        // Softdevice was disabled before going into reset. Inform bootloader to skip CRC on next boot.
+        nrf_power_gpregret2_set(BOOTLOADER_DFU_SKIP_CRC);
+
+        //Go to system off.
+        nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_GOTO_SYSOFF);
+    }
+}
+
+/* nrf_sdh state observer. */
+NRF_SDH_STATE_OBSERVER(m_buttonless_dfu_state_obs, 0) =
+{
+    .handler = buttonless_dfu_sdh_state_observer,
+};
+
+
 /**@brief Function for starting advertising.
  */
 void advertising_start(bool erase_bonds)
@@ -123,6 +146,77 @@ void advertising_start(bool erase_bonds)
 
         ret_code_t ret = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
         APP_ERROR_CHECK(ret);
+    }
+}
+
+
+static void disconnect(uint16_t conn_handle, void * p_context)
+{
+    UNUSED_PARAMETER(p_context);
+
+    sd_ble_gap_disconnect(conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+}
+
+static void advertising_config_get(ble_adv_modes_config_t * p_config)
+{
+    memset(p_config, 0, sizeof(ble_adv_modes_config_t));
+
+    p_config->ble_adv_whitelist_enabled          = true;
+    p_config->ble_adv_directed_high_duty_enabled = true;
+    p_config->ble_adv_directed_enabled           = false;
+    p_config->ble_adv_directed_interval          = 0;
+    p_config->ble_adv_directed_timeout           = 0;
+    p_config->ble_adv_fast_enabled               = true;
+    p_config->ble_adv_fast_interval              = APP_ADV_FAST_INTERVAL;
+    p_config->ble_adv_fast_timeout               = APP_ADV_FAST_DURATION;
+    p_config->ble_adv_slow_enabled               = true;
+    p_config->ble_adv_slow_interval              = APP_ADV_SLOW_INTERVAL;
+    p_config->ble_adv_slow_timeout               = APP_ADV_SLOW_DURATION;
+
+}
+
+
+/**@brief Function for handling dfu events from the Buttonless Secure DFU service
+ *
+ * @param[in]   event   Event from the Buttonless Secure DFU service.
+ */
+static void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
+{
+    switch (event)
+    {
+        case BLE_DFU_EVT_BOOTLOADER_ENTER_PREPARE:
+        {
+            // Prevent device from advertising on disconnect.
+            ble_adv_modes_config_t config;
+            advertising_config_get(&config);
+            config.ble_adv_on_disconnect_disabled = true;
+            ble_advertising_modes_config_set(&m_advertising, &config);
+
+            // Disconnect all other bonded devices that currently are connected.
+            // This is required to receive a service changed indication
+            // on bootup after a successful (or aborted) Device Firmware Update.
+            ble_conn_state_for_each_connected(disconnect, NULL);
+            break;
+        }
+
+        case BLE_DFU_EVT_BOOTLOADER_ENTER:
+            // YOUR_JOB: Write app-specific unwritten data to FLASH, control finalization of this
+            //           by delaying reset by reporting false in app_shutdown_handler
+            break;
+
+        case BLE_DFU_EVT_BOOTLOADER_ENTER_FAILED:
+            // YOUR_JOB: Take corrective measures to resolve the issue
+            //           like calling APP_ERROR_CHECK to reset the device.
+            break;
+
+        case BLE_DFU_EVT_RESPONSE_SEND_ERROR:
+            // YOUR_JOB: Take corrective measures to resolve the issue
+            //           like calling APP_ERROR_CHECK to reset the device.
+            APP_ERROR_CHECK(false);
+            break;
+
+        default:
+            break;
     }
 }
 
@@ -247,6 +341,17 @@ static void dis_init(void)
     dis_init_obj.dis_char_rd_sec = SEC_JUST_WORKS;
 
     err_code = ble_dis_init(&dis_init_obj);
+    APP_ERROR_CHECK(err_code);
+}
+
+static void dfu_init(void) 
+{
+    uint32_t                  err_code;
+    ble_dfu_buttonless_init_t dfus_init = {0};
+
+    dfus_init.evt_handler = ble_dfu_evt_handler;
+
+    err_code = ble_dfu_buttonless_init(&dfus_init);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -515,17 +620,7 @@ static void advertising_init(void)
     init.advdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
     init.advdata.uuids_complete.p_uuids  = m_adv_uuids;
 
-    init.config.ble_adv_whitelist_enabled          = true;
-    init.config.ble_adv_directed_high_duty_enabled = true;
-    init.config.ble_adv_directed_enabled           = false;
-    init.config.ble_adv_directed_interval          = 0;
-    init.config.ble_adv_directed_timeout           = 0;
-    init.config.ble_adv_fast_enabled               = true;
-    init.config.ble_adv_fast_interval              = APP_ADV_FAST_INTERVAL;
-    init.config.ble_adv_fast_timeout               = APP_ADV_FAST_DURATION;
-    init.config.ble_adv_slow_enabled               = true;
-    init.config.ble_adv_slow_interval              = APP_ADV_SLOW_INTERVAL;
-    init.config.ble_adv_slow_timeout               = APP_ADV_SLOW_DURATION;
+    advertising_config_get(&init.config);
 
     init.evt_handler   = on_adv_evt;
     init.error_handler = ble_advertising_error_handler;
@@ -545,6 +640,7 @@ void ble_services_init(evt_handler handler) {
     // services
     qwr_init();
     dis_init();
+    dfu_init();
     conn_params_init();
     peer_manager_init();
 }

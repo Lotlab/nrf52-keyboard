@@ -17,7 +17,11 @@
         "nrf.h": "c",
         "nrfx.h": "c",
         "nrfx_config.h": "c",
-        "sdk_config.h": "c"
+        "sdk_config.h": "c",
+        "nrf_bootloader_info.h": "c",
+        "nrf_pwr_mgmt.h": "c",
+        "nrf_power.h": "c",
+        "ble_dfu.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",
@@ -128,6 +132,7 @@
         "SDK/components/ble/ble_services/ble_rscs",
         "SDK/components/libraries/stack_guard",
         "SDK/components/libraries/log/src",
+        "SDK/components/libraries/bootloader"
     ],
     "C_Cpp.default.defines": [
         "uint8_t=char",

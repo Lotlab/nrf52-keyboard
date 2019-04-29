@@ -25,5 +25,23 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 
 ## 编译
 
-打开`main/project/arm5_no_packs/`目录下的keil工程，点击编译即可。
+```
+cd application/main/project/armgcc
+make flash
+```
+
+## 目录结构
+- application/ 固件相关
+  - main/ 主程序
+    - src/ 源码
+      - ble/ 蓝牙相关代码
+      - tmk/ tmk桥接相关
+      - config/ 硬件配置相关
+    - project/ 工程
+  - bootloader/ 
+    - src/ 源码
+    - project/ 工程
+- SDK/ nRF52 SDK
+- tmk/ tmk core 相关
+- usb/ USB部分代码
 
