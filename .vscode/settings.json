@@ -8,7 +8,16 @@
         "ble_conn_state.h": "c",
         "ble_hids.h": "c",
         "ble_hid_service.h": "c",
-        "ble_hci.h": "c"
+        "ble_hci.h": "c",
+        "nrfx_saadc.h": "c",
+        "nrf_saadc.h": "c",
+        "nrf_drv_saadc.h": "c",
+        "nrf_assert.h": "c",
+        "nrf_soc.h": "c",
+        "nrf.h": "c",
+        "nrfx.h": "c",
+        "nrfx_config.h": "c",
+        "sdk_config.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",
@@ -102,7 +111,10 @@
         "SDK/components/libraries/gfx",
         "SDK/components/libraries/button",
         "SDK/modules/nrfx",
+        "SDK/modules/nrfx/hal",
+        "SDK/modules/nrfx/drivers/include",
         "SDK/components/libraries/twi_sensor",
+        "SDK/integration/nrfx/legacy",
         "SDK/integration/nrfx/legacy",
         "SDK/components/libraries/usbd",
         "SDK/external/segger_rtt",

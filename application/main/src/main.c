@@ -57,6 +57,7 @@
 #include <string.h>
 #include "nordic_common.h"
 #include "nrf.h"
+#include "nrf_soc.h"
 #include "nrf_assert.h"
 #include "app_error.h"
 

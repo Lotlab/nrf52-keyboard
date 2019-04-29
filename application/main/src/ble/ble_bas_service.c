@@ -4,10 +4,20 @@
 #include "ble_bas.h"
 #include "app_timer.h"
 
+#define __STATIC_INLINE static inline
+#include "nrf_drv_saadc.h"
+#include "nrfx_saadc.h"
+
 #define BATTERY_LEVEL_MEAS_INTERVAL         APP_TIMER_TICKS(2000)                      /**< Battery level measurement interval (ticks). */
 #define MIN_BATTERY_LEVEL                   81                                         /**< Minimum simulated battery level. */
 #define MAX_BATTERY_LEVEL                   100                                        /**< Maximum simulated battery level. */
 #define BATTERY_LEVEL_INCREMENT             1                                          /**< Increment between each simulated battery level measurement. */
+
+#define SAMPLES_IN_BUFFER                   5
+
+#define ADC_PIN                             NRF_SAADC_INPUT_AIN0 
+
+static nrf_saadc_value_t    m_buffer_pool[2][SAMPLES_IN_BUFFER];
 
 APP_TIMER_DEF(m_battery_timer_id);                                  /**< Battery timer. */
 BLE_BAS_DEF(m_bas);                                                 /**< Structure used to identify the battery service. */
@@ -15,13 +25,9 @@ BLE_BAS_DEF(m_bas);                                                 /**< Structu
 
 /**@brief Function for performing a battery measurement, and update the Battery Level characteristic in the Battery Service.
  */
-static void battery_level_update(void)
+static void battery_level_update(uint8_t battery_level)
 {
     ret_code_t err_code;
-    uint8_t  battery_level;
-
-    // todo: battery measuerment
-    battery_level = 100;
 
     err_code = ble_bas_battery_level_update(&m_bas, battery_level, BLE_CONN_HANDLE_ALL);
     if ((err_code != NRF_SUCCESS) &&
@@ -47,7 +53,7 @@ static void battery_level_update(void)
 static void battery_level_meas_timeout_handler(void * p_context)
 {
     UNUSED_PARAMETER(p_context);
-    battery_level_update();
+    nrfx_saadc_sample();
 }
 
 /**@brief Init battery measurement timer.
@@ -93,8 +99,68 @@ void battery_timer_start(void)
     APP_ERROR_CHECK(err_code);
 }
 
+static void adc_result_handler(nrf_saadc_value_t value) 
+{
+    // RESULT = [V(P) – V(N) ] * GAIN/REFERENCE * 2 ^ (RESOLUTION - m)
+    // value  = V_in / 1.2 * 1024
+    // V_in   = V_bat * 2.2 / 12.2
+
+    uint32_t vott = value * 1200 * 122 / 1024 / 22;
+    uint8_t level;
+
+    if (vott >= 4200) level = 100;
+    else if (vott >= 4000) level = 90 + (vott - 4000) / 20;
+    else if (vott >= 3600) level = 10 + (vott - 3600) / 5;
+    else if (vott >= 3200) level = (vott - 3200) / 40;
+    else level = 0;
+
+    battery_level_update(level);
+}
+
+static const nrfx_saadc_config_t config = NRFX_SAADC_DEFAULT_CONFIG;
+
+static void saadc_callback(nrf_drv_saadc_evt_t const * p_event)
+{
+    if (p_event->type == NRF_DRV_SAADC_EVT_DONE)
+    {
+        ret_code_t err_code;
+
+        nrf_saadc_value_t value = 0;
+        for (uint8_t i = 0; i < p_event->data.done.size; i++)
+        {
+            value += p_event->data.done.p_buffer[i];
+        }
+        value /= p_event->data.done.size;
+        adc_result_handler(value);
+
+        err_code = nrf_drv_saadc_buffer_convert(p_event->data.done.p_buffer, SAMPLES_IN_BUFFER);
+        APP_ERROR_CHECK(err_code);
+    }
+}
+
+static void adc_init(void) 
+{
+    ret_code_t err_code;
+
+    nrf_saadc_channel_config_t channel_config = NRFX_SAADC_DEFAULT_CHANNEL_CONFIG_SE(ADC_PIN);
+    channel_config.gain = NRF_SAADC_GAIN1_2;
+
+    err_code = nrfx_saadc_init(&config, saadc_callback);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = nrfx_saadc_channel_init(0, &channel_config);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = nrfx_saadc_buffer_convert(m_buffer_pool[0], SAMPLES_IN_BUFFER);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = nrfx_saadc_buffer_convert(m_buffer_pool[1], SAMPLES_IN_BUFFER);
+    APP_ERROR_CHECK(err_code);
+}
+
 void battery_service_init(void) 
 {
+    adc_init();
     battery_timer_init();
     bas_init();
 }
