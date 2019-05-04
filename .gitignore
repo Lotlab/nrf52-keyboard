@@ -9,6 +9,9 @@ EventRecorderStub.scvd
 # ignore sdk
 /SDK
 
+# ignore virtualenv
+/venv
+
 # Created by https://www.gitignore.io/api/code
 # Edit at https://www.gitignore.io/?templates=code
 
