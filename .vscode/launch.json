@@ -1,0 +1,23 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Application",
+            "type": "gdb",
+            "request": "attach",
+            "target": ":3333",
+            "remote": true,
+            "cwd": "${workspaceRoot}/application/main/project/armgcc/_build/",
+            "executable": "nrf52810_xxaa.out",
+            "valuesFormatting": "parseText",
+            "autorun": [
+                "symbol-file nrf52810_xxaa.out",
+                "mon reset"
+            ],
+            "gdbpath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-gdb"
+        }
+    ]
+}

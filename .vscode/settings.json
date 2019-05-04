@@ -25,6 +25,7 @@
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",
+        "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/",
         "SDK/components/ble/ble_services/ble_ancs_c",
         "SDK/components/ble/ble_services/ble_ias_c",
         "SDK/components/libraries/pwm",
@@ -39,6 +40,8 @@
         "SDK/components/libraries/fstorage",
         "SDK/components/libraries/mutex",
         "SDK/components/libraries/gpiote",
+        "SDK/components/libraries/bootloader",
+        "SDK/components/libraries/bootloader/dfu",
         "SDK/components/libraries/bootloader/ble_dfu",
         "SDK/components/boards",
         "SDK/components/ble/ble_advertising",

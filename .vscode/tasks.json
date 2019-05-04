@@ -56,6 +56,14 @@
             "problemMatcher": [
                 "$gcc"
             ]
+        }, 
+        {
+            "type": "shell",
+            "label": "launch pyocd gdb server",
+            "command": "pyocd gdb -t nrf52",
+            "group": "none",
+            "isBackground": true,
+            "problemMatcher": []
         }
     ]
 }
