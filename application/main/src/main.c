@@ -69,6 +69,9 @@
 #include "ble/ble_hid_service.h"
 #include "ble/ble_services.h"
 
+// tmk
+#include "keyboard.h"
+
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 #define SCHED_MAX_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE /**< Maximum size of scheduler events. */
@@ -220,16 +223,6 @@ static void scheduler_init(void)
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
 }
 
-/**@brief Function for initializing buttons and leds.
- *
- * @param[out] p_erase_bonds  Will be true if the clear bonding button was pressed to wake the application up.
- */
-static void buttons_leds_init(bool* p_erase_bonds)
-{
-    // ret_code_t err_code;
-    *p_erase_bonds = false;
-}
-
 /**@brief Function for initializing power management.
  */
 static void power_management_init(void)
@@ -251,15 +244,32 @@ static void idle_state_handle(void)
     nrf_pwr_mgmt_run();
 }
 
+static void keyboard_init(void) 
+{
+    keyboard_setup(); // 初始化各按键阵列
+    // - martix_setup();
+    // led_init(); // 初始化led
+    // keymap_init(); // 初始化自定义keymap
+    // uart_init(); // 初始化外部USB通信协议
+    keyboard_init();
+    // - timer_init();
+    // - matrix_init();
+    // host_set_driver(&driver); // 设置 host driver
+}
+
+static void keyboard_timeout(void) 
+{
+    keyboard_task();
+}
+
 /**@brief Function for application main entry.
  */
 int main(void)
 {
-    bool erase_bonds;
+    bool erase_bonds = false;
 
     // Initialize.
     timers_init();
-    buttons_leds_init(&erase_bonds);
     power_management_init();
 
     ble_stack_init();

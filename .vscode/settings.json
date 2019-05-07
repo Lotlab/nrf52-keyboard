@@ -145,4 +145,5 @@
         "__UINT16_TYPE__=short unsigned int",
         "uint32_t=unsigned int"
     ],
+    "C_Cpp.default.forcedInclude": ["application/main/src/config/config.h"]
 }

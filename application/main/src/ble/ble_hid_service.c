@@ -3,13 +3,13 @@
 #include "app_error.h"
 #include "ble.h"
 #include "ble_hids.h"
+#include "report.h"
 
 #include "ble_hid_service.h"
 
 #define OUTPUT_REPORT_INDEX 0 /**< Index of Output Report. */
 #define OUTPUT_REPORT_MAX_LEN 1 /**< Maximum length of Output Report. */
 #define INPUT_REPORT_KEYS_INDEX 0 /**< Index of Input Report. */
-#define OUTPUT_REPORT_BIT_MASK_CAPS_LOCK 0x02 /**< CAPS LOCK bit in Output Report (based on 'LED Page (0x08)' of the Universal Serial Bus HID Usage Tables). */
 #define INPUT_REP_REF_ID 0 /**< Id of reference to Keyboard Input Report. */
 #define OUTPUT_REP_REF_ID 0 /**< Id of reference to Keyboard Output Report. */
 #define FEATURE_REP_REF_ID 0 /**< ID of reference to Keyboard Feature Report. */
@@ -22,11 +22,6 @@
 
 #define INPUT_REPORT_KEYS_MAX_LEN 8 /**< Maximum length of the Input Report characteristic. */
 
-#define MODIFIER_KEY_POS 0 /**< Position of the modifier byte in the Input Report. */
-#define SCAN_CODE_POS 2 /**< The start position of the key scan code in a HID Report. */
-#define SHIFT_KEY_CODE 0x02 /**< Key code indicating the press of the Shift Key. */
-
-#define MAX_KEYS_IN_ONE_REPORT (INPUT_REPORT_KEYS_MAX_LEN - SCAN_CODE_POS) /**< Maximum number of key presses that can be sent in one Input Report. */
 static bool m_in_boot_mode = false; /**< Current protocol mode. */
 
 /**Buffer queue access macros
@@ -57,7 +52,7 @@ static bool m_in_boot_mode = false; /**< Current protocol mode. */
 
 /** Abstracts buffer element */
 typedef struct hid_key_buffer {
-    uint8_t data_offset; /**< Max Data that can be buffered for all entries */
+    uint8_t index; /**< Report Index */
     uint8_t data_len; /**< Total length of data */
     uint8_t* p_data; /**< Scanned key pattern */
     ble_hids_t* p_instance; /**< Identifies peer and service instance */
@@ -83,6 +78,8 @@ BLE_HIDS_DEF(m_hids, /**< Structure used to identify the HID service. */
     OUTPUT_REPORT_MAX_LEN,
     FEATURE_REPORT_MAX_LEN);
 
+uint8_t keyboard_led_val;
+
 static void on_hids_evt(ble_hids_t* p_hids, ble_hids_evt_t* p_evt);
 
 /**@brief Function for initializing HID Service.
@@ -96,7 +93,7 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     ble_hids_feature_rep_init_t* p_feature_report;
     uint8_t hid_info_flags;
 
-    static ble_hids_inp_rep_init_t input_report_array[1];
+    static ble_hids_inp_rep_init_t input_report_array[3];
     static ble_hids_outp_rep_init_t output_report_array[1];
     static ble_hids_feature_rep_init_t feature_report_array[1];
     static uint8_t report_map_data[] = {
@@ -135,14 +132,35 @@ static void hids_init(ble_srv_error_handler_t err_handler)
         0x29, 0x65, // Usage Maximum (101)
         0x81, 0x00, // Input (Data, Array) Key array(6 bytes)
 
-        0x09, 0x05, // Usage (Vendor Defined)
-        0x15, 0x00, // Logical Minimum (0)
-        0x26, 0xFF, 0x00, // Logical Maximum (255)
-        0x75, 0x08, // Report Size (8 bit)
-        0x95, 0x02, // Report Count (2)
-        0xB1, 0x02, // Feature (Data, Variable, Absolute)
+        0xC0, // End Collection (Application)
 
-        0xC0 // End Collection (Application)
+        // system
+        0x05, 0x01, // USAGE_PAGE (Generic Desktop)
+        0x09, 0x80, // USAGE (System Control)
+        0xa1, 0x01, // COLLECTION (Application)
+        0x85, REPORT_ID_SYSTEM, //   REPORT_ID (2)
+        0x15, 0x01, //   LOGICAL_MINIMUM (0x1)
+        0x26, 0xb7, 0x00, //   LOGICAL_MAXIMUM (0xb7)
+        0x19, 0x01, //   USAGE_MINIMUM (0x1)
+        0x29, 0xb7, //   USAGE_MAXIMUM (0xb7)
+        0x75, 0x10, //   REPORT_SIZE (16)
+        0x95, 0x01, //   REPORT_COUNT (1)
+        0x81, 0x00, //   INPUT (Data,Array,Abs)
+        0xc0, // END_COLLECTION
+
+        // consumer
+        0x05, 0x0c, // USAGE_PAGE (Consumer Devices)
+        0x09, 0x01, // USAGE (Consumer Control)
+        0xa1, 0x01, // COLLECTION (Application)
+        0x85, REPORT_ID_CONSUMER, //   REPORT_ID (3)
+        0x15, 0x01, //   LOGICAL_MINIMUM (0x1)
+        0x26, 0x9c, 0x02, //   LOGICAL_MAXIMUM (0x29c)
+        0x19, 0x01, //   USAGE_MINIMUM (0x1)
+        0x2a, 0x9c, 0x02, //   USAGE_MAXIMUM (0x29c)
+        0x75, 0x10, //   REPORT_SIZE (16)
+        0x95, 0x01, //   REPORT_COUNT (1)
+        0x81, 0x00, //   INPUT (Data,Array,Abs)
+        0xc0, // END_COLLECTION
     };
 
     memset((void*)input_report_array, 0, sizeof(ble_hids_inp_rep_init_t));
@@ -159,6 +177,27 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     p_input_report->sec.wr = SEC_JUST_WORKS;
     p_input_report->sec.rd = SEC_JUST_WORKS;
 
+    // system input report
+    p_input_report = &input_report_array[1];
+    p_input_report->max_len = 2;
+    p_input_report->rep_ref.report_id = REPORT_ID_SYSTEM;
+    p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
+
+    p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
+    p_input_report->sec.wr = SEC_JUST_WORKS;
+    p_input_report->sec.rd = SEC_JUST_WORKS;
+
+    // consumer input report
+    p_input_report = &input_report_array[2];
+    p_input_report->max_len = 2;
+    p_input_report->rep_ref.report_id = REPORT_ID_CONSUMER;
+    p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
+
+    p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
+    p_input_report->sec.wr = SEC_JUST_WORKS;
+    p_input_report->sec.rd = SEC_JUST_WORKS;
+
+    // keyboard led report
     p_output_report = &output_report_array[OUTPUT_REPORT_INDEX];
     p_output_report->max_len = OUTPUT_REPORT_MAX_LEN;
     p_output_report->rep_ref.report_id = OUTPUT_REP_REF_ID;
@@ -167,6 +206,7 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     p_output_report->sec.wr = SEC_JUST_WORKS;
     p_output_report->sec.rd = SEC_JUST_WORKS;
 
+    // unknown vendor define featurn report
     p_feature_report = &feature_report_array[FEATURE_REPORT_INDEX];
     p_feature_report->max_len = FEATURE_REPORT_MAX_LEN;
     p_feature_report->rep_ref.report_id = FEATURE_REP_REF_ID;
@@ -214,86 +254,26 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief   Function for transmitting a key scan Press & Release Notification.
- *
- * @warning This handler is an example only. You need to analyze how you wish to send the key
- *          release.
- *
- * @param[in]  p_instance     Identifies the service for which Key Notifications are requested.
- * @param[in]  p_key_pattern  Pointer to key pattern.
- * @param[in]  pattern_len    Length of key pattern. 0 < pattern_len < 7.
- * @param[in]  pattern_offset Offset applied to Key Pattern for transmission.
- * @param[out] actual_len     Provides actual length of Key Pattern transmitted, making buffering of
- *                            rest possible if needed.
- * @return     NRF_SUCCESS on success, NRF_ERROR_RESOURCES in case transmission could not be
- *             completed due to lack of transmission buffer or other error codes indicating reason
- *             for failure.
- *
- * @note       In case of NRF_ERROR_RESOURCES, remaining pattern that could not be transmitted
- *             can be enqueued \ref buffer_enqueue function.
- *             In case a pattern of 'cofFEe' is the p_key_pattern, with pattern_len as 6 and
- *             pattern_offset as 0, the notifications as observed on the peer side would be
- *             1>    'c', 'o', 'f', 'F', 'E', 'e'
- *             2>    -  , 'o', 'f', 'F', 'E', 'e'
- *             3>    -  ,   -, 'f', 'F', 'E', 'e'
- *             4>    -  ,   -,   -, 'F', 'E', 'e'
- *             5>    -  ,   -,   -,   -, 'E', 'e'
- *             6>    -  ,   -,   -,   -,   -, 'e'
- *             7>    -  ,   -,   -,   -,   -,  -
- *             Here, '-' refers to release, 'c' refers to the key character being transmitted.
- *             Therefore 7 notifications will be sent.
- *             In case an offset of 4 was provided, the pattern notifications sent will be from 5-7
- *             will be transmitted.
- */
-static uint32_t send_key_scan_press_release(ble_hids_t* p_hids,
-    uint8_t* p_key_pattern,
-    uint16_t pattern_len,
-    uint16_t pattern_offset,
-    uint16_t* p_actual_len)
+static uint32_t send_key(ble_hids_t* p_hids,
+    uint8_t index,
+    uint8_t* pattern,
+    uint8_t len)
 {
     ret_code_t err_code;
-    uint16_t offset;
-    uint16_t data_len;
-    uint8_t data[INPUT_REPORT_KEYS_MAX_LEN];
-
-    // HID Report Descriptor enumerates an array of size 6, the pattern hence shall not be any
-    // longer than this.
-    STATIC_ASSERT((INPUT_REPORT_KEYS_MAX_LEN - 2) == 6);
-
-    ASSERT(pattern_len <= (INPUT_REPORT_KEYS_MAX_LEN - 2));
-
-    offset = pattern_offset;
-    data_len = pattern_len;
-
-    do {
-        // Reset the data buffer.
-        memset(data, 0, sizeof(data));
-
-        // Copy the scan code.
-        memcpy(data + SCAN_CODE_POS + offset, p_key_pattern + offset, data_len - offset);
-
-        if (!m_in_boot_mode) {
-            err_code = ble_hids_inp_rep_send(p_hids,
-                INPUT_REPORT_KEYS_INDEX,
-                INPUT_REPORT_KEYS_MAX_LEN,
-                data,
-                m_conn_handle);
-        } else {
+    if (m_in_boot_mode) {
+        if (index == 0) {
             err_code = ble_hids_boot_kb_inp_rep_send(p_hids,
-                INPUT_REPORT_KEYS_MAX_LEN,
-                data,
+                len,
+                pattern,
                 m_conn_handle);
         }
-
-        if (err_code != NRF_SUCCESS) {
-            break;
-        }
-
-        offset++;
-    } while (offset <= data_len);
-
-    *p_actual_len = offset;
-
+    } else {
+        err_code = ble_hids_inp_rep_send(p_hids,
+            index,
+            len,
+            pattern,
+            m_conn_handle);
+    }
     return err_code;
 }
 
@@ -332,9 +312,9 @@ static void buffer_init(void)
  * @return     NRF_SUCCESS on success, else an error code indicating reason for failure.
  */
 static uint32_t buffer_enqueue(ble_hids_t* p_hids,
+    uint8_t report_index,
     uint8_t* p_key_pattern,
-    uint16_t pattern_len,
-    uint16_t offset)
+    uint16_t pattern_len)
 {
     buffer_entry_t* element;
     uint32_t err_code = NRF_SUCCESS;
@@ -347,7 +327,7 @@ static uint32_t buffer_enqueue(ble_hids_t* p_hids,
         element = &buffer_list.buffer[(buffer_list.wp)];
         element->p_instance = p_hids;
         element->p_data = p_key_pattern;
-        element->data_offset = offset;
+        element->index = report_index;
         element->data_len = pattern_len;
 
         buffer_list.count++;
@@ -377,7 +357,6 @@ static uint32_t buffer_dequeue(bool tx_flag)
 {
     buffer_entry_t* p_element;
     uint32_t err_code = NRF_SUCCESS;
-    uint16_t actual_len;
 
     if (BUFFER_LIST_EMPTY()) {
         err_code = NRF_ERROR_NOT_FOUND;
@@ -387,17 +366,12 @@ static uint32_t buffer_dequeue(bool tx_flag)
         p_element = &buffer_list.buffer[(buffer_list.rp)];
 
         if (tx_flag) {
-            err_code = send_key_scan_press_release(p_element->p_instance,
+            err_code = send_key(p_element->p_instance,
+                p_element->index,
                 p_element->p_data,
-                p_element->data_len,
-                p_element->data_offset,
-                &actual_len);
-            // An additional notification is needed for release of all keys, therefore check
-            // is for actual_len <= element->data_len and not actual_len < element->data_len
-            if ((err_code == NRF_ERROR_RESOURCES) && (actual_len <= p_element->data_len)) {
-                // Transmission could not be completed, do not remove the entry, adjust next data to
-                // be transmitted
-                p_element->data_offset = actual_len;
+                p_element->data_len);
+            if (err_code == NRF_ERROR_RESOURCES) {
+                // Transmission could not be completed, do not remove the entry
                 remove_element = false;
             }
         }
@@ -419,27 +393,22 @@ static uint32_t buffer_dequeue(bool tx_flag)
 
 /**@brief Function for sending sample key presses to the peer.
  *
+ * @param[in]   report_index      Packet report index. 0:keyboard, 1:system, 2:consumer.
  * @param[in]   key_pattern_len   Pattern length.
  * @param[in]   p_key_pattern     Pattern to be sent.
  */
-void keys_send(uint8_t key_pattern_len, uint8_t* p_key_pattern)
+void keys_send(uint8_t report_index, uint8_t key_pattern_len, uint8_t* p_key_pattern)
 {
     ret_code_t err_code;
-    uint16_t actual_len;
 
-    err_code = send_key_scan_press_release(&m_hids,
-        p_key_pattern,
-        key_pattern_len,
-        0,
-        &actual_len);
-    // An additional notification is needed for release of all keys, therefore check
-    // is for actual_len <= key_pattern_len and not actual_len < key_pattern_len.
-    if ((err_code == NRF_ERROR_RESOURCES) && (actual_len <= key_pattern_len)) {
+    err_code = send_key(&m_hids, report_index, p_key_pattern, key_pattern_len);
+    // check if send success, otherwise enqueue this.
+    if (err_code == NRF_ERROR_RESOURCES) {
         // Buffer enqueue routine return value is not intentionally checked.
         // Rationale: Its better to have a a few keys missing than have a system
         // reset. Recommendation is to work out most optimal value for
         // MAX_BUFFER_ENTRIES to minimize chances of buffer queue full condition
-        UNUSED_VARIABLE(buffer_enqueue(&m_hids, p_key_pattern, key_pattern_len, actual_len));
+        UNUSED_VARIABLE(buffer_enqueue(&m_hids, report_index, p_key_pattern, key_pattern_len));
     }
 
     if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_INVALID_STATE) && (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_BUSY) && (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)) {
@@ -470,6 +439,7 @@ static void on_hid_rep_char_write(ble_hids_evt_t* p_evt)
                 m_conn_handle,
                 &report_val);
             APP_ERROR_CHECK(err_code);
+            keyboard_led_val = report_val;
         }
     }
 }
