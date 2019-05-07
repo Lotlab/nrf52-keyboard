@@ -135,7 +135,9 @@
         "SDK/components/ble/ble_services/ble_rscs",
         "SDK/components/libraries/stack_guard",
         "SDK/components/libraries/log/src",
-        "SDK/components/libraries/bootloader"
+        "SDK/components/libraries/bootloader",
+        "tmk/tmk_core/common",
+        "tmk/tmk_core/common/avr"
     ],
     "C_Cpp.default.defines": [
         "uint8_t=char",
