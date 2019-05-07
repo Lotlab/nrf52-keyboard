@@ -53,43 +53,30 @@
  * Also it would accept pairing requests from any peer device.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include "app_error.h"
 #include "nordic_common.h"
 #include "nrf.h"
-#include "nrf_soc.h"
 #include "nrf_assert.h"
-#include "app_error.h"
+#include "nrf_soc.h"
+#include <stdint.h>
+#include <string.h>
 
 #include "app_scheduler.h"
 #include "app_timer.h"
 #include "nrf_pwr_mgmt.h"
 
-#include "ble/ble_services.h"
-#include "ble/ble_hid_service.h"
 #include "ble/ble_bas_service.h"
+#include "ble/ble_hid_service.h"
+#include "ble/ble_services.h"
 
+#define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
-#define DEAD_BEEF                           0xDEADBEEF                                 /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
-
-#define SCHED_MAX_EVENT_DATA_SIZE           APP_TIMER_SCHED_EVENT_DATA_SIZE            /**< Maximum size of scheduler events. */
+#define SCHED_MAX_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE /**< Maximum size of scheduler events. */
 #ifdef SVCALL_AS_NORMAL_FUNCTION
-#define SCHED_QUEUE_SIZE                    20                                         /**< Maximum number of events in the scheduler queue. More is needed in case of Serialization. */
+#define SCHED_QUEUE_SIZE 20 /**< Maximum number of events in the scheduler queue. More is needed in case of Serialization. */
 #else
-#define SCHED_QUEUE_SIZE                    10                                         /**< Maximum number of events in the scheduler queue. */
+#define SCHED_QUEUE_SIZE 10 /**< Maximum number of events in the scheduler queue. */
 #endif
-
-
-static uint8_t m_sample_key_press_scan_str[] = /**< Key pattern to be sent when the key press button has been pushed. */
-{
-    0x0b,       /* Key h */
-    0x08,       /* Key e */
-    0x0f,       /* Key l */
-    0x0f,       /* Key l */
-    0x12,       /* Key o */
-    0x28        /* Key Return */
-};
-
 
 /**@brief Callback function for asserts in the SoftDevice.
  *
@@ -102,11 +89,10 @@ static uint8_t m_sample_key_press_scan_str[] = /**< Key pattern to be sent when 
  * @param[in]   line_num   Line number of the failing ASSERT call.
  * @param[in]   file_name  File name of the failing ASSERT call.
  */
-void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
+void assert_nrf_callback(uint16_t line_num, const uint8_t* p_file_name)
 {
     app_error_handler(DEAD_BEEF, line_num, p_file_name);
 }
-
 
 /**@brief Function for handling Service errors.
  *
@@ -120,7 +106,6 @@ void service_error_handler(uint32_t nrf_error)
     APP_ERROR_HANDLER(nrf_error);
 }
 
-
 /**@brief Handler for shutdown preparation.
  *
  * @details During shutdown procedures, this function will be called at a 1 second interval
@@ -133,38 +118,37 @@ void service_error_handler(uint32_t nrf_error)
  */
 static bool app_shutdown_handler(nrf_pwr_mgmt_evt_t event)
 {
-    switch (event)
-    {
-        case NRF_PWR_MGMT_EVT_PREPARE_DFU:;
-            // YOUR_JOB: Get ready to reset into DFU mode
-            //
-            // If you aren't finished with any ongoing tasks, return "false" to
-            // signal to the system that reset is impossible at this stage.
-            //
-            // Here is an example using a variable to delay resetting the device.
-            //
-            // if (!m_ready_for_reset)
-            // {
-            //      return false;
-            // }
-            // else
-            //{
-            //
-            //    // Device ready to enter
-            //    uint32_t err_code;
-            //    err_code = sd_softdevice_disable();
-            //    APP_ERROR_CHECK(err_code);
-            //    err_code = app_timer_stop_all();
-            //    APP_ERROR_CHECK(err_code);
-            //}
-            break;
+    switch (event) {
+    case NRF_PWR_MGMT_EVT_PREPARE_DFU:;
+        // YOUR_JOB: Get ready to reset into DFU mode
+        //
+        // If you aren't finished with any ongoing tasks, return "false" to
+        // signal to the system that reset is impossible at this stage.
+        //
+        // Here is an example using a variable to delay resetting the device.
+        //
+        // if (!m_ready_for_reset)
+        // {
+        //      return false;
+        // }
+        // else
+        //{
+        //
+        //    // Device ready to enter
+        //    uint32_t err_code;
+        //    err_code = sd_softdevice_disable();
+        //    APP_ERROR_CHECK(err_code);
+        //    err_code = app_timer_stop_all();
+        //    APP_ERROR_CHECK(err_code);
+        //}
+        break;
 
-        default:
-            // YOUR_JOB: Implement any of the other events available from the power management module:
-            //      -NRF_PWR_MGMT_EVT_PREPARE_SYSOFF
-            //      -NRF_PWR_MGMT_EVT_PREPARE_WAKEUP
-            //      -NRF_PWR_MGMT_EVT_PREPARE_RESET
-            return true;
+    default:
+        // YOUR_JOB: Implement any of the other events available from the power management module:
+        //      -NRF_PWR_MGMT_EVT_PREPARE_SYSOFF
+        //      -NRF_PWR_MGMT_EVT_PREPARE_WAKEUP
+        //      -NRF_PWR_MGMT_EVT_PREPARE_RESET
+        return true;
     }
     return true;
 }
@@ -173,7 +157,6 @@ static bool app_shutdown_handler(nrf_pwr_mgmt_evt_t event)
 /**@brief Register application shutdown handler with priority 0.
  */
 NRF_PWR_MGMT_HANDLER_REGISTER(app_shutdown_handler, 0);
-
 
 /**@brief Function for the Timer initialization.
  *
@@ -187,7 +170,6 @@ static void timers_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-
 static void ble_user_event(enum user_ble_event event);
 
 /**@brief Function for initializing services that will be used by the application.
@@ -199,14 +181,12 @@ static void services_init(void)
     hid_service_init(service_error_handler);
 }
 
-
 /**@brief Function for starting timers.
  */
 static void timers_start(void)
 {
     battery_timer_start();
 }
-
 
 /**@brief Function for putting the chip into sleep mode.
  *
@@ -221,21 +201,17 @@ static void sleep_mode_enter(void)
     APP_ERROR_CHECK(err_code);
 }
 
-static void ble_user_event(enum user_ble_event arg) {
-    switch (arg)
-    {
+static void ble_user_event(enum user_ble_event arg)
+{
+    switch (arg) {
     case USER_BLE_IDLE:
         sleep_mode_enter();
-        break;
-    case USER_BLE_CONNECTED:
-        keys_send(6, m_sample_key_press_scan_str);
         break;
     default:
         break;
     }
     hid_event_handler(arg);
 }
-
 
 /**@brief Function for the Event Scheduler initialization.
  */
@@ -244,17 +220,15 @@ static void scheduler_init(void)
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
 }
 
-
 /**@brief Function for initializing buttons and leds.
  *
  * @param[out] p_erase_bonds  Will be true if the clear bonding button was pressed to wake the application up.
  */
-static void buttons_leds_init(bool * p_erase_bonds)
+static void buttons_leds_init(bool* p_erase_bonds)
 {
     // ret_code_t err_code;
     *p_erase_bonds = false;
 }
-
 
 /**@brief Function for initializing power management.
  */
@@ -266,7 +240,6 @@ static void power_management_init(void)
 
     sd_power_dcdc_mode_set(1);
 }
-
 
 /**@brief Function for handling the idle state (main loop).
  *
@@ -296,14 +269,12 @@ int main(void)
     // Start execution.
     timers_start();
     advertising_start(erase_bonds);
-	
+
     // Enter main loop.
-    for (;;)
-    {
+    for (;;) {
         idle_state_handle();
     }
 }
-
 
 /**
  * @}
