@@ -37,7 +37,7 @@ uint8_t keyboard_leds()
 void send_keyboard(report_keyboard_t* report)
 {
     keys_send(0, KEYBOARD_REPORT_SIZE, report->raw);
-    hook_send_keyboard(report);
+    // hook_send_keyboard(report);
 }
 
 void send_mouse(report_mouse_t* report)

@@ -3,6 +3,7 @@
 #include "app_timer.h" // nordic
 #include "keyboard.h" // tmk
 #include <stdint.h>
+#include "keyboard_host_driver.h"
 
 #include "hook.h"
 #include "custom_hook.h"
@@ -136,6 +137,6 @@ void ble_keyboard_init(void)
     keyboard_init();
     // - timer_init();
     // - matrix_init();
-    // host_set_driver(&driver); // 设置 host driver
+    host_set_driver(&driver); // 设置 host driver
     keyboard_timer_init(); // 初始化计时器
 }
