@@ -77,7 +77,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* disable print */
 //#define NO_PRINT
 
-#define xprintf printf
+#ifndef xprintf
+    // #define xprintf printf
+#endif
 
 /* disable action features */
 //#define NO_ACTION_LAYER

@@ -8,6 +8,7 @@
 #include "keyboard_fn.h"
 #include <stdint.h>
 
+/*
 void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
 {
     if (record->event.pressed) {
@@ -21,3 +22,4 @@ void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
         }
     }
 }
+*/
