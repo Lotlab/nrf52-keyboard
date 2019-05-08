@@ -13,6 +13,7 @@ SRC_FILES += $(PROJ_DIR)/keyboard/keyboard_matrix.c \
     $(PROJ_DIR)/keyboard/glue_layer.c \
     $(PROJ_DIR)/keyboard/keyboard_fn.c \
     $(PROJ_DIR)/keyboard/keymap_plain.c \
+    $(PROJ_DIR)/keyboard/keyboard_led.c \
 
 ifdef KEYMAP
     SRC := keymap_$(KEYMAP).c $(SRC)
@@ -34,6 +35,8 @@ EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
 # COMMAND_ENABLE = yes    # Commands for debug and configuration
 # NKRO_ENABLE = yes	# USB Nkey Rollover
 USB_6KRO_ENABLE = yes # USB 6Key Rollover
+
+OPT_DEFS += -DDEBUG
 
 include tmk.mk
 include app.mk

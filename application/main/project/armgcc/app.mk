@@ -36,6 +36,7 @@ SRC_FILES += \
 	$(SDK_ROOT)/components/libraries/experimental_section_vars/nrf_section_iter.c \
 	$(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
 	$(SDK_ROOT)/components/libraries/bootloader/dfu/nrf_dfu_svci.c \
+	$(SDK_ROOT)/components/libraries/low_power_pwm/low_power_pwm.c \
 	$(SDK_ROOT)/modules/nrfx/mdk/system_nrf52810.c \
 	$(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_clock.c \
 	$(SDK_ROOT)/modules/nrfx/soc/nrfx_atomic.c \
@@ -107,6 +108,7 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/bootloader \
 	$(SDK_ROOT)/components/libraries/bootloader/dfu \
 	$(SDK_ROOT)/components/libraries/bootloader/ble_dfu \
+	$(SDK_ROOT)/components/libraries/low_power_pwm \
 	$(SDK_ROOT)/components/softdevice/common \
 	$(SDK_ROOT)/components/libraries/low_power_pwm \
 	$(SDK_ROOT)/components/ble/ble_services/ble_dfu \
@@ -254,7 +256,7 @@ flash: default
 	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52810_xxaa.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
-pyocd_flash: 
+pyocd_flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52810_xxaa.hex
 	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52810_xxaa.hex
 	pyocd cmd -t nrf52 -c reset

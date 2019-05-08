@@ -70,6 +70,7 @@
 #include "ble/ble_services.h"
 
 #include "keyboard/ble_keyboard.h"
+#include "keyboard/keyboard_led.h"
 
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
@@ -248,7 +249,7 @@ static void idle_state_handle(void)
  */
 int main(void)
 {
-    bool erase_bonds = false;
+    bool erase_bonds = true;
 
     // Initialize.
     timers_init();
@@ -258,6 +259,7 @@ int main(void)
     scheduler_init();
     services_init();
     ble_keyboard_init();
+    keyboard_led_init();
 
     // Start execution.
     timers_start();

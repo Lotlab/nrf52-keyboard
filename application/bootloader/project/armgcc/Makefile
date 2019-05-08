@@ -246,7 +246,7 @@ flash: default
 	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52810_xxaa_s112.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
-pyocd_flash: 
+pyocd_flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52810_xxaa_s112.hex
 	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52810_xxaa_s112.hex
 	pyocd cmd -t nrf52 -c reset
