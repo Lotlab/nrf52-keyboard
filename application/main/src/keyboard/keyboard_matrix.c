@@ -14,7 +14,7 @@
 
 #include "custom_hook.h"
 #include "debug.h"
-#include "keyboard_conf.h"
+#include "../config/keyboard_config.h"
 #include "keyboard_matrix.h"
 #include "matrix.h"
 #include "print.h"
@@ -42,17 +42,6 @@ static void unselect_rows(void);
 void matrix_init(void)
 {
     for (uint_fast8_t i = MATRIX_ROWS; i--;) {
-        // nrf_gpio_cfg_output((uint32_t)row_pin_array[i]);
-#ifndef MATRIX_HAS_GHOST
-        nrf_gpio_cfg(
-            (uint32_t)row_pin_array[i],
-            NRF_GPIO_PIN_DIR_OUTPUT,
-            NRF_GPIO_PIN_INPUT_DISCONNECT,
-            NRF_GPIO_PIN_NOPULL,
-            NRF_GPIO_PIN_S0D1,
-            NRF_GPIO_PIN_NOSENSE);
-        nrf_gpio_pin_set((uint32_t)row_pin_array[i]); //Set pin to low
-#else
         nrf_gpio_cfg(
             (uint32_t)row_pin_array[i],
             NRF_GPIO_PIN_DIR_OUTPUT,
@@ -61,14 +50,9 @@ void matrix_init(void)
             NRF_GPIO_PIN_D0S1,
             NRF_GPIO_PIN_NOSENSE);
         nrf_gpio_pin_clear((uint32_t)row_pin_array[i]); //Set pin to low
-#endif
     }
     for (uint_fast8_t i = MATRIX_COLS; i--;) {
-#ifndef MATRIX_HAS_GHOST
-        nrf_gpio_cfg_input((uint32_t)column_pin_array[i], NRF_GPIO_PIN_PULLUP);
-#else
         nrf_gpio_cfg_input((uint32_t)column_pin_array[i], NRF_GPIO_PIN_PULLDOWN);
-#endif
     }
 }
 /** read all rows */
@@ -77,13 +61,8 @@ static matrix_row_t read_cols(void)
     uint16_t result = 0;
 
     for (uint_fast8_t c = 0; c < MATRIX_COLS; c++) {
-#ifndef MATRIX_HAS_GHOST
-        if (!nrf_gpio_pin_read((uint32_t)column_pin_array[c]))
-            result |= 1 << c;
-#else
         if (nrf_gpio_pin_read((uint32_t)column_pin_array[c]))
             result |= 1 << c;
-#endif
     }
 
     return result;
@@ -91,21 +70,13 @@ static matrix_row_t read_cols(void)
 
 static void select_row(uint8_t row)
 {
-#ifndef MATRIX_HAS_GHOST
-    nrf_gpio_pin_clear((uint32_t)row_pin_array[row]);
-#else
     nrf_gpio_pin_set((uint32_t)row_pin_array[row]);
-#endif
 }
 
 static void unselect_rows(void)
 {
     for (uint_fast8_t i = 0; i < MATRIX_ROWS; i++) {
-#ifndef MATRIX_HAS_GHOST
-        nrf_gpio_pin_set((uint32_t)row_pin_array[i]);
-#else
         nrf_gpio_pin_clear((uint32_t)row_pin_array[i]);
-#endif
     }
 }
 
@@ -132,9 +103,9 @@ uint8_t matrix_scan(void)
             matrix_debouncing[i] = cols;
             hook_key_change();
             if (debouncing) {
-                debug("bounce!: ");
+                dprint("bounce!: ");
                 debug_hex(debouncing);
-                debug("\n");
+                dprint("\n");
             }
             debouncing = DEBOUNCE;
         }

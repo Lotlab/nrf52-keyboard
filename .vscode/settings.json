@@ -21,7 +21,21 @@
         "nrf_bootloader_info.h": "c",
         "nrf_pwr_mgmt.h": "c",
         "nrf_power.h": "c",
-        "ble_dfu.h": "c"
+        "ble_dfu.h": "c",
+        "debug.h": "c",
+        "keyboard_config.h": "c",
+        "nrfx_errors.h": "c",
+        "nrfx_common.h": "c",
+        "keyboard_matrix.h": "c",
+        "nrf_gpio.h": "c",
+        "keyboard_host_driver.h": "c",
+        "host_driver.h": "c",
+        "keyboard.h": "c",
+        "print.h": "c",
+        "bootloader.h": "c",
+        "led.h": "c",
+        "host.h": "c",
+        "keyboard_fn.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",

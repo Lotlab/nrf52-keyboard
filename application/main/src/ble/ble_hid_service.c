@@ -259,7 +259,7 @@ static uint32_t send_key(ble_hids_t* p_hids,
     uint8_t* pattern,
     uint8_t len)
 {
-    ret_code_t err_code;
+    ret_code_t err_code = NRF_SUCCESS;
     if (m_in_boot_mode) {
         if (index == 0) {
             err_code = ble_hids_boot_kb_inp_rep_send(p_hids,

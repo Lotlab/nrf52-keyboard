@@ -5,6 +5,15 @@ PROJ_DIR := ../../src
 SRC =	matrix.c \
 	led.c
 
+SRC_FILES += $(PROJ_DIR)/keyboard/keyboard_matrix.c \
+    $(PROJ_DIR)/keyboard/host_driver.c \
+    $(PROJ_DIR)/keyboard/eeconfig.c \
+    $(PROJ_DIR)/keyboard/ble_keyboard.c \
+    $(PROJ_DIR)/keyboard/keyboard_timer.c \
+    $(PROJ_DIR)/keyboard/glue_layer.c \
+    $(PROJ_DIR)/keyboard/keyboard_fn.c \
+    $(PROJ_DIR)/keyboard/keymap_plain.c \
+
 ifdef KEYMAP
     SRC := keymap_$(KEYMAP).c $(SRC)
 else

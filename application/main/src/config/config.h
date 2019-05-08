@@ -47,7 +47,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)) \
 )
 
+// 定义Bootmagic按键
+#define BOOTMAGIC_KEY_BOOT              KC_U /* boot! */
+#define BOOTMAGIC_KEY_ERASE_BOND        KC_E /* erase bond info */
 
+// 键盘省电参数
+#define SLEEP_SLOW_TIMEOUT 15               // 键盘闲置多久后转入慢速扫描模式 (s)
+#define SLEEP_OFF_TIMEOUT 600               // 键盘闲置多久后转入自动关机 (s)
+#define KEYBOARD_FAST_SCAN_INTERVAL 10      // 通常模式下，多久扫描一次键盘 (ms)
+#define KEYBOARD_SLOW_SCAN_INTERVAL 100     // 慢速模式下，多久扫描一次键盘 (ms)
+
+/**
+ * 在检测到有按键改变后即立刻退出慢速扫描模式，而不是等待完整一轮消抖后再退出。
+ * 可能可以缓解慢速扫描模式下第一次按键后响应时间过长的问题。
+ **/
+#define SLOW_MODE_EARLY_EXIT
+
+// LED自动熄灭时长(ms)，设为0则不自动熄灭
+#define LED_AUTOOFF_TIME 1000
 
 /*
  * Feature disable options
@@ -59,6 +76,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* disable print */
 //#define NO_PRINT
+
+#define xprintf printf
 
 /* disable action features */
 //#define NO_ACTION_LAYER

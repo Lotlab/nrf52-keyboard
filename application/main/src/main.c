@@ -69,8 +69,7 @@
 #include "ble/ble_hid_service.h"
 #include "ble/ble_services.h"
 
-// tmk
-#include "keyboard.h"
+#include "keyboard/ble_keyboard.h"
 
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
@@ -189,6 +188,7 @@ static void services_init(void)
 static void timers_start(void)
 {
     battery_timer_start();
+    ble_keyboard_timer_start();
 }
 
 /**@brief Function for putting the chip into sleep mode.
@@ -244,24 +244,6 @@ static void idle_state_handle(void)
     nrf_pwr_mgmt_run();
 }
 
-static void keyboard_init(void) 
-{
-    keyboard_setup(); // 初始化各按键阵列
-    // - martix_setup();
-    // led_init(); // 初始化led
-    // keymap_init(); // 初始化自定义keymap
-    // uart_init(); // 初始化外部USB通信协议
-    keyboard_init();
-    // - timer_init();
-    // - matrix_init();
-    // host_set_driver(&driver); // 设置 host driver
-}
-
-static void keyboard_timeout(void) 
-{
-    keyboard_task();
-}
-
 /**@brief Function for application main entry.
  */
 int main(void)
@@ -275,6 +257,7 @@ int main(void)
     ble_stack_init();
     scheduler_init();
     services_init();
+    ble_keyboard_init();
 
     // Start execution.
     timers_start();
