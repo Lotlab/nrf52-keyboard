@@ -103,7 +103,7 @@ static void keyboard_timer_init(void)
     APP_ERROR_CHECK(err_code);
 
     // init keyboard sleep counter timer
-    err_code = app_timer_create(&m_keyboard_scan_timer,
+    err_code = app_timer_create(&m_keyboard_sleep_timer,
         APP_TIMER_MODE_REPEATED,
         keyboard_sleep_handler);
     APP_ERROR_CHECK(err_code);
