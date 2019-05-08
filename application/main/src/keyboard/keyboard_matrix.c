@@ -12,9 +12,9 @@
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
 
+#include "../config/keyboard_config.h"
 #include "custom_hook.h"
 #include "debug.h"
-#include "../config/keyboard_config.h"
 #include "keyboard_matrix.h"
 #include "matrix.h"
 #include "print.h"
@@ -35,6 +35,12 @@ static matrix_row_t read_cols(void);
 static void select_row(uint8_t row);
 static void unselect_rows(void);
 
+#ifdef ROW_IN
+#define READ_COL(pin) (!nrf_gpio_pin_read(pin))
+#else
+#define READ_COL(pin) nrf_gpio_pin_read(pin)
+#endif
+
 /**
  * @brief 初始化键盘阵列
  * 
@@ -47,12 +53,24 @@ void matrix_init(void)
             NRF_GPIO_PIN_DIR_OUTPUT,
             NRF_GPIO_PIN_INPUT_DISCONNECT,
             NRF_GPIO_PIN_NOPULL,
+#ifdef ROW_IN
+            NRF_GPIO_PIN_S0D1,
+#else
             NRF_GPIO_PIN_D0S1,
+#endif
             NRF_GPIO_PIN_NOSENSE);
+#ifdef ROW_IN
+        nrf_gpio_pin_set((uint32_t)row_pin_array[i]);
+#else
         nrf_gpio_pin_clear((uint32_t)row_pin_array[i]); //Set pin to low
+#endif
     }
     for (uint_fast8_t i = MATRIX_COLS; i--;) {
+#ifdef ROW_IN
+        nrf_gpio_cfg_input((uint32_t)column_pin_array[i], NRF_GPIO_PIN_PULLUP);
+#else
         nrf_gpio_cfg_input((uint32_t)column_pin_array[i], NRF_GPIO_PIN_PULLDOWN);
+#endif
     }
 }
 /** read all rows */
@@ -61,7 +79,7 @@ static matrix_row_t read_cols(void)
     uint16_t result = 0;
 
     for (uint_fast8_t c = 0; c < MATRIX_COLS; c++) {
-        if (nrf_gpio_pin_read((uint32_t)column_pin_array[c]))
+        if (READ_COL((uint32_t)column_pin_array[c]))
             result |= 1 << c;
     }
 
@@ -70,13 +88,21 @@ static matrix_row_t read_cols(void)
 
 static void select_row(uint8_t row)
 {
+#ifdef ROW_IN
+    nrf_gpio_pin_clear((uint32_t)row_pin_array[row]);
+#else
     nrf_gpio_pin_set((uint32_t)row_pin_array[row]);
+#endif
 }
 
 static void unselect_rows(void)
 {
     for (uint_fast8_t i = 0; i < MATRIX_ROWS; i++) {
+#ifdef ROW_IN
+        nrf_gpio_pin_set((uint32_t)row_pin_array[i]);
+#else
         nrf_gpio_pin_clear((uint32_t)row_pin_array[i]);
+#endif
     }
 }
 
@@ -153,7 +179,8 @@ uint8_t matrix_key_count(void)
  */
 void matrix_sleep_prepare(void)
 {
-    // 这里监听所有按键作为唤醒按键，所以真正的唤醒判断应该在main的初始化过程中
+// 这里监听所有按键作为唤醒按键，所以真正的唤醒判断应该在main的初始化过程中
+#ifdef ROW_IN
     for (uint8_t i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_cfg_output((uint32_t)column_pin_array[i]);
         nrf_gpio_pin_set((uint32_t)column_pin_array[i]);
@@ -161,4 +188,13 @@ void matrix_sleep_prepare(void)
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         nrf_gpio_cfg_sense_input((uint32_t)row_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     }
+#else
+    for (uint8_t i = 0; i < MATRIX_COLS; i++) {
+        nrf_gpio_cfg_sense_input((uint32_t)column_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+    }
+    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
+        nrf_gpio_cfg_output((uint32_t)row_pin_array[i]);
+        nrf_gpio_pin_set((uint32_t)row_pin_array[i]);
+    }
+#endif
 }
