@@ -249,7 +249,7 @@ static void idle_state_handle(void)
  */
 int main(void)
 {
-    bool erase_bonds = true;
+    bool erase_bonds = false;
 
     // Initialize.
     timers_init();

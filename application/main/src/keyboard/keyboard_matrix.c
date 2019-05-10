@@ -54,7 +54,7 @@ void matrix_init(void)
             NRF_GPIO_PIN_INPUT_DISCONNECT,
             NRF_GPIO_PIN_NOPULL,
 #ifdef ROW_IN
-            NRF_GPIO_PIN_S0D1,
+            NRF_GPIO_PIN_S0S1,
 #else
             NRF_GPIO_PIN_D0S1,
 #endif
@@ -111,9 +111,7 @@ static inline void delay_30ns(void)
 #ifdef __GNUC__
 #define __nop() __asm("NOP")
 #endif
-    for (int i = 0; i < 6; i++) {
-        __nop();
-    }
+    __nop(); // 32mhz, 1cycle = 31.25ns
 }
 
 uint8_t matrix_scan(void)
