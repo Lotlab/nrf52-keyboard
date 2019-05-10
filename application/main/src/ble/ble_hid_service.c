@@ -100,6 +100,7 @@ static void hids_init(ble_srv_error_handler_t err_handler)
         0x05, 0x01, // Usage Page (Generic Desktop)
         0x09, 0x06, // Usage (Keyboard)
         0xA1, 0x01, // Collection (Application)
+        0x85, 0x01, // Report ID 1
         0x05, 0x07, // Usage Page (Key Codes)
         0x19, 0xe0, // Usage Minimum (224)
         0x29, 0xe7, // Usage Maximum (231)
@@ -170,7 +171,7 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     // Initialize HID Service
     p_input_report = &input_report_array[INPUT_REPORT_KEYS_INDEX];
     p_input_report->max_len = INPUT_REPORT_KEYS_MAX_LEN;
-    p_input_report->rep_ref.report_id = INPUT_REP_REF_ID;
+    p_input_report->rep_ref.report_id = 1;
     p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
 
     p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
