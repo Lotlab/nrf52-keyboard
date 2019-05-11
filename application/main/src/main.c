@@ -71,6 +71,7 @@
 
 #include "keyboard/ble_keyboard.h"
 #include "keyboard/keyboard_led.h"
+#include "keyboard/keyboard_matrix.h"
 
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
@@ -200,11 +201,19 @@ static void sleep_mode_enter(void)
 {
     ret_code_t err_code;
 
+    keyboard_led_off();
+    matrix_sleep_prepare();
+
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
     err_code = sd_power_system_off();
     APP_ERROR_CHECK(err_code);
 }
 
+/**
+ * @brief 用户蓝牙事件处理函数
+ * 
+ * @param arg 
+ */
 static void ble_user_event(enum user_ble_event arg)
 {
     switch (arg) {
@@ -214,6 +223,7 @@ static void ble_user_event(enum user_ble_event arg)
     default:
         break;
     }
+    // 将事件转向至HID继续处理
     hid_event_handler(arg);
 }
 
@@ -264,6 +274,8 @@ int main(void)
     // Start execution.
     timers_start();
     advertising_start(erase_bonds);
+
+    keyboard_led_rgb_set(0x66ccff);
 
     // Enter main loop.
     for (;;) {

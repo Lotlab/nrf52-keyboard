@@ -7,11 +7,15 @@
 
 extern uint16_t m_conn_handle;
 
+/**
+ * @brief 蓝牙用户事件
+ * 
+ */
 enum user_ble_event {
-    USER_BLE_IDLE,
-    USER_BLE_DISCONNECT,
-    USER_BLE_GATTS_TX_COMPLETE,
-    USER_BLE_CONNECTED
+    USER_BLE_IDLE, // 蓝牙进入空闲状态
+    USER_BLE_DISCONNECT, // 蓝牙被断开
+    USER_BLE_GATTS_TX_COMPLETE, // GATTs发送完毕
+    USER_BLE_CONNECTED // 蓝牙已连接
 };
 
 typedef void (*evt_handler) (enum user_ble_event arg);
