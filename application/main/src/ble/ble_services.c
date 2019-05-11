@@ -254,7 +254,7 @@ static void get_device_name(char * device_name, int offset) {
     {
         uint8_t addr = ble_addr.addr[3+i];
         device_name[offset+1+i*2] = lookup_table[addr / 16];
-        device_name[offset+2+i*2] = lookup_table[addr / 16];
+        device_name[offset+2+i*2] = lookup_table[addr % 16];
     }
 }
 
