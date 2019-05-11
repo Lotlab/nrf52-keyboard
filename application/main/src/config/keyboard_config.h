@@ -10,9 +10,12 @@
 
 // LED 配置
 #define LED_CAPS 21
-#define LED_EXT1 22
-#define LED_EXT2 23
-#define LED_EXT3 24
+
+// 启用 RGB
+#define LED_RGB
+#define LED_RGB_R 22
+#define LED_RGB_G 23
+#define LED_RGB_B 24
 
 // SPI 传输配置
 #define SPI_CLK 17

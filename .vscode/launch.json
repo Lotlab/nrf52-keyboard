@@ -14,10 +14,11 @@
             "executable": "nrf52810_xxaa.out",
             "valuesFormatting": "parseText",
             "autorun": [
+                "load nrf52810_xxaa.out",
                 "symbol-file nrf52810_xxaa.out",
                 "mon reset"
             ],
-            "gdbpath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-gdb"
+            "gdbpath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-gdb",
         }
     ]
 }

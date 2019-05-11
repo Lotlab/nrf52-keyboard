@@ -35,7 +35,9 @@
         "bootloader.h": "c",
         "led.h": "c",
         "host.h": "c",
-        "keyboard_fn.h": "c"
+        "keyboard_fn.h": "c",
+        "nrf52.h": "c",
+        "keyboard_led.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",
