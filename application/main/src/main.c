@@ -259,12 +259,12 @@ static void idle_state_handle(void)
     nrf_pwr_mgmt_run();
 }
 
+bool erase_bonds = false;
+
 /**@brief Function for application main entry.
  */
 int main(void)
 {
-    bool erase_bonds = false;
-
     // Initialize.
     timers_init();
     power_management_init();

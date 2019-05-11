@@ -15,6 +15,7 @@ SRC_FILES += $(PROJ_DIR)/keyboard/keyboard_matrix.c \
     $(PROJ_DIR)/keyboard/keymap_plain.c \
     $(PROJ_DIR)/keyboard/keyboard_led.c \
     $(PROJ_DIR)/keyboard/passkey.c \
+    $(PROJ_DIR)/keyboard/keyboard_bootmagic.c \
 
 ifdef KEYMAP
     SRC := keymap_$(KEYMAP).c $(SRC)

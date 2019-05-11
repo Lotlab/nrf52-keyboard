@@ -28,7 +28,7 @@ static void keyboard_led_rgb_set_internal(uint32_t color)
 {
     low_power_pwm_duty_set(&led_r, (color & 0xFF0000) >> 16);
     low_power_pwm_duty_set(&led_g, (color & 0xFF00) >> 8);
-    low_power_pwm_duty_set(&led_b, (color  & 0xFF));
+    low_power_pwm_duty_set(&led_b, (color & 0xFF));
 }
 
 /**
@@ -83,6 +83,16 @@ static void keyboard_led_rgb_init()
     err_code = low_power_pwm_start(&led_b, led_b.bit_mask);
     APP_ERROR_CHECK(err_code);
 }
+
+static void keyboard_led_rgb_off() {
+    low_power_pwm_stop(&led_r);
+    low_power_pwm_stop(&led_g);
+    low_power_pwm_stop(&led_b);
+
+    nrf_gpio_pin_set(LED_RGB_R);
+    nrf_gpio_pin_set(LED_RGB_G);
+    nrf_gpio_pin_set(LED_RGB_B);
+}
 #endif
 
 /**
@@ -118,18 +128,6 @@ void keyboard_led_set(uint8_t led_val)
 }
 
 /**
- * @brief 将LED点亮
- * 
- */
-static void led_on(void)
-{
-    keyboard_led_set_internal(saved_led_val);
-#ifdef LED_RGB
-    keyboard_led_rgb_set_internal(saved_color);
-#endif
-}
-
-/**
  * @brief 将LED熄灭
  * 
  */
@@ -148,6 +146,9 @@ static void led_off(void)
 void keyboard_led_off(void)
 {
     led_off();
+#ifdef LED_RGB
+    keyboard_led_rgb_off();
+#endif
 }
 
 #if LED_AUTOOFF_TIME > 0
@@ -155,6 +156,19 @@ void keyboard_led_off(void)
 static bool counting;
 static bool led_autooff = true;
 APP_TIMER_DEF(led_off_timer);
+
+/**
+ * @brief 将LED点亮
+ * 
+ */
+static void led_on(void)
+{
+    keyboard_led_set_internal(saved_led_val);
+#ifdef LED_RGB
+    keyboard_led_rgb_set_internal(saved_color);
+#endif
+}
+
 
 /**
  * @brief LED自动关闭的handler
