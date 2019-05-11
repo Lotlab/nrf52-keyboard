@@ -255,9 +255,17 @@ static void gap_params_init(void)
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
+    ble_gap_addr_t ble_addr;
+    sd_ble_gap_addr_get(&ble_addr);
+
+    int name_len = strlen(DEVICE_NAME)+8;
+    char device_name[name_len];
+    snprintf(device_name, name_len, "%s_%X%X%X", DEVICE_NAME,
+        ble_addr.addr[3], ble_addr.addr[4], ble_addr.addr[5]);
+
     err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                          (const uint8_t *)DEVICE_NAME,
-                                          strlen(DEVICE_NAME));
+                                          (const uint8_t *)device_name,
+                                          strlen(device_name));
     APP_ERROR_CHECK(err_code);
 
     err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_HID_KEYBOARD);
