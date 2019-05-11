@@ -23,9 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define VENDOR_ID       0xFEED
 #define PRODUCT_ID      0x6060
 #define DEVICE_VER      0x0001
-#define MANUFACTURER    geekhack
-#define PRODUCT         GH60
-#define DESCRIPTION     t.m.k. keyboard firmware for GH60
+#define MANUFACTURER    "Lotlab"
+#define PRODUCT         "BLE60-REV.C"
 
 /* key matrix size */
 #define MATRIX_ROWS 5
@@ -65,6 +64,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // LED自动熄灭时长(ms)，设为0则不自动熄灭
 #define LED_AUTOOFF_TIME 1000
+
+// 需要输入配对码
+#define PASSKEY_REQUIRED
 
 /*
  * Feature disable options

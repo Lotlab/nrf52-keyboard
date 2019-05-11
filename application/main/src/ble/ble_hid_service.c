@@ -5,6 +5,7 @@
 #include "ble_hids.h"
 #include "report.h"
 
+#include "ble_config.h"
 #include "ble_hid_service.h"
 
 #define OUTPUT_REPORT_INDEX 0 /**< Index of Output Report. */
@@ -174,9 +175,9 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     p_input_report->rep_ref.report_id = 1;
     p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
 
-    p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
-    p_input_report->sec.wr = SEC_JUST_WORKS;
-    p_input_report->sec.rd = SEC_JUST_WORKS;
+    p_input_report->sec.cccd_wr = SEC_CURRENT;
+    p_input_report->sec.wr = SEC_CURRENT;
+    p_input_report->sec.rd = SEC_CURRENT;
 
     // system input report
     p_input_report = &input_report_array[1];
@@ -184,9 +185,9 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     p_input_report->rep_ref.report_id = REPORT_ID_SYSTEM;
     p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
 
-    p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
-    p_input_report->sec.wr = SEC_JUST_WORKS;
-    p_input_report->sec.rd = SEC_JUST_WORKS;
+    p_input_report->sec.cccd_wr = SEC_CURRENT;
+    p_input_report->sec.wr = SEC_CURRENT;
+    p_input_report->sec.rd = SEC_CURRENT;
 
     // consumer input report
     p_input_report = &input_report_array[2];
@@ -194,9 +195,9 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     p_input_report->rep_ref.report_id = REPORT_ID_CONSUMER;
     p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
 
-    p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
-    p_input_report->sec.wr = SEC_JUST_WORKS;
-    p_input_report->sec.rd = SEC_JUST_WORKS;
+    p_input_report->sec.cccd_wr = SEC_CURRENT;
+    p_input_report->sec.wr = SEC_CURRENT;
+    p_input_report->sec.rd = SEC_CURRENT;
 
     // keyboard led report
     p_output_report = &output_report_array[OUTPUT_REPORT_INDEX];
@@ -204,8 +205,8 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     p_output_report->rep_ref.report_id = OUTPUT_REP_REF_ID;
     p_output_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_OUTPUT;
 
-    p_output_report->sec.wr = SEC_JUST_WORKS;
-    p_output_report->sec.rd = SEC_JUST_WORKS;
+    p_output_report->sec.wr = SEC_CURRENT;
+    p_output_report->sec.rd = SEC_CURRENT;
 
     // unknown vendor define featurn report
     p_feature_report = &feature_report_array[FEATURE_REPORT_INDEX];
@@ -213,8 +214,8 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     p_feature_report->rep_ref.report_id = FEATURE_REP_REF_ID;
     p_feature_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_FEATURE;
 
-    p_feature_report->sec.rd = SEC_JUST_WORKS;
-    p_feature_report->sec.wr = SEC_JUST_WORKS;
+    p_feature_report->sec.rd = SEC_CURRENT;
+    p_feature_report->sec.wr = SEC_CURRENT;
 
     hid_info_flags = HID_INFO_FLAG_REMOTE_WAKE_MSK | HID_INFO_FLAG_NORMALLY_CONNECTABLE_MSK;
 
@@ -238,18 +239,18 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     hids_init_obj.included_services_count = 0;
     hids_init_obj.p_included_services_array = NULL;
 
-    hids_init_obj.rep_map.rd_sec = SEC_JUST_WORKS;
-    hids_init_obj.hid_information.rd_sec = SEC_JUST_WORKS;
+    hids_init_obj.rep_map.rd_sec = SEC_CURRENT;
+    hids_init_obj.hid_information.rd_sec = SEC_CURRENT;
 
-    hids_init_obj.boot_kb_inp_rep_sec.cccd_wr = SEC_JUST_WORKS;
-    hids_init_obj.boot_kb_inp_rep_sec.rd = SEC_JUST_WORKS;
+    hids_init_obj.boot_kb_inp_rep_sec.cccd_wr = SEC_CURRENT;
+    hids_init_obj.boot_kb_inp_rep_sec.rd = SEC_CURRENT;
 
-    hids_init_obj.boot_kb_outp_rep_sec.rd = SEC_JUST_WORKS;
-    hids_init_obj.boot_kb_outp_rep_sec.wr = SEC_JUST_WORKS;
+    hids_init_obj.boot_kb_outp_rep_sec.rd = SEC_CURRENT;
+    hids_init_obj.boot_kb_outp_rep_sec.wr = SEC_CURRENT;
 
-    hids_init_obj.protocol_mode_rd_sec = SEC_JUST_WORKS;
-    hids_init_obj.protocol_mode_wr_sec = SEC_JUST_WORKS;
-    hids_init_obj.ctrl_point_wr_sec = SEC_JUST_WORKS;
+    hids_init_obj.protocol_mode_rd_sec = SEC_CURRENT;
+    hids_init_obj.protocol_mode_wr_sec = SEC_CURRENT;
+    hids_init_obj.ctrl_point_wr_sec = SEC_CURRENT;
 
     err_code = ble_hids_init(&m_hids, &hids_init_obj);
     APP_ERROR_CHECK(err_code);

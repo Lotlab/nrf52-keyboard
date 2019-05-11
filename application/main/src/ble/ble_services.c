@@ -20,8 +20,7 @@
 #include "ble_conn_params.h"
 #include "peer_manager_handler.h"
 
-#define DEVICE_NAME                         "Nordic_Keyboard"                          /**< Name of device. Will be included in the advertising data. */
-#define MANUFACTURER_NAME                   "NordicSemiconductor"                      /**< Manufacturer. Will be passed to Device Information Service. */
+#include "ble_config.h"
 
 #define PNP_ID_VENDOR_ID_SOURCE             0x02                                       /**< Vendor ID Source. */
 #define PNP_ID_VENDOR_ID                    0x1915                                     /**< Vendor ID. */
@@ -46,15 +45,6 @@
 #define MAX_CONN_INTERVAL                   MSEC_TO_UNITS(30, UNIT_1_25_MS)            /**< Maximum connection interval (30 ms). */
 #define SLAVE_LATENCY                       6                                          /**< Slave latency. */
 #define CONN_SUP_TIMEOUT                    MSEC_TO_UNITS(430, UNIT_10_MS)             /**< Connection supervisory timeout (430 ms). */
-
-#define SEC_PARAM_BOND                      1                                          /**< Perform bonding. */
-#define SEC_PARAM_MITM                      0                                          /**< Man In The Middle protection not required. */
-#define SEC_PARAM_LESC                      0                                          /**< LE Secure Connections not enabled. */
-#define SEC_PARAM_KEYPRESS                  0                                          /**< Keypress notifications not enabled. */
-#define SEC_PARAM_IO_CAPABILITIES           BLE_GAP_IO_CAPS_NONE                       /**< No I/O capabilities. */
-#define SEC_PARAM_OOB                       0                                          /**< Out Of Band data not available. */
-#define SEC_PARAM_MIN_KEY_SIZE              7                                          /**< Minimum encryption key size. */
-#define SEC_PARAM_MAX_KEY_SIZE              16                                         /**< Maximum encryption key size. */
 
 uint16_t          m_conn_handle  = BLE_CONN_HANDLE_INVALID;  /**< Handle of the current connection. */
 static pm_peer_id_t      m_peer_id;                                 /**< Device reference handle to the current bonded central. */
@@ -527,6 +517,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             APP_ERROR_CHECK(err_code);
             break;
 
+        case BLE_GAP_EVT_AUTH_KEY_REQUEST:
+            event_handler(USER_BLE_PASSKEY);
+            break;
+
         default:
             // No implementation needed.
             break;
@@ -629,6 +623,14 @@ static void advertising_init(void)
     APP_ERROR_CHECK(err_code);
 
     ble_advertising_conn_cfg_tag_set(&m_advertising, APP_BLE_CONN_CFG_TAG);
+}
+
+void ble_passkey_send(uint8_t const * p_key) {
+    ret_code_t err_code = sd_ble_gap_auth_key_reply(
+        m_conn_handle,
+        BLE_GAP_AUTH_KEY_TYPE_PASSKEY,
+        p_key);
+    APP_ERROR_CHECK(err_code);
 }
 
 void ble_services_init(evt_handler handler) {

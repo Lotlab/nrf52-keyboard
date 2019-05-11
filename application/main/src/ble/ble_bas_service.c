@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "app_timer.h"
+#include "ble_config.h"
 #include "ble_bas.h"
 
 #define __STATIC_INLINE static inline
@@ -69,9 +70,9 @@ static void bas_init(void)
     bas_init_obj.p_report_ref = NULL;
     bas_init_obj.initial_batt_level = 100;
 
-    bas_init_obj.bl_rd_sec = SEC_JUST_WORKS;
-    bas_init_obj.bl_cccd_wr_sec = SEC_JUST_WORKS;
-    bas_init_obj.bl_report_rd_sec = SEC_JUST_WORKS;
+    bas_init_obj.bl_rd_sec = SEC_CURRENT;
+    bas_init_obj.bl_cccd_wr_sec = SEC_CURRENT;
+    bas_init_obj.bl_report_rd_sec = SEC_CURRENT;
 
     err_code = ble_bas_init(&m_bas, &bas_init_obj);
     APP_ERROR_CHECK(err_code);

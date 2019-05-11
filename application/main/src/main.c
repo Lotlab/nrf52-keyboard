@@ -72,6 +72,7 @@
 #include "keyboard/ble_keyboard.h"
 #include "keyboard/keyboard_led.h"
 #include "keyboard/keyboard_matrix.h"
+#include "keyboard/passkey.h"
 
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
@@ -219,6 +220,9 @@ static void ble_user_event(enum user_ble_event arg)
     switch (arg) {
     case USER_BLE_IDLE:
         sleep_mode_enter();
+        break;
+    case USER_BLE_PASSKEY:
+        passkey_req_handler();
         break;
     default:
         break;
