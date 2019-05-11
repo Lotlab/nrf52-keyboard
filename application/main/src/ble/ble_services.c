@@ -241,6 +241,23 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
     }
 }
 
+static void get_device_name(char * device_name, int offset) {
+    char lookup_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'}; 
+
+    strcpy(device_name, DEVICE_NAME);
+    device_name[offset] = '_';
+
+    ble_gap_addr_t ble_addr;
+    sd_ble_gap_addr_get(&ble_addr);
+
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        uint8_t addr = ble_addr.addr[3+i];
+        device_name[offset+1+i*2] = lookup_table[addr / 16];
+        device_name[offset+2+i*2] = lookup_table[addr / 16];
+    }
+}
+
 
 /**@brief Function for the GAP initialization.
  *
@@ -255,17 +272,15 @@ static void gap_params_init(void)
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
-    ble_gap_addr_t ble_addr;
-    sd_ble_gap_addr_get(&ble_addr);
-
-    int name_len = strlen(DEVICE_NAME)+8;
+    int orig_len = strlen(DEVICE_NAME);
+    int name_len = orig_len+8;
     char device_name[name_len];
-    snprintf(device_name, name_len, "%s_%X%X%X", DEVICE_NAME,
-        ble_addr.addr[3], ble_addr.addr[4], ble_addr.addr[5]);
+    get_device_name(device_name, orig_len);
 
     err_code = sd_ble_gap_device_name_set(&sec_mode,
                                           (const uint8_t *)device_name,
                                           strlen(device_name));
+
     APP_ERROR_CHECK(err_code);
 
     err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_HID_KEYBOARD);
