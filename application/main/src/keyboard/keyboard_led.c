@@ -26,9 +26,9 @@ static void pwm_handler(void* p_context)
  */
 static void keyboard_led_rgb_set_internal(uint32_t color)
 {
-    low_power_pwm_duty_set(&led_r, (color && 0xFF0000) >> 16);
-    low_power_pwm_duty_set(&led_g, (color && 0xFF00) >> 8);
-    low_power_pwm_duty_set(&led_b, (color && 0xFF));
+    low_power_pwm_duty_set(&led_r, (color & 0xFF0000) >> 16);
+    low_power_pwm_duty_set(&led_g, (color & 0xFF00) >> 8);
+    low_power_pwm_duty_set(&led_b, (color  & 0xFF));
 }
 
 /**
@@ -176,6 +176,7 @@ static void off_timer_start()
     if (led_autooff) {
         if (counting)
             app_timer_stop(led_off_timer);
+        led_on();
         app_timer_start(led_off_timer, APP_TIMER_TICKS(LED_AUTOOFF_TIME), NULL);
         counting = true;
     }
@@ -201,7 +202,10 @@ void keyboard_led_powersave(bool powersave)
         app_timer_stop(led_off_timer);
 
     led_autooff = powersave;
-    led_on();
+    if (powersave)
+        off_timer_start();
+    else
+        led_on();
 }
 
 #else
