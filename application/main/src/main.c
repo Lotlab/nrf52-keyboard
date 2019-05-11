@@ -197,7 +197,7 @@ static void timers_start(void)
  *
  * @note This function will not return.
  */
-static void sleep_mode_enter(void)
+void sleep_mode_enter(void)
 {
     ret_code_t err_code;
 
