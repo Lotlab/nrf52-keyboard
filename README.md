@@ -45,3 +45,12 @@ make flash
 - tmk/ tmk core 相关
 - usb/ USB部分代码
 
+## Todo
+
+- EEConfig 配置存储
+- Bootloader Jump 跳转至Bootloader
+- Keymap 存储
+- 关机原因存储并快速恢复
+- 多设备切换（？）
+- 自定义各种灯光（？）
+- SPI通讯
