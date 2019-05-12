@@ -2,11 +2,12 @@
 #include "../config/keyboard_config.h"
 #include "app_timer.h" // nordic
 #include "keyboard.h" // tmk
-#include <stdint.h>
 #include "keyboard_host_driver.h"
+#include <stdint.h>
 
-#include "hook.h"
+#include "../main.h"
 #include "custom_hook.h"
+#include "hook.h"
 #include "keymap_storage.h"
 
 APP_TIMER_DEF(m_keyboard_scan_timer); /**< keyboard scan timer. */
@@ -57,7 +58,7 @@ static void keyboard_sleep_handler(void* p_context)
     if (sleep_counter == SLEEP_SLOW_TIMEOUT) {
         keyboard_switch_scan_mode(true);
     } else if (sleep_counter == SLEEP_OFF_TIMEOUT) {
-        // todo: sleep.
+        sleep(SLEEP_TIMEOUT);
     }
 }
 

@@ -69,6 +69,8 @@
 #include "ble/ble_hid_service.h"
 #include "ble/ble_services.h"
 
+#include "main.h"
+
 #include "keyboard/ble_keyboard.h"
 #include "keyboard/keyboard_led.h"
 #include "keyboard/keyboard_matrix.h"
@@ -111,6 +113,20 @@ void service_error_handler(uint32_t nrf_error)
     APP_ERROR_HANDLER(nrf_error);
 }
 
+/**
+ * @brief 准备RESET
+ * 
+ */
+static void reset_prepare(void)
+{
+    // 关闭键盘LED
+    keyboard_led_off();
+
+    ret_code_t err_code;
+    err_code = app_timer_stop_all();
+    APP_ERROR_CHECK(err_code);
+}
+
 /**@brief Handler for shutdown preparation.
  *
  * @details During shutdown procedures, this function will be called at a 1 second interval
@@ -125,27 +141,7 @@ static bool app_shutdown_handler(nrf_pwr_mgmt_evt_t event)
 {
     switch (event) {
     case NRF_PWR_MGMT_EVT_PREPARE_DFU:;
-        // YOUR_JOB: Get ready to reset into DFU mode
-        //
-        // If you aren't finished with any ongoing tasks, return "false" to
-        // signal to the system that reset is impossible at this stage.
-        //
-        // Here is an example using a variable to delay resetting the device.
-        //
-        // if (!m_ready_for_reset)
-        // {
-        //      return false;
-        // }
-        // else
-        //{
-        //
-        //    // Device ready to enter
-        //    uint32_t err_code;
-        //    err_code = sd_softdevice_disable();
-        //    APP_ERROR_CHECK(err_code);
-        //    err_code = app_timer_stop_all();
-        //    APP_ERROR_CHECK(err_code);
-        //}
+        reset_prepare();
         break;
 
     default:
@@ -198,17 +194,21 @@ static void timers_start(void)
  *
  * @note This function will not return.
  */
-void sleep_mode_enter(void)
+static void sleep_mode_enter(void)
 {
-    ret_code_t err_code;
-
-    keyboard_led_off();
-    matrix_sleep_prepare();
+    reset_prepare();
+    matrix_sleep_prepare(); // 准备按键阵列用于唤醒
 
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    err_code = sd_power_system_off();
+    ret_code_t err_code = sd_power_system_off();
     APP_ERROR_CHECK(err_code);
 }
+
+/**
+ * @brief 用户定义的事件处理方法
+ * 
+ */
+__attribute__((weak)) void user_event_handler(enum user_ble_event arg) {}
 
 /**
  * @brief 用户蓝牙事件处理函数
@@ -219,7 +219,7 @@ static void ble_user_event(enum user_ble_event arg)
 {
     switch (arg) {
     case USER_BLE_IDLE:
-        sleep_mode_enter();
+        sleep(SLEEP_NO_CONNECTION);
         break;
     case USER_BLE_PASSKEY:
         passkey_req_handler();
@@ -229,6 +229,28 @@ static void ble_user_event(enum user_ble_event arg)
     }
     // 将事件转向至HID继续处理
     hid_event_handler(arg);
+    // 以及用户自定义的处理
+    user_event_handler(arg);
+}
+
+void sleep(enum SLEEP_REASON reason)
+{
+    switch (reason) {
+    case SLEEP_NO_CONNECTION:
+    case SLEEP_TIMEOUT:
+        ble_user_event(USER_EVT_SLEEP_AUTO);
+        sleep_mode_enter();
+        break;
+    case SLEEP_MANUALLY:
+        ble_user_event(USER_EVT_SLEEP_MANUAL);
+        sleep_mode_enter();
+        break;
+    case SLEEP_NOT_PWRON:
+        sleep_mode_enter();
+        break;
+    default:
+        break;
+    }
 }
 
 /**@brief Function for the Event Scheduler initialization.
