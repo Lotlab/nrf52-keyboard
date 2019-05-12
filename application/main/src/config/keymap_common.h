@@ -30,6 +30,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "action_macro.h"
 #include "keymap.h"
 
+extern const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS];
+extern const action_t fn_actions[];
+
 /* GH60 keymap definition macro
  * K2C, K31 and  K3C are extra keys for ISO
  */

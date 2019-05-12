@@ -272,8 +272,8 @@ int main(void)
     ble_stack_init();
     scheduler_init();
     services_init();
-    ble_keyboard_init();
     keyboard_led_init();
+    ble_keyboard_init();
 
     // Start execution.
     timers_start();

@@ -39,7 +39,11 @@
         "nrf52.h": "c",
         "keyboard_led.h": "c",
         "action.h": "c",
-        "ble_bas_service.h": "c"
+        "ble_bas_service.h": "c",
+        "string.h": "c",
+        "keymap.h": "c",
+        "keymap_common.h": "c",
+        "keymap_storage.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",

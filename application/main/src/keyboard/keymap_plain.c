@@ -8,7 +8,7 @@
 #include "../config/keymap_common.h"
 #include "keyboard_fn.h"
 
-const uint8_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* 0: qwerty */
     KEYMAP_ANSI(
         GRV, 1,   2,   3,   4,   5,   6,   7,   8,   9,   0,   MINS,EQL, BSPC, \
@@ -24,7 +24,7 @@ const uint8_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         TRNS,DEL, TRNS,WHOM,MUTE,VOLU,VOLD,TRNS,PGUP,PGDN,DEL,           TRNS, \
         TRNS,TRNS,TRNS,          TRNS,                     TRNS,TRNS,TRNS,TRNS),
 };
-const action_t PROGMEM fn_actions[] = {
+const action_t fn_actions[] = {
     /* Poker Layout */
     ACTION_LAYER_MOMENTARY(1),  // to Fn overlay
     ACTION_FUNCTION(POWER_SLEEP), // sleep

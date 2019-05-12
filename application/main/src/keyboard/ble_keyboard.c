@@ -7,6 +7,7 @@
 
 #include "hook.h"
 #include "custom_hook.h"
+#include "keymap_storage.h"
 
 APP_TIMER_DEF(m_keyboard_scan_timer); /**< keyboard scan timer. */
 APP_TIMER_DEF(m_keyboard_sleep_timer); /**< keyboard sleep timer. */
@@ -132,7 +133,7 @@ void ble_keyboard_init(void)
     keyboard_setup(); // 初始化各按键阵列
     // - martix_setup();
     // led_init(); // 初始化led
-    // keymap_init(); // 初始化自定义keymap
+    keymap_init(); // 初始化自定义keymap
     // uart_init(); // 初始化外部USB通信协议
     keyboard_init();
     // - timer_init();
