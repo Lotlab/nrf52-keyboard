@@ -301,7 +301,7 @@ int main(void)
     timers_start();
     advertising_start(erase_bonds);
 
-    keyboard_led_rgb_set(0x66ccff);
+    ble_user_event(USER_EVT_INITED);
 
     // Enter main loop.
     for (;;) {

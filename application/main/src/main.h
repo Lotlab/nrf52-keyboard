@@ -30,6 +30,7 @@ enum user_ble_event {
     USER_BLE_PASSKEY, // 需要Passkey
     USER_EVT_SLEEP_AUTO, // 自动准备进入睡眠状态
     USER_EVT_SLEEP_MANUAL, // 手动准备进入睡眠状态
+    USER_EVT_INITED, // 初始化完毕
 };
 
 void user_event_handler(enum user_ble_event arg);
