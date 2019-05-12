@@ -197,6 +197,7 @@ static void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
         case BLE_DFU_EVT_BOOTLOADER_ENTER_FAILED:
             // YOUR_JOB: Take corrective measures to resolve the issue
             //           like calling APP_ERROR_CHECK to reset the device.
+            APP_ERROR_CHECK(false);
             break;
 
         case BLE_DFU_EVT_RESPONSE_SEND_ERROR:
