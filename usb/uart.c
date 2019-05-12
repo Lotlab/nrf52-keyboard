@@ -12,7 +12,7 @@ static uint8_t len, pos;
 static uint8_t __xdata recv_buff[64];
 bool usb_evt = false;
 
-static bool uart_check_flag, uart_arrive_flag, last_success, sending = false;
+static bool uart_check_flag, uart_arrive_flag, last_success;
 
 static void uart_tx(uint8_t c)
 {
@@ -77,6 +77,9 @@ static void uart_send_status() {
     uart_tx(data);
 }
 
+static uint8_t __xdata send_buff[64];
+static uint8_t send_len = 0;
+
 void uart_check()
 {
     if (uart_check_flag)
@@ -93,8 +96,13 @@ void uart_check()
         }
 
         if (uart_rx_state == STATE_IDLE) {
-            // 发送定期Query状态包
-            if (!sending) {
+            if (send_len > 0) {
+                for (uint8_t i = 0; i<send_len; i++) {
+                    uart_tx(send_buff[i]);
+                }
+                send_len=0;
+            } else {
+                // 发送定期Query状态包
                 if (last_success) {
                     uart_send_status();
                     last_success = false;
@@ -143,21 +151,14 @@ void uart_recv(void)
     uart_check_flag = false;
 }
 
-void uart_send(uint8_t *data, uint8_t len)
-{
-    sending = true;
-    while (len--)
-        uart_tx(*(data++));
-
-    sending = false;
-}
-
 void uart_send_led(uint8_t val) {
-    uint8_t data = 0x40 + (val & 0x3F);
-    uart_tx(data);
+    send_buff[0] = 0x40 + (val & 0x3F);
+    send_len = 1;
 }
 
 void uart_send_keymap(uint8_t* data, uint8_t len) {
     data[0] = (data[0] & 0x7F) + 0x80;
-    uart_send(data, len);
+    for (uint8_t i = 0; i<len; i++)
+        send_buff[i] = data[i];
+    send_len = len;
 }
