@@ -20,6 +20,7 @@ APP_TIMER_DEF(m_keyboard_sleep_timer); /**< keyboard sleep timer. */
 #define TICK_INTERVAL APP_TIMER_TICKS(1000) /**< 键盘Tick计时器 */
 
 static uint32_t sleep_counter;
+static bool powersave = true;
 
 /**
  * @brief 切换扫描模式
@@ -61,7 +62,9 @@ static void keyboard_sleep_handler(void* p_context)
     nrf_drv_wdt_feed();
 #endif
 
-    sleep_counter++;
+    if (powersave)
+        sleep_counter++;
+
     if (sleep_counter == SLEEP_SLOW_TIMEOUT) {
         keyboard_switch_scan_mode(true);
     } else if (sleep_counter == SLEEP_OFF_TIMEOUT) {
@@ -150,6 +153,20 @@ void ble_keyboard_timer_start(void)
 
     err_code = app_timer_start(m_keyboard_sleep_timer, TICK_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
+}
+
+/**
+ * @brief 设置省电模式
+ * 
+ * @param save 
+ */
+void ble_keyboard_powersave(bool save) {
+    if (save != powersave) {
+        powersave = save;
+        if (!powersave) {
+            keyboard_sleep_counter_reset();
+        } 
+    }
 }
 
 /**

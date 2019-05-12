@@ -17,7 +17,9 @@ void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
             sleep(SLEEP_MANUALLY);
             break;
         case SWITCH_USB:
+#ifdef HAS_USB
             usb_comm_switch();
+#endif
             break;
         default:
             break;
