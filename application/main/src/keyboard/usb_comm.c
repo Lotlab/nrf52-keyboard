@@ -309,13 +309,16 @@ void usb_comm_init()
 
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_start(uart_check_timer, UART_CHECK_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
-
     nrf_gpio_cfg_input(UART_DET, NRF_GPIO_PIN_PULLDOWN);
     if (nrf_gpio_pin_read(UART_DET)) {
         uart_init_hardware();
     }
+}
+
+void usb_comm_timer_start()
+{
+    uint32_t err_code = app_timer_start(uart_check_timer, UART_CHECK_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
 void usb_comm_sleep_prepare()

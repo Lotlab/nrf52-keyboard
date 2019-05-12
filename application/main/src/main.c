@@ -189,6 +189,9 @@ static void timers_start(void)
 {
     battery_timer_start();
     ble_keyboard_timer_start();
+#ifdef HAS_USB
+    usb_comm_timer_start();
+#endif
 }
 
 /**@brief Function for putting the chip into sleep mode.
