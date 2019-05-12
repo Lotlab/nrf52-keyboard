@@ -2,12 +2,15 @@
 #include "keycode.h"
 #include "bootmagic.h"
 #include "../main.h"
+#include "sleep_reason.h"
 
 void hook_bootmagic() {
     if (!bootmagic_scan_key(BOOTMAGIC_KEY_BOOT)) {
 #ifndef DEBUG
-        // todo: 根据上次睡眠原因判断是否应该直接开机
-        sleep(SLEEP_NOT_PWRON);
+        // 非自动休眠则需要使用BOOT按键开机
+        if (!sleep_reason_get()) {
+            sleep(SLEEP_NOT_PWRON);
+        }
 #endif
     }
     
