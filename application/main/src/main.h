@@ -31,6 +31,10 @@ enum user_ble_event {
     USER_EVT_SLEEP_AUTO, // 自动准备进入睡眠状态
     USER_EVT_SLEEP_MANUAL, // 手动准备进入睡眠状态
     USER_EVT_INITED, // 初始化完毕
+    USER_USB_CHARGING, // 正在充电
+    USER_USB_FULL, // 充电完成
+    USER_USB_CONNECTED, // 连接至主机
+    USER_USB_DISCONNECT, // 断开连接
 };
 
 void user_event_handler(enum user_ble_event arg);

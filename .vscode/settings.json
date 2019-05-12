@@ -46,7 +46,12 @@
         "keymap_storage.h": "c",
         "main.h": "c",
         "sleep_reason.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "nrfx_spis.h": "c",
+        "nrfx_uart.h": "c",
+        "nrf_drv_uart.h": "c",
+        "app_uart.h": "c",
+        "stdlib.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",
@@ -161,6 +166,7 @@
         "SDK/components/libraries/stack_guard",
         "SDK/components/libraries/log/src",
         "SDK/components/libraries/bootloader",
+        "SDK/components/libraries/uart",
         "tmk/tmk_core/common",
         "tmk/tmk_core/common/avr"
     ],
@@ -168,7 +174,8 @@
         "uint8_t=char",
         "__INT8_TYPE__=char",
         "__UINT16_TYPE__=short unsigned int",
-        "uint32_t=unsigned int"
+        "uint32_t=unsigned int",
+        "NRF52810"
     ],
     "C_Cpp.default.forcedInclude": ["application/main/src/config/config.h"]
 }

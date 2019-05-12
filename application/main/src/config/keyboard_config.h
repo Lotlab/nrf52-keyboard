@@ -17,10 +17,12 @@
 #define LED_RGB_G 23
 #define LED_RGB_B 24
 
-// SPI 传输配置
-#define SPI_CLK 17
-#define SPI_MISO 18
-#define SPI_MOSI 19
+// UART 传输配置
+#define HAS_USB
+#define UART_RXD 17
+#define UART_TXD 18
+// #define UART_DET 19
+#define UART_BAUDRATE 38400
 
 // 电量检测配置
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0

@@ -10,6 +10,7 @@
 
 #include "../ble/ble_hid_service.h"
 #include "custom_hook.h"
+#include "usb_comm.h"
 
 // todo: impliment
 uint8_t keyboard_idle;
@@ -34,10 +35,22 @@ uint8_t keyboard_leds()
     return keyboard_led_val;
 }
 
+static void send(uint8_t index, uint8_t len, uint8_t* keys)
+{
+#ifdef HAS_USB
+    if (usb_working()) {
+        usb_send(index, len, keys);
+    } else
+#endif
+    {
+        keys_send(index, len, keys);
+    }
+}
+
 void send_keyboard(report_keyboard_t* report)
 {
     hook_send_keyboard(report);
-    keys_send(0, KEYBOARD_REPORT_SIZE, report->raw);
+    send(0, KEYBOARD_REPORT_SIZE, report->raw);
 }
 
 void send_mouse(report_mouse_t* report)
@@ -47,10 +60,10 @@ void send_mouse(report_mouse_t* report)
 
 void send_system(uint16_t data)
 {
-    keys_send(1, 2, (uint8_t*)&data);
+    send(1, 2, (uint8_t*)&data);
 }
 
 void send_consumer(uint16_t data)
 {
-    keys_send(0, 2, (uint8_t*)&data);
+    send(2, 2, (uint8_t*)&data);
 }

@@ -19,6 +19,7 @@ SRC_FILES += $(PROJ_DIR)/keyboard/keyboard_matrix.c \
     $(PROJ_DIR)/keyboard/keymap_storage.c \
     $(PROJ_DIR)/keyboard/sleep_reason.c \
     $(PROJ_DIR)/keyboard/keyboard_evt.c \
+    $(PROJ_DIR)/keyboard/usb_comm.c \
 
 ifdef KEYMAP
     SRC := keymap_$(KEYMAP).c $(SRC)

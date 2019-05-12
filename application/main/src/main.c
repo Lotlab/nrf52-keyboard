@@ -75,6 +75,7 @@
 #include "keyboard/keyboard_led.h"
 #include "keyboard/keyboard_matrix.h"
 #include "keyboard/passkey.h"
+#include "keyboard/usb_comm.h"
 
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
@@ -198,6 +199,9 @@ static void sleep_mode_enter(void)
 {
     reset_prepare();
     matrix_sleep_prepare(); // 准备按键阵列用于唤醒
+#ifdef HAS_USB
+    usb_comm_sleep_prepare();
+#endif
 
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
     ret_code_t err_code = sd_power_system_off();
@@ -294,6 +298,9 @@ int main(void)
     ble_stack_init();
     scheduler_init();
     services_init();
+#ifdef HAS_USB
+    usb_comm_init();
+#endif
     keyboard_led_init();
     ble_keyboard_init();
 
