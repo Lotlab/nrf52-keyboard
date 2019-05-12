@@ -177,5 +177,7 @@
         "uint32_t=unsigned int",
         "NRF52810"
     ],
-    "C_Cpp.default.forcedInclude": ["application/main/src/config/config.h"]
+    "C_Cpp.default.forcedInclude": [
+        "application/main/src/config/config.h"
+    ]
 }

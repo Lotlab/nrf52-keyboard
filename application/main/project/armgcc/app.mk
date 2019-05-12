@@ -37,7 +37,8 @@ SRC_FILES += \
 	$(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
 	$(SDK_ROOT)/components/libraries/bootloader/dfu/nrf_dfu_svci.c \
 	$(SDK_ROOT)/components/libraries/low_power_pwm/low_power_pwm.c \
-	$(SDK_ROOT)/components/libraries/uart/app_uart.c \
+	$(SDK_ROOT)/components/libraries/uart/app_uart_fifo.c \
+	$(SDK_ROOT)/components/libraries/fifo/app_fifo.c \
 	$(SDK_ROOT)/modules/nrfx/mdk/system_nrf52810.c \
 	$(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_clock.c \
 	$(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_uart.c \
@@ -133,6 +134,7 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/hci \
 	$(SDK_ROOT)/components/libraries/timer \
 	$(SDK_ROOT)/components/libraries/uart \
+	$(SDK_ROOT)/components/libraries/fifo \
 	$(SDK_ROOT)/integration/nrfx \
 	$(SDK_ROOT)/components/libraries/sortlist \
 	$(SDK_ROOT)/components/libraries/spi_mngr \
