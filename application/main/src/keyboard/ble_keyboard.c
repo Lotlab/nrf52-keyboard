@@ -56,8 +56,10 @@ static void keyboard_sleep_handler(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
 
+#ifdef ENABLE_WATCHDOG
     // feed watch dog
     nrf_drv_wdt_feed();
+#endif
 
     sleep_counter++;
     if (sleep_counter == SLEEP_SLOW_TIMEOUT) {
@@ -117,13 +119,15 @@ static void keyboard_timer_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+#ifdef ENABLE_WATCHDOG
 nrf_drv_wdt_channel_id m_channel_id;
 
 /**
  * @brief 初始化看门狗
  * 
  */
-static void keyboard_wdt_init(void) {
+static void keyboard_wdt_init(void)
+{
     ret_code_t err_code;
 
     nrf_drv_wdt_config_t config = NRF_DRV_WDT_DEAFULT_CONFIG;
@@ -133,6 +137,7 @@ static void keyboard_wdt_init(void) {
     APP_ERROR_CHECK(err_code);
     nrf_drv_wdt_enable();
 }
+#endif
 
 /**
  * @brief 启动键盘计时器
@@ -163,5 +168,7 @@ void ble_keyboard_init(void)
     // - matrix_init();
     host_set_driver(&driver); // 设置 host driver
     keyboard_timer_init(); // 初始化计时器
+#ifdef ENABLE_WATCHDOG
     keyboard_wdt_init(); // 初始化看门狗
+#endif
 }
