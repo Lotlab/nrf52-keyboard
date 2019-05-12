@@ -172,8 +172,6 @@ static void timers_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-static void ble_user_event(enum user_ble_event event);
-
 /**@brief Function for initializing services that will be used by the application.
  */
 static void services_init(void)
@@ -222,7 +220,7 @@ __attribute__((weak)) void user_event_handler(enum user_ble_event arg) {}
  * 
  * @param arg 
  */
-static void ble_user_event(enum user_ble_event arg)
+void ble_user_event(enum user_ble_event arg)
 {
     switch (arg) {
     case USER_BLE_IDLE:

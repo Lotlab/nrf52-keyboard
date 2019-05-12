@@ -28,6 +28,6 @@ const action_t fn_actions[] = {
     /* Poker Layout */
     ACTION_LAYER_MOMENTARY(1),  // to Fn overlay
     ACTION_FUNCTION(POWER_SLEEP), // sleep
-    ACTION_FUNCTION(SWITCH_DEVICE)
+    ACTION_FUNCTION(SWITCH_USB) // switch between usb and ble
 };
 

@@ -5,7 +5,7 @@
 
 enum fn_functions {
     POWER_SLEEP,
-    SWITCH_DEVICE,
+    SWITCH_USB,
 };
 
 #endif

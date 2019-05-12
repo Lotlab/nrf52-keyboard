@@ -29,8 +29,7 @@ static uint8_t recv_buf[62];
 static uint8_t recv_index;
 
 static bool has_host;
-static bool is_full = true;
-static bool is_connected, is_checked;
+static bool is_full, is_connected, is_checked, is_disable;
 
 struct queue_item {
     uint8_t* data;
@@ -133,11 +132,11 @@ static void set_state(bool host, bool charge)
 {
     if (host != has_host) {
         has_host = host;
-        user_event_handler(host ? USER_USB_CONNECTED : USER_USB_DISCONNECT);
+        ble_user_event(host ? USER_USB_CONNECTED : USER_USB_CHARGE);
     }
     if (charge != is_full) {
         is_full = charge;
-        user_event_handler(is_full ? USER_USB_FULL : USER_USB_CHARGING);
+        ble_user_event(is_full ? USER_BAT_FULL : USER_BAT_CHARGING);
     }
 }
 
@@ -208,6 +207,7 @@ static void uart_to_idle()
     queue_clear();
     app_uart_close();
     is_connected = false;
+    ble_user_event(USER_USB_DISCONNECT);
 }
 
 static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
@@ -253,7 +253,10 @@ static void uart_init_hardware()
 
     err_code = app_uart_init(&config, &buffers, uart_evt_handler, APP_IRQ_PRIORITY_LOW);
     APP_ERROR_CHECK(err_code);
+
     is_connected = true;
+    ble_user_event(USER_USB_CHARGE);
+    ble_user_event(USER_BAT_CHARGING);
 }
 
 static uint8_t* pack_packet(uint8_t index, uint8_t len, uint8_t* pattern)
@@ -286,7 +289,7 @@ static void uart_task(void* context)
 
 bool usb_working(void)
 {
-    return has_host && is_connected;
+    return has_host && is_connected && !is_disable;
 }
 
 void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
@@ -325,6 +328,16 @@ void usb_comm_sleep_prepare()
 {
     uart_to_idle();
     nrf_gpio_cfg_sense_input(UART_DET, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+}
+
+void usb_comm_switch()
+{
+    is_disable = !is_disable;
+    if (is_disable) {
+        ble_user_event(USER_USB_CHARGE);
+    } else {
+        ble_user_event(is_connected ? USER_BLE_CONNECTED : USER_USB_CHARGE);
+    }
 }
 
 #endif

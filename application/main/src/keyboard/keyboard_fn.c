@@ -7,6 +7,7 @@
  */
 #include "keyboard_fn.h"
 #include "../main.h"
+#include "usb_comm.h"
 
 void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
 {
@@ -15,7 +16,8 @@ void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
         case POWER_SLEEP:
             sleep(SLEEP_MANUALLY);
             break;
-        case SWITCH_DEVICE:
+        case SWITCH_USB:
+            usb_comm_switch();
             break;
         default:
             break;

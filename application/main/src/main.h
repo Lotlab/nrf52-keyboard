@@ -31,13 +31,14 @@ enum user_ble_event {
     USER_EVT_SLEEP_AUTO, // 自动准备进入睡眠状态
     USER_EVT_SLEEP_MANUAL, // 手动准备进入睡眠状态
     USER_EVT_INITED, // 初始化完毕
-    USER_USB_CHARGING, // 正在充电
-    USER_USB_FULL, // 充电完成
+    USER_BAT_CHARGING, // 正在充电
+    USER_BAT_FULL, // 充电完成
     USER_USB_CONNECTED, // 连接至主机
-    USER_USB_DISCONNECT, // 断开连接
+    USER_USB_DISCONNECT, // 没有连接
+    USER_USB_CHARGE, // 仅充电
 };
 
-void user_event_handler(enum user_ble_event arg);
+void ble_user_event(enum user_ble_event arg);
 void sleep(enum SLEEP_REASON reason);
 extern bool erase_bonds;
 
