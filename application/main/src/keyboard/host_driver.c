@@ -11,6 +11,7 @@
 #include "../ble/ble_hid_service.h"
 #include "custom_hook.h"
 #include "usb_comm.h"
+#include "../config/keyboard_config.h"
 
 // todo: impliment
 uint8_t keyboard_idle;

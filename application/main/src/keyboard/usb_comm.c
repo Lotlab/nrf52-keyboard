@@ -29,7 +29,7 @@ static uint8_t recv_buf[62];
 static uint8_t recv_index;
 
 static bool has_host;
-static bool is_full;
+static bool is_full = true;
 static bool is_connected, is_checked;
 
 struct queue_item {
@@ -141,14 +141,12 @@ static void set_state(bool host, bool charge)
     }
 }
 
-
 static void uart_send(uint8_t* data, uint8_t len)
 {
     while (len--) {
         app_uart_put(*(data++));
     }
 }
-
 
 /**
  * @brief 接收消息
@@ -157,48 +155,48 @@ static void uart_send(uint8_t* data, uint8_t len)
 static void uart_on_recv()
 {
     uint8_t buff;
-    app_uart_get(&buff);
-    recv_buf[recv_index] = buff;
+    while (app_uart_get(&buff) == NRF_SUCCESS) {
+        recv_buf[recv_index] = buff;
+        if (!recv_index) {
+            if (buff >= 0x80) { // keymap sending
+                recv_index++;
+            } else if (buff >= 0x40) { // led
+                keyboard_led_val = buff & 0x1F; // 5bit
+            } else if (buff >= 0x10) { // status
+                bool success = buff & 0x01;
+                bool charging_status = buff & 0x02;
+                bool usb_status = buff & 0x04;
 
-    if (!recv_index) {
-        if (buff > 0x80) { // keymap sending
+                // 设置当前状态
+                set_state(usb_status, charging_status);
+
+                // 成功接收，出队。
+                if (success) {
+                    queue_pop();
+                }
+                // 尝试发送下一个
+                if (queue != NULL) {
+                    uart_send(queue->data, queue->len);
+                }
+            }
+        } else {
             recv_index++;
-        } else if (buff > 0x40) { // led
-            keyboard_led_val = buff & 0x1F; // 5bit
-        } else if (buff > 0x10) { // status
-            bool success = buff & 0x01;
-            bool charging_status = buff & 0x02;
-            bool usb_status = buff & 0x04;
-
-            // 设置当前状态
-            set_state(usb_status, charging_status);
-
-            // 成功接收，出队。
-            if (success) {
-                queue_pop();
-            }
-            // 尝试发送下一个
-            if (queue != NULL) {
-                uart_send(queue->data, queue->len);
+            if (recv_index >= 62) {
+                recv_index = 0;
+                uint8_t sum = checksum(recv_buf, 61);
+                if (sum == recv_buf[61]) {
+                    uint8_t id = recv_buf[0] & 0x7F;
+                    keymap_set(id, 60, &recv_buf[1]);
+                    if (id >= 9)
+                        keymap_write();
+                    uart_ack(true);
+                } else {
+                    uart_ack(false);
+                }
             }
         }
-    } else {
-        recv_index++;
-        if (recv_index >= 62) {
-            recv_index = 0;
-            uint8_t sum = checksum(recv_buf, 61);
-            if (sum == recv_buf[61]) {
-                uint8_t id = recv_buf[0] & 0x7F;
-                keymap_set(id, 60, &recv_buf[1]);
-                if (id >= 9)
-                    keymap_write();
-                uart_ack(true);
-            } else {
-                uart_ack(false);
-            }
-        }
+        is_checked = true;
     }
-    is_checked = true;
 }
 
 /**
@@ -209,13 +207,13 @@ static void uart_to_idle()
 {
     queue_clear();
     app_uart_close();
-    nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
     is_connected = false;
 }
 
 static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
 {
     switch (p_app_uart_event->evt_type) {
+    case APP_UART_DATA:
     case APP_UART_DATA_READY:
         uart_on_recv();
         break;
@@ -280,7 +278,7 @@ static void uart_task(void* context)
         }
     } else {
         // 检查是否连接
-        if (nrf_gpio_pin_read(UART_RXD)) {
+        if (nrf_gpio_pin_read(UART_DET)) {
             uart_init_hardware();
         }
     }
@@ -314,9 +312,8 @@ void usb_comm_init()
     err_code = app_timer_start(uart_check_timer, UART_CHECK_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 
-    uart_to_idle();
-
-    if (nrf_gpio_pin_read(UART_RXD)) {
+    nrf_gpio_cfg_input(UART_DET, NRF_GPIO_PIN_PULLDOWN);
+    if (nrf_gpio_pin_read(UART_DET)) {
         uart_init_hardware();
     }
 }
@@ -324,7 +321,7 @@ void usb_comm_init()
 void usb_comm_sleep_prepare()
 {
     uart_to_idle();
-    nrf_gpio_cfg_sense_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+    nrf_gpio_cfg_sense_input(UART_DET, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
 }
 
 #endif
