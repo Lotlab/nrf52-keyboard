@@ -10,6 +10,8 @@
 #include "hook.h"
 #include "keymap_storage.h"
 
+#include "nrf_drv_wdt.h"
+
 APP_TIMER_DEF(m_keyboard_scan_timer); /**< keyboard scan timer. */
 APP_TIMER_DEF(m_keyboard_sleep_timer); /**< keyboard sleep timer. */
 
@@ -53,8 +55,11 @@ static void keyboard_scan_handler(void* p_context)
 static void keyboard_sleep_handler(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
-    sleep_counter++;
 
+    // feed watch dog
+    nrf_drv_wdt_feed();
+
+    sleep_counter++;
     if (sleep_counter == SLEEP_SLOW_TIMEOUT) {
         keyboard_switch_scan_mode(true);
     } else if (sleep_counter == SLEEP_OFF_TIMEOUT) {
@@ -112,6 +117,23 @@ static void keyboard_timer_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+nrf_drv_wdt_channel_id m_channel_id;
+
+/**
+ * @brief 初始化看门狗
+ * 
+ */
+static void keyboard_wdt_init(void) {
+    ret_code_t err_code;
+
+    nrf_drv_wdt_config_t config = NRF_DRV_WDT_DEAFULT_CONFIG;
+    err_code = nrf_drv_wdt_init(&config, NULL);
+    APP_ERROR_CHECK(err_code);
+    err_code = nrf_drv_wdt_channel_alloc(&m_channel_id);
+    APP_ERROR_CHECK(err_code);
+    nrf_drv_wdt_enable();
+}
+
 /**
  * @brief 启动键盘计时器
  * 
@@ -141,4 +163,5 @@ void ble_keyboard_init(void)
     // - matrix_init();
     host_set_driver(&driver); // 设置 host driver
     keyboard_timer_init(); // 初始化计时器
+    keyboard_wdt_init(); // 初始化看门狗
 }
