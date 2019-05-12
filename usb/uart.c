@@ -10,10 +10,9 @@
 uart_state uart_rx_state;
 static uint8_t len, pos;
 static uint8_t __xdata recv_buff[64];
-static packet_type send_type;
 bool usb_evt = false;
 
-static bool uart_check_flag, uart_arrive_flag, last_success, sending;
+static bool uart_check_flag, uart_arrive_flag, last_success, sending = false;
 
 static void uart_tx(uint8_t c)
 {
@@ -33,7 +32,7 @@ static uint8_t checksum()
 {
     uint8_t sum = 0x00;
 
-    for (int i = 1; i < len - 1; i++)
+    for (int i = 0; i < len - 1; i++)
         sum += recv_buff[i];
     return sum == recv_buff[len - 1];
 }
@@ -52,16 +51,17 @@ static void uart_data_parser(void)
     uint8_t command = recv_buff[0];
     if (command & 0x80) {
         uint8_t index = (command & 0x30) >> 4;
-        uint8_t len = (command & 0x0F);
+        uint8_t kplen = (command & 0x0F);
         if (checksum()) {
             if (index == 0) {
-                KeyboardGenericUpload(&recv_buff[1], len - 2);
+                KeyboardGenericUpload(&recv_buff[1], kplen);
                 last_success = true;
             } else if (index == 1 || index == 2) {
                 recv_buff[0] = index + 1;
                 KeyboardExtraUpload(recv_buff, 3);
                 last_success = true;
             }
+        } else {
         }
     }
 }
@@ -92,13 +92,15 @@ void uart_check()
             uart_data_parser();
         }
 
-        // 发送定期Query状态包
-        if (!sending) {
-            if (last_success) {
-                uart_send_status();
-                last_success = false;
-            } else {
-                uart_send_status();
+        if (uart_rx_state == STATE_IDLE) {
+            // 发送定期Query状态包
+            if (!sending) {
+                if (last_success) {
+                    uart_send_status();
+                    last_success = false;
+                } else {
+                    uart_send_status();
+                }
             }
         }
     }
@@ -114,11 +116,12 @@ void uart_recv(void)
      *     len  buf[0] buf[1]  ... Buf[Len-1]
      */
     uint8_t data = uart_rx();
+
     switch (uart_rx_state)
     {
     case STATE_IDLE:
         if (data >= 0x80) {
-            len = data & 0x0F + 2; // 实际大小加上1byte 的头和1byte的 Checksum
+            len = (data & 0x0F) + 2; // 实际大小加上1byte 的头和1byte的 Checksum
             pos = 0;
             recv_buff[pos++] = data;
             uart_rx_state = STATE_DATA;
@@ -150,11 +153,11 @@ void uart_send(uint8_t *data, uint8_t len)
 }
 
 void uart_send_led(uint8_t val) {
-    uint8_t data = 0x40 + val & 0x3F;
+    uint8_t data = 0x40 + (val & 0x3F);
     uart_tx(data);
 }
 
 void uart_send_keymap(uint8_t* data, uint8_t len) {
-    data[0] = data[0] & 0x7F + 0x80;
+    data[0] = (data[0] & 0x7F) + 0x80;
     uart_send(data, len);
 }

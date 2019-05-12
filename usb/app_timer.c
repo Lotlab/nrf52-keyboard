@@ -1,6 +1,6 @@
 #include "app_timer.h"
 
-#define MAX_TIMER_SIZE 3
+#define MAX_TIMER_SIZE 2
 volatile __idata timer_info timers[MAX_TIMER_SIZE];
 uint8_t pos = 0;
 
@@ -38,7 +38,7 @@ void timer_task_exec()
     }
 }
 
-void timer_create(void *task, bool repeat, uint16_t period)
+void timer_create(task_t task, bool repeat, uint16_t period)
 {
     timer_info *timer = &timers[pos++];
     timer->exec_flag = false;

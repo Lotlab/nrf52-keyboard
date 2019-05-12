@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef void(*task_t)(void);
+
 typedef struct
 {
     uint16_t period;
@@ -11,11 +13,11 @@ typedef struct
     bool repeat;
     bool is_start;
     bool exec_flag;
-    void (*task)(void);
+    task_t task;
 } timer_info;
 
 void timer_tick(void);
 void timer_task_exec(void);
-void timer_create(void *task, bool repeat, uint16_t period);
+void timer_create(task_t task, bool repeat, uint16_t period);
 
 #endif // __APP_TIMER_H_

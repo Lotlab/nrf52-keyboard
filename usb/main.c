@@ -186,8 +186,7 @@ void UsbSuspendEvt()
 static void timer_init()
 {
     timer_create(&FeedWatchDog, true, 500);
-    // timer_create(&ping_packet, true, 500);
-    timer_create(&uart_check, true, 1);
+    timer_create(&uart_check, true, 2);
     IE_TKEY = 1;
 }
 
@@ -206,6 +205,7 @@ static void main()
     UEP1_T_LEN = 0; //预使用发送长度一定要清空
     UEP2_T_LEN = 0; //预使用发送长度一定要清空
 
+    MOSI = true;
     while (1)
     {
         timer_task_exec();

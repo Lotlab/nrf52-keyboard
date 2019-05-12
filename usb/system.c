@@ -3,7 +3,7 @@
 #include "system.h"
 #include <stdio.h>
 
-#define UART0_BUAD 38400
+#define UART0_BUAD 57600
 
 /** \brief 配置系统时钟
  *
