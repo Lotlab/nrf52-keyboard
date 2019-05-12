@@ -4,39 +4,29 @@
 #include "system.h"
 #include <stdbool.h>
 
-#define CHARGING UCC1
-#define STANDBY UCC2
+#define CHARGING !UCC1
+#define STANDBY !UCC2
 
 uart_state uart_rx_state;
 static uint8_t len, pos;
 static uint8_t __xdata recv_buff[64];
 static packet_type send_type;
+bool usb_evt = false;
 
-static bool uart_check_flag, uart_arrive_flag;
+static bool uart_check_flag, uart_arrive_flag, last_success, sending;
 
 static void uart_tx(uint8_t c)
 {
     SBUF1 = c;
-    while (U1TI == 0)
-        ;
+    while (U1TI == 0);
     U1TI = 0;
 }
 
 static uint8_t uart_rx()
 {
-    while (U1RI == 0)
-        ;
+    while (U1RI == 0);
     U1RI = 0;
     return SBUF1;
-}
-
-static void uart_ack()
-{
-    uart_send(PACKET_ACK, 0, 0);
-}
-static void uart_fail()
-{
-    uart_send(PACKET_FAIL, 0, 0);
 }
 
 static uint8_t checksum()
@@ -59,61 +49,32 @@ void uart_init()
 
 static void uart_data_parser(void)
 {
-    switch ((packet_type)recv_buff[0])
-    {
-    case PACKET_ACK:
-    case PACKET_FAIL:
-        if (send_type == PACKET_KEYMAP)
-        {
-            ResponseConfigurePacket(recv_buff, 1);
+    uint8_t command = recv_buff[0];
+    if (command & 0x80) {
+        uint8_t index = (command & 0x30) >> 4;
+        uint8_t len = (command & 0x0F);
+        if (checksum()) {
+            if (index == 0) {
+                KeyboardGenericUpload(&recv_buff[1], len - 2);
+                last_success = true;
+            } else if (index == 1 || index == 2) {
+                recv_buff[0] = index + 1;
+                KeyboardExtraUpload(recv_buff, 3);
+                last_success = true;
+            }
         }
-        break;
-    case PACKET_KEYBOARD:
-        if (checksum())
-        {
-            KeyboardGenericUpload(&recv_buff[1], len - 2);
-            uart_ack();
-        }
-        else
-        {
-            uart_fail();
-        }
-
-        break;
-    case PACKET_SYSTEM:
-        // 使用type位置暂存一下ID
-        recv_buff[0] = 2;
-        KeyboardExtraUpload(recv_buff, 3);
-        uart_ack();
-        break;
-    case PACKET_COMSUMER:
-        recv_buff[0] = 3;
-        KeyboardExtraUpload(recv_buff, 3);
-        uart_ack();
-        break;
-    case PACKET_GET_STATE:
-        recv_buff[0] = CHARGING;
-        uart_send(PACKET_CHARGING, recv_buff, 1);
-        break;
     }
 }
 
-static bool length_check(void)
-{
-    switch ((packet_type)recv_buff[0])
-    {
-    case PACKET_KEYBOARD:
-        return len == 10;
-    case PACKET_SYSTEM:
-    case PACKET_COMSUMER:
-        return len == 4;
-    case PACKET_GET_STATE:
-    case PACKET_FAIL:
-    case PACKET_ACK:
-        return len == 1;
-    default:
-        return false;
-    }
+static void uart_send_status() {
+    uint8_t data = 0x10;
+    if (!CHARGING && STANDBY)
+        data |= 0x02;
+    if (usb_evt)
+        data |= 0x04;
+    if (last_success)
+        data |= 0x01;
+    uart_tx(data);
 }
 
 void uart_check()
@@ -122,20 +83,22 @@ void uart_check()
     {
         if (uart_rx_state == STATE_DATA)
         {
-            // 接收超时强制退出并请求重发
+            // 接收超时强制退出
             uart_rx_state = STATE_IDLE;
-            // uart_fail();
         }
         else if ((uart_rx_state == STATE_IDLE) && uart_arrive_flag)
         {
             uart_arrive_flag = false;
-            if (length_check())
-            {
-                uart_data_parser();
-            }
-            else
-            {
-                uart_fail();
+            uart_data_parser();
+        }
+
+        // 发送定期Query状态包
+        if (!sending) {
+            if (last_success) {
+                uart_send_status();
+                last_success = false;
+            } else {
+                uart_send_status();
             }
         }
     }
@@ -150,17 +113,23 @@ void uart_recv(void)
      * Variable:
      *     len  buf[0] buf[1]  ... Buf[Len-1]
      */
+    uint8_t data = uart_rx();
     switch (uart_rx_state)
     {
     case STATE_IDLE:
-        len = uart_rx();
-        pos = 0;
-        if (len > 0) // Len=0 意味着出错了，别管它
+        if (data >= 0x80) {
+            len = data & 0x0F + 2; // 实际大小加上1byte 的头和1byte的 Checksum
+            pos = 0;
+            recv_buff[pos++] = data;
             uart_rx_state = STATE_DATA;
+        }
+        else if (data >= 0x10) {
+            ResponseConfigurePacket(&data, 1);
+        }
         break;
 
     case STATE_DATA:
-        recv_buff[pos++] = uart_rx();
+        recv_buff[pos++] = data;
         if (pos >= len)
         {
             uart_rx_state = STATE_IDLE;
@@ -171,13 +140,21 @@ void uart_recv(void)
     uart_check_flag = false;
 }
 
-void uart_send(packet_type type, uint8_t *data, uint8_t len)
+void uart_send(uint8_t *data, uint8_t len)
 {
-    send_type = type;
-    uart_tx(len + 1);
-    uart_tx(type);
+    sending = true;
     while (len--)
-    {
         uart_tx(*(data++));
-    }
+
+    sending = false;
+}
+
+void uart_send_led(uint8_t val) {
+    uint8_t data = 0x40 + val & 0x3F;
+    uart_tx(data);
+}
+
+void uart_send_keymap(uint8_t* data, uint8_t len) {
+    data[0] = data[0] & 0x7F + 0x80;
+    uart_send(data, len);
 }

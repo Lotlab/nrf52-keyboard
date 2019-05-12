@@ -22,7 +22,7 @@
 #define UART_RXD 17
 #define UART_TXD 18
 // #define UART_DET 19
-#define UART_BAUDRATE 38400
+#define UART_BAUDRATE 57600
 
 // 电量检测配置
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0

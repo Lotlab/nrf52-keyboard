@@ -2,6 +2,7 @@
 #define __UART__DRIVER__
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum
 {
@@ -23,10 +24,11 @@ typedef enum
     PACKET_ACK,
 } packet_type;
 
-void uart_send(packet_type type, uint8_t *data, uint8_t len);
 void uart_recv(void);
 void uart_init(void);
 void uart_check(void);
+void uart_send_led(uint8_t val);
+void uart_send_keymap(uint8_t* data, uint8_t len);
 
 typedef enum
 {
@@ -35,5 +37,7 @@ typedef enum
 } uart_state;
 
 extern uart_state uart_rx_state;
+
+extern bool usb_evt;
 
 #endif // __UART__DRIVER__

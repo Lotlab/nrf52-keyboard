@@ -10,9 +10,7 @@
 #include "uart.h"
 #include "app_timer.h"
 
-bool usb_evt = false;
 bool usb_sleep = false;
-bool ping_skip_next = false;
 
 /**
  * @brief CH554 软复位
@@ -54,7 +52,6 @@ static void UsbOnKeySend()
         usb_sleep = false;
         CH554USBDevWakeup();
     }
-    ping_skip_next = true;
 }
 
 /**
@@ -103,7 +100,7 @@ void ResponseConfigurePacket(uint8_t *packet, uint8_t len)
         return;
     Ep3Buffer[64] = 0x3f; // packet id
     memcpy(&Ep3Buffer[65], packet, len);
-    UEP3_T_LEN = 5;
+    UEP3_T_LEN = len + 1;
     UEP3_CTRL = UEP3_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
 }
 
@@ -132,7 +129,7 @@ void EP3_OUT()
         checksum += Ep3Buffer[i];
     }
     Ep3Buffer[62] = checksum;
-    uart_send(PACKET_KEYMAP, &Ep3Buffer[1], 62);
+    uart_send_keymap(&Ep3Buffer[1], 62);
 }
 
 /**
@@ -142,7 +139,7 @@ void EP3_OUT()
 void EP1_OUT()
 {
     uint8_t datalen = USB_RX_LEN;
-    uart_send(PACKET_LED, Ep1Buffer, 1);
+    uart_send_led(Ep1Buffer[0]);
 }
 
 /**
@@ -174,28 +171,6 @@ static void TimerInterrupt(void) __interrupt INT_NO_TKEY
 }
 
 /**
- * @brief 发送Ping包用于维持UART链接
- *
- */
-static void ping_packet()
-{
-    if (uart_rx_state == STATE_IDLE)
-    {
-        if (ping_skip_next)
-        {
-            ping_skip_next = false;
-        }
-        else
-        {
-            if (usb_evt)
-                uart_send(PACKET_USB_STATE, NULL, 0);
-            else
-                uart_send(PACKET_PING, NULL, 0);
-        }
-    }
-}
-
-/**
  * @brief USB睡眠事件
  *
  */
@@ -211,7 +186,7 @@ void UsbSuspendEvt()
 static void timer_init()
 {
     timer_create(&FeedWatchDog, true, 500);
-    timer_create(&ping_packet, true, 500);
+    // timer_create(&ping_packet, true, 500);
     timer_create(&uart_check, true, 1);
     IE_TKEY = 1;
 }
