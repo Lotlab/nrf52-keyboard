@@ -1,0 +1,28 @@
+
+# Created by https://www.gitignore.io/api/sdcc,codeblocks
+
+### CodeBlocks ###
+# specific to CodeBlocks IDE
+*.layout
+*.depend
+
+# generated directories
+bin/
+obj/
+
+### Sdcc ###
+# SDCC stuff
+*.lnk
+*.lst
+*.map
+*.mem
+*.rel
+*.rst
+*.sym
+*.hex
+*.ihx
+*.bin
+*.dep
+*.d
+*.lk
+# End of https://www.gitignore.io/api/sdcc,codeblocks
