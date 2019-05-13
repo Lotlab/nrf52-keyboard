@@ -70,7 +70,7 @@ namespace KeymapDownloader
         private void Download_Click(object sender, RoutedEventArgs e)
         {
             var path = Path.Text;
-            byte[] binary = new Byte[1024];
+            byte[] binary = new Byte[660];
 
             HidStream hidStream = device.Open();
 
@@ -85,7 +85,7 @@ namespace KeymapDownloader
                 {
                     using (var stream = File.Open(path, FileMode.Open))
                     {
-                        stream.Read(binary, 0, 1024);
+                        stream.Read(binary, 0, 660);
                     }
                 }
                 else
@@ -97,14 +97,30 @@ namespace KeymapDownloader
                     foreach (var item in memoryRepresentation.Cells)
                     {
                         binary[index++] = item.Value;
-                        if (index == 1024)
+                        if (index == 660)
                         {
                             break;
                         }
                     }
+
+                    const int checksum_offset = 0x13;
+                    const int total_size = checksum_offset + 2 + 0x40 + (14 * 5 * 8);
+                    int checksum = (binary[checksum_offset]) + (binary[checksum_offset + 1] << 8);
+
+                    int calc_sum = 0xFEED;
+                    for (int i = checksum_offset + 2; i < total_size - 1; i+=2)
+                    {
+                        var c = (binary[i]) + (binary[i + 1] << 8);
+                        calc_sum += c;
+                        calc_sum %= 0x10000;
+                    }
+
+                    if (checksum != calc_sum)
+                    {
+                        lbl_status.Text = "Keymap校验不通过";
+                        return;
+                    }
                 }
-                // 第一个Byte为0x55代表启用此Keymap
-                binary[0] = 0x55;
             }
 
             try
@@ -116,13 +132,12 @@ namespace KeymapDownloader
                     Array.Copy(binary, i * 60, packet, 0, 60);
                     SendPacket(hidStream, (uint)i, packet);
                 }
+                lbl_status.Text = "完成";
             }
             catch (Exception exp)
             {
                 lbl_status.Text = exp.Message;
             }
-
-            lbl_status.Text = "完成";
         }
 
         void SendPacket(HidStream stream, uint id, byte[] data)
@@ -140,10 +155,10 @@ namespace KeymapDownloader
             {
                 stream.Write(send);
                 var ret = stream.Read();
-                ret_code = ret[1] == 0xc1;
+                ret_code = ret[1] == 0x11;
             } while (!ret_code && retryCount-- > 0);
 
-            if (retryCount == 0)
+            if (retryCount <= 0)
             {
                 throw new Exception("发送重试次数达到上限");
             }

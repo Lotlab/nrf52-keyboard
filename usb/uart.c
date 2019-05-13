@@ -160,5 +160,7 @@ void uart_send_keymap(uint8_t* data, uint8_t len) {
     data[0] = (data[0] & 0x7F) + 0x80;
     for (uint8_t i = 0; i<len; i++)
         send_buff[i] = data[i];
+
+    send_buff[len - 1] += 0x80; // fix checksum
     send_len = len;
 }
