@@ -42,7 +42,7 @@ EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
 # NKRO_ENABLE = yes	# USB Nkey Rollover
 USB_6KRO_ENABLE = yes # USB 6Key Rollover
 
-OPT_DEFS += -DDEBUG
+# OPT_DEFS += -DDEBUG
 
 include tmk.mk
 include app.mk

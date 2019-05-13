@@ -542,7 +542,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             break;
 
         case BLE_GAP_EVT_AUTH_KEY_REQUEST:
-            event_handler(USER_BLE_PASSKEY);
+            event_handler(USER_BLE_PASSKEY_REQUIRE);
             break;
 
         default:
@@ -655,6 +655,8 @@ void ble_passkey_send(uint8_t const * p_key) {
         BLE_GAP_AUTH_KEY_TYPE_PASSKEY,
         p_key);
     APP_ERROR_CHECK(err_code);
+
+    event_handler(USER_BLE_PASSKEY_SEND);
 }
 
 void ble_services_init(evt_handler handler) {

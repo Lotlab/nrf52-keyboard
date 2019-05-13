@@ -226,7 +226,7 @@ void ble_user_event(enum user_ble_event arg)
     case USER_BLE_IDLE:
         sleep(SLEEP_NO_CONNECTION);
         break;
-    case USER_BLE_PASSKEY:
+    case USER_BLE_PASSKEY_REQUIRE:
         passkey_req_handler();
         break;
     default:
