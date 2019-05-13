@@ -64,26 +64,19 @@ static void keymap_read(void)
     /* It is required to zero the token before first use. */
     memset(&ftok, 0x00, sizeof(fds_find_token_t));
 
-    bool data_valid = false;
-
     if (fds_record_find(FILE_ID, RECORD_KEY, &record_desc, &ftok) == FDS_SUCCESS) {
         fds_record_open(&record_desc, &flash_record);
 
         if (flash_record.p_header->length_words == KEYMAP_SIZE_WORD) {
             memcpy(keymap_block, flash_record.p_data, KEYMAP_SIZE);
             fds_record_close(&record_desc);
-            data_valid = true;
         } else {
             fds_record_close(&record_desc);
-            fds_record_delete(&record_desc);
-        }
-    }
-    if (!data_valid) {
-        record.file_id = FILE_ID;
-        record.key = RECORD_KEY;
-        record.data.p_data = &keymap_block;
-        record.data.length_words = KEYMAP_SIZE_WORD;
+            ret_code_t code = fds_record_update(&record_desc, &record);
+            APP_ERROR_CHECK(code);
 
+        }
+    } else {
         ret_code_t code = fds_record_write(&record_desc, &record);
         APP_ERROR_CHECK(code);
     }
@@ -91,11 +84,6 @@ static void keymap_read(void)
 
 static void keymap_update(void)
 {
-    record.file_id = FILE_ID;
-    record.key = RECORD_KEY;
-    record.data.p_data = &keymap_block;
-    record.data.length_words = KEYMAP_SIZE_WORD;
-
     // record_desc was create by fds_record_find or fds_record_write
     ret_code_t code = fds_record_update(&record_desc, &record);
     APP_ERROR_CHECK(code);
@@ -107,6 +95,11 @@ static void keymap_update(void)
  */
 void keymap_init(void)
 {
+    record.file_id = FILE_ID;
+    record.key = RECORD_KEY;
+    record.data.p_data = &keymap_block;
+    record.data.length_words = KEYMAP_SIZE_WORD;
+
     keymap_read();
     keymap_valid();
 }
