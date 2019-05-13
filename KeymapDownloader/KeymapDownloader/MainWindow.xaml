@@ -1,0 +1,42 @@
+﻿<Controls:MetroWindow x:Class="KeymapDownloader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:local="clr-namespace:KeymapDownloader"
+        mc:Ignorable="d"
+        Title="配列下载工具" Height="174.003" Width="460.907" IsMaxRestoreButtonEnabled="False">
+    <Grid>
+        <Grid Height="26" Margin="10,10,10,0" VerticalAlignment="Top">
+            <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="选择设备" VerticalAlignment="Center"/>
+            <ComboBox Name="Devices" Margin="63,0,26,0" VerticalAlignment="Top" SelectionChanged="Devices_SelectionChanged" Controls:TextBoxHelper.Watermark="选择一个键盘"/>
+            <Button Name="refresh" HorizontalAlignment="Right" Margin="0,0,0,0" VerticalAlignment="Top" Width="26" Style="{DynamicResource SquareButtonStyle}" Height="26" Click="refresh_Click">
+                <Rectangle Height="14" Width="12">
+                    <Rectangle.Fill>
+                        <VisualBrush Visual="{DynamicResource appbar_refresh}"></VisualBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+            </Button>
+        </Grid>
+        <Grid Height="26" Margin="10,46,10,0" VerticalAlignment="Top">
+            <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="选择文件" VerticalAlignment="Center"/>
+            <TextBox Name="Path" Margin="63,0,26,0" VerticalAlignment="Top" Controls:TextBoxHelper.Watermark="留空以使用键盘内置的配列" />
+            <Button Name="browse" HorizontalAlignment="Right" Margin="0,0,0,0" VerticalAlignment="Top" Width="26" Style="{DynamicResource SquareButtonStyle}" Content="..." Click="browse_Click" />
+        </Grid>
+        <Grid Height="26" Margin="10,82,10,0" VerticalAlignment="Top">
+            <Button Name="Download" Margin="0,0,0,0" VerticalAlignment="Top" Style="{DynamicResource SquareButtonStyle}" Content="下载" Click="Download_Click" />
+        </Grid>
+        <StatusBar Margin="0,0,0,0" Height="26" 
+                   VerticalAlignment="Bottom" >
+            <TextBlock x:Name="lbl_status" Foreground="White" Margin="5,0,5,0" Text="准备就绪"/>
+        </StatusBar>
+    </Grid>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Icons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+</Controls:MetroWindow>
