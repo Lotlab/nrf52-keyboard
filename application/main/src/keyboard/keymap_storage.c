@@ -16,6 +16,7 @@
 #define layer_offset (fn_offset + 0x40)
 #define layer_end (layer_offset + 14 * 5 * 8)
 
+__ALIGN(4)
 static uint8_t keymap_block[KEYMAP_SIZE] = { 0 };
 
 static bool storage_keymap_valid = false;
@@ -83,7 +84,8 @@ static void keymap_read(void)
         record.data.p_data = &keymap_block;
         record.data.length_words = KEYMAP_SIZE_WORD;
 
-        fds_record_write(&record_desc, &record);
+        ret_code_t code = fds_record_write(&record_desc, &record);
+        APP_ERROR_CHECK(code);
     }
 }
 
@@ -95,7 +97,8 @@ static void keymap_update(void)
     record.data.length_words = KEYMAP_SIZE_WORD;
 
     // record_desc was create by fds_record_find or fds_record_write
-    fds_record_update(&record_desc, &record);
+    ret_code_t code = fds_record_update(&record_desc, &record);
+    APP_ERROR_CHECK(code);
 }
 
 /**

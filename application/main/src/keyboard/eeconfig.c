@@ -6,6 +6,7 @@
 #define FILE_ID 0x0114 /* The ID of the file to write the records into. */
 #define RECORD_KEY 0x0514 /* A key for the first record. */
 
+__ALIGN(4)
 static uint8_t config_buffer[8] __attribute__((aligned(4))) = { EECONFIG_MAGIC_NUMBER >> 8, EECONFIG_MAGIC_NUMBER % 0x100, 0, 0, 0, 0, 0, 0 };
 static bool fds_inited = false;
 
