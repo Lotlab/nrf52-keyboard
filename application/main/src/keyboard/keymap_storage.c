@@ -5,7 +5,7 @@
 #include "nrf.h"
 #include <string.h>
 
-#define KEYMAP_SIZE 600
+#define KEYMAP_SIZE 660
 #define KEYMAP_SIZE_WORD (KEYMAP_SIZE / 4)
 #define FILE_ID 0x0514 /* The ID of the file to write the records into. */
 #define RECORD_KEY 0x0514 /* A key for the first record. */
@@ -14,6 +14,7 @@
 #define checksum_offset 0x13
 #define fn_offset (checksum_offset + 2)
 #define layer_offset (fn_offset + 0x40)
+#define layer_end (layer_offset + 14 * 5 * 8)
 
 static uint8_t keymap_block[KEYMAP_SIZE] = { 0 };
 
@@ -47,11 +48,11 @@ static fds_record_desc_t record_desc;
 static void keymap_valid(void)
 {
     uint32_t checksum = 0xFEED;
-    for (uint16_t i = fn_offset; i < KEYMAP_SIZE - 1; i += 2) {
-        checksum += (keymap_block[i] << 8) + keymap_block[i + 1];
-        checksum %= 0xFF;
+    for (uint16_t i = fn_offset; i < layer_end; i += 2) {
+        checksum += (keymap_block[i]) + (keymap_block[i + 1] << 8);
+        checksum &= 0xFFFF;
     }
-    uint16_t real_sum = (keymap_block[checksum_offset] << 8) + keymap_block[checksum_offset + 1];
+    uint16_t real_sum = (keymap_block[checksum_offset]) + (keymap_block[checksum_offset + 1] << 8);
     storage_keymap_valid = (real_sum == checksum);
 }
 

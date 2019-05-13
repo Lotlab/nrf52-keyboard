@@ -186,7 +186,7 @@ static void uart_on_recv()
                 if (sum == recv_buf[61]) {
                     uint8_t id = recv_buf[0] & 0x7F;
                     keymap_set(id, 60, &recv_buf[1]);
-                    if (id >= 9)
+                    if (id >= 10) // 11 pages total
                         keymap_write();
                     uart_ack(true);
                 } else {
