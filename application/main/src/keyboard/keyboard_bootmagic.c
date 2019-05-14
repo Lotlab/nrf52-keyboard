@@ -10,14 +10,16 @@ void hook_bootmagic() {
         bool sleep_flag = true;
 #ifdef DEBUG
         // debug状态下自动开机
-        sleep_flag &= false;
+        sleep_flag = false;
 #endif
 #ifdef HAS_USB
         // 若连接至主机则自动开机
-        sleep_flag &= !usb_working();
+        if (usb_working())
+            sleep_flag = false;
 #endif
         // 自动休眠则不需要需要使用BOOT按键开机
-        sleep_flag &= sleep_reason_get();
+        if (sleep_reason_get())
+            sleep_flag = false;
 
         if (sleep_flag) {
             sleep(SLEEP_NOT_PWRON);

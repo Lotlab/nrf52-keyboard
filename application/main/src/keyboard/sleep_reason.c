@@ -19,7 +19,8 @@ void sleep_reason_set(bool val)
     if (val) {
         data |= BIT_MASK;
     } else {
-        data &= ~BIT_MASK;
+        data -= (data & BIT_MASK);
     }
+    sd_power_gpregret_clr(0, 0xffffffff);
     sd_power_gpregret_set(0, data);
 }

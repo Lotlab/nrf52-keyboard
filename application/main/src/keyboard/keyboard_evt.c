@@ -2,6 +2,7 @@
 #include "ble_keyboard.h"
 #include "keyboard_led.h"
 #include "sleep_reason.h"
+#include "nrf_delay.h"
 
 void user_event_handler(enum user_ble_event arg)
 {
@@ -32,7 +33,7 @@ void user_event_handler(enum user_ble_event arg)
     // 这里可以放置用户自定义的处理程序，例如设置灯光等。
     switch (arg) {
     case USER_EVT_INITED:
-        keyboard_led_rgb_set(0x66ccff); // 天依蓝
+        keyboard_led_rgb_set(0x303030); // 黯淡白色
         break;
     case USER_USB_DISCONNECT:
         keyboard_led_rgb_set(0x66ccff); // 天依蓝
@@ -49,6 +50,16 @@ void user_event_handler(enum user_ble_event arg)
     case USER_BLE_PASSKEY_SEND:
         keyboard_led_rgb_set(0x99C030); // 青绿色
         break;
+    case USER_BLE_DISCONNECT:
+        keyboard_led_rgb_set(0xFF0000); // 
+        break;
+    case USER_BLE_CONNECTED:
+        keyboard_led_rgb_set(0x66ccff); // 天依蓝
+        break;
+    case USER_EVT_SLEEP_AUTO:
+    case USER_EVT_SLEEP_MANUAL:
+        keyboard_led_rgb_direct(0b00000101);
+        nrf_delay_ms(200);
     default:
         break;
     }
