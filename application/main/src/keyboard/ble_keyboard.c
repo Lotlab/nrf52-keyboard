@@ -15,11 +15,11 @@
 APP_TIMER_DEF(m_keyboard_scan_timer); /**< keyboard scan timer. */
 APP_TIMER_DEF(m_keyboard_sleep_timer); /**< keyboard sleep timer. */
 
-#define SCAN_INTERVAL_FAST APP_TIMER_TICKS(KEYBOARD_FAST_SCAN_INTERVAL) /**< Keyboard scan interval (ticks). */
-#define SCAN_INTERVAL_SLOW APP_TIMER_TICKS(KEYBOARD_SLOW_SCAN_INTERVAL) /**< Keyboard slow scan interval (ticks). */
+#define SCAN_INTERVAL APP_TIMER_TICKS(KEYBOARD_SCAN_INTERVAL)
 #define TICK_INTERVAL APP_TIMER_TICKS(1000) /**< 键盘Tick计时器 */
 
 static uint32_t sleep_counter;
+static int16_t scan_counter, scan_reload = KEYBOARD_FAST_SCAN_INTERVAL;
 static bool powersave = true;
 
 /**
@@ -29,12 +29,7 @@ static bool powersave = true;
  */
 static void keyboard_switch_scan_mode(bool slow)
 {
-    uint32_t err_code;
-    err_code = app_timer_stop(m_keyboard_scan_timer);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = app_timer_start(m_keyboard_scan_timer, slow ? SCAN_INTERVAL_SLOW : SCAN_INTERVAL_FAST, NULL);
-    APP_ERROR_CHECK(err_code);
+    scan_reload = slow ? KEYBOARD_SLOW_SCAN_INTERVAL : KEYBOARD_FAST_SCAN_INTERVAL;
 }
 
 /**
@@ -45,7 +40,11 @@ static void keyboard_switch_scan_mode(bool slow)
 static void keyboard_scan_handler(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
-    keyboard_task();
+    scan_counter -= KEYBOARD_SCAN_INTERVAL;
+    if (scan_counter <= 0) {
+        scan_counter = scan_reload;
+        keyboard_task();
+    }
 }
 
 /**
@@ -142,13 +141,19 @@ static void keyboard_wdt_init(void)
 }
 #endif
 
+void keyboard_debounce(void)
+{
+    // 下一个计时期间立即扫描用于消抖
+    scan_counter = 0;
+}
+
 /**
  * @brief 启动键盘计时器
  * 
  */
 void ble_keyboard_timer_start(void)
 {
-    ret_code_t err_code = app_timer_start(m_keyboard_scan_timer, SCAN_INTERVAL_FAST, NULL);
+    ret_code_t err_code = app_timer_start(m_keyboard_scan_timer, SCAN_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_start(m_keyboard_sleep_timer, TICK_INTERVAL, NULL);
@@ -160,12 +165,13 @@ void ble_keyboard_timer_start(void)
  * 
  * @param save 
  */
-void ble_keyboard_powersave(bool save) {
+void ble_keyboard_powersave(bool save)
+{
     if (save != powersave) {
         powersave = save;
         if (!powersave) {
             keyboard_sleep_counter_reset();
-        } 
+        }
     }
 }
 

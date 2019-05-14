@@ -13,6 +13,7 @@
 #include "nrf_gpio.h"
 
 #include "../config/keyboard_config.h"
+#include "ble_keyboard.h"
 #include "custom_hook.h"
 #include "debug.h"
 #include "keyboard_matrix.h"
@@ -139,7 +140,7 @@ uint8_t matrix_scan(void)
     if (debouncing) {
         if (--debouncing) {
             // no need to delay here manually, because we use the clock.
-            // wait_ms(1);
+            keyboard_debounce();
         } else {
             for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
                 matrix[i] = matrix_debouncing[i];
