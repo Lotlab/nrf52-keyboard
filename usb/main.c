@@ -205,7 +205,10 @@ static void main()
     UEP1_T_LEN = 0; //预使用发送长度一定要清空
     UEP2_T_LEN = 0; //预使用发送长度一定要清空
 
-    MOSI = true;
+    // 拉低P1.5，通知主控使用UART接收
+    P1_MOD_OC -= (P1_MOD_OC & bMOSI);
+    MOSI = false;
+
     while (1)
     {
         timer_task_exec();
