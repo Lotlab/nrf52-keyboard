@@ -305,7 +305,9 @@ void usb_comm_init()
 
     nrf_gpio_cfg_input(UART_DET, NRF_GPIO_PIN_PULLUP);
     // 初始化时启用UART尝试接收事件，若没有主机则在超时处关闭
-    uart_init_hardware();
+    if (!nrf_gpio_pin_read(UART_DET)) {
+        uart_init_hardware();
+    }
 }
 
 void usb_comm_timer_start()
