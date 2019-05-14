@@ -84,7 +84,8 @@ static void keyboard_led_rgb_init()
     APP_ERROR_CHECK(err_code);
 }
 
-static void keyboard_led_rgb_off() {
+static void keyboard_led_rgb_off()
+{
     low_power_pwm_stop(&led_r);
     low_power_pwm_stop(&led_g);
     low_power_pwm_stop(&led_b);
@@ -92,6 +93,13 @@ static void keyboard_led_rgb_off() {
     nrf_gpio_pin_set(LED_RGB_R);
     nrf_gpio_pin_set(LED_RGB_G);
     nrf_gpio_pin_set(LED_RGB_B);
+}
+
+void keyboard_led_rgb_direct(uint8_t bit)
+{
+    nrf_gpio_pin_write(LED_RGB_R, !(bit & 0x04));
+    nrf_gpio_pin_write(LED_RGB_G, !(bit & 0x02));
+    nrf_gpio_pin_write(LED_RGB_B, !(bit & 0x01));
 }
 #endif
 
@@ -168,7 +176,6 @@ static void led_on(void)
     keyboard_led_rgb_set_internal(saved_color);
 #endif
 }
-
 
 /**
  * @brief LED自动关闭的handler

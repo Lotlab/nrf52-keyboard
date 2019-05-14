@@ -243,10 +243,12 @@ void sleep(enum SLEEP_REASON reason)
     switch (reason) {
     case SLEEP_NO_CONNECTION:
     case SLEEP_TIMEOUT:
+        app_timer_stop_all();
         ble_user_event(USER_EVT_SLEEP_AUTO);
         sleep_mode_enter();
         break;
     case SLEEP_MANUALLY:
+        app_timer_stop_all();
         ble_user_event(USER_EVT_SLEEP_MANUAL);
         sleep_mode_enter();
         break;
