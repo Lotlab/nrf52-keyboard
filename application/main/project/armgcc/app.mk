@@ -48,7 +48,6 @@ SRC_FILES += \
 	$(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_saadc.c \
 	$(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_wdt.c \
 	$(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uart.c \
-	$(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uarte.c \
 	$(PROJ_DIR)/main.c \
 	$(PROJ_DIR)/ble/ble_services.c \
 	$(PROJ_DIR)/ble/ble_hid_service.c \
