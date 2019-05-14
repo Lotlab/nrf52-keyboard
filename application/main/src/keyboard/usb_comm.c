@@ -23,8 +23,6 @@
 
 #ifdef HAS_USB
 
-static uint8_t rx_buf[32];
-static uint8_t tx_buf[32];
 static uint8_t recv_buf[62];
 static uint8_t recv_index;
 
@@ -236,13 +234,6 @@ static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
 static void uart_init_hardware()
 {
     uint32_t err_code;
-    app_uart_buffers_t buffers;
-
-    buffers.rx_buf = rx_buf;
-    buffers.rx_buf_size = sizeof(rx_buf);
-    buffers.tx_buf = tx_buf;
-    buffers.tx_buf_size = sizeof(tx_buf);
-
     const app_uart_comm_params_t config = {
         .baud_rate = UART_BAUDRATE,
         .flow_control = APP_UART_FLOW_CONTROL_DISABLED,
@@ -251,7 +242,7 @@ static void uart_init_hardware()
         .use_parity = false
     };
 
-    err_code = app_uart_init(&config, &buffers, uart_evt_handler, APP_IRQ_PRIORITY_LOW);
+    APP_UART_FIFO_INIT(&config, 32, 32, uart_evt_handler, APP_IRQ_PRIORITY_LOW, err_code);
     APP_ERROR_CHECK(err_code);
 
     is_connected = true;
@@ -281,7 +272,7 @@ static void uart_task(void* context)
         }
     } else {
         // 检查是否连接
-        if (nrf_gpio_pin_read(UART_DET)) {
+        if (!nrf_gpio_pin_read(UART_DET)) {
             uart_init_hardware();
         }
     }
@@ -312,10 +303,9 @@ void usb_comm_init()
 
     APP_ERROR_CHECK(err_code);
 
-    nrf_gpio_cfg_input(UART_DET, NRF_GPIO_PIN_PULLDOWN);
-    if (nrf_gpio_pin_read(UART_DET)) {
-        uart_init_hardware();
-    }
+    nrf_gpio_cfg_input(UART_DET, NRF_GPIO_PIN_PULLUP);
+    // 初始化时启用UART尝试接收事件，若没有主机则在超时处关闭
+    uart_init_hardware();
 }
 
 void usb_comm_timer_start()
@@ -327,7 +317,7 @@ void usb_comm_timer_start()
 void usb_comm_sleep_prepare()
 {
     uart_to_idle();
-    nrf_gpio_cfg_sense_input(UART_DET, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+    nrf_gpio_cfg_sense_input(UART_DET, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
 }
 
 void usb_comm_switch()
