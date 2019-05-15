@@ -16,6 +16,7 @@
 #define layer_offset (fn_offset + 0x40)
 #define layer_end (layer_offset + 14 * 5 * 8)
 
+#ifdef KEYMAP_STORAGE
 __ALIGN(4)
 static uint8_t keymap_block[KEYMAP_SIZE] = { 0 };
 
@@ -74,7 +75,6 @@ static void keymap_read(void)
             fds_record_close(&record_desc);
             ret_code_t code = fds_record_update(&record_desc, &record);
             APP_ERROR_CHECK(code);
-
         }
     } else {
         ret_code_t code = fds_record_write(&record_desc, &record);
@@ -125,3 +125,8 @@ void keymap_write(void)
     keymap_valid();
     keymap_update();
 }
+#else
+void keymap_init(void) {}
+void keymap_set(uint8_t block, uint8_t size, uint8_t* data) {}
+void keymap_write(void) {}
+#endif
