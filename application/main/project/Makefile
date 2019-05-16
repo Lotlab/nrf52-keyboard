@@ -1,5 +1,5 @@
-TMK_CORE_DIR = ../../../../tmk/tmk_core
-PROJ_DIR := ../../src
+TMK_CORE_DIR = ../../../tmk/tmk_core
+PROJ_DIR := ../src
 
 # project specific files
 SRC =	matrix.c \

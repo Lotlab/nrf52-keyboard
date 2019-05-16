@@ -6,7 +6,7 @@
         {
             "type": "shell",
             "label": "build main",
-            "command": "cd application/main/project/armgcc/ && make -j",
+            "command": "cd application/main/project/ && make -j",
             "group": "build",
             "problemMatcher": [
                 "$gcc"
@@ -15,7 +15,7 @@
         {
             "type": "shell",
             "label": "flash main",
-            "command": "cd application/main/project/armgcc/ && make flash -j",
+            "command": "cd application/main/project/ && make flash -j",
             "group": "build",
             "problemMatcher": [
                 "$gcc"
@@ -24,7 +24,7 @@
         {
             "type": "shell",
             "label": "flash main (pyOCD)",
-            "command": "cd application/main/project/armgcc/ && make pyocd_flash -j",
+            "command": "cd application/main/project/ && make pyocd_flash -j",
             "group": "build",
             "problemMatcher": [
                 "$gcc"

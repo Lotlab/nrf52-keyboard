@@ -2,9 +2,8 @@ PROJECT_NAME     := ble_app_hids_keyboard_pca10040e_s112
 TARGETS          := nrf52810_xxaa
 OUTPUT_DIRECTORY := _build
 
-SDK_ROOT := ../../../../SDK
-PROJ_DIR := ../../src
-TEMPLATE_PATH := ../../../../template
+SDK_ROOT := ../../../SDK
+TEMPLATE_PATH := ../../../template
 
 $(OUTPUT_DIRECTORY)/nrf52810_xxaa.out: \
 	LINKER_SCRIPT  := ble_app_hids_keyboard_gcc_nrf52.ld
@@ -125,7 +124,7 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/cli \
 	$(SDK_ROOT)/components/libraries/crc16 \
 	$(SDK_ROOT)/components/libraries/util \
-	../config \
+	$(PROJ_DIR)/config \
 	$(SDK_ROOT)/components/libraries/csense \
 	$(SDK_ROOT)/components/libraries/balloc \
 	$(SDK_ROOT)/components/libraries/ecc \

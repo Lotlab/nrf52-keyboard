@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "cwd": "${workspaceRoot}/application/main/project/armgcc/_build/",
+            "cwd": "${workspaceRoot}/application/main/project/_build/",
             "executable": "nrf52810_xxaa.out",
             "name": "Debug Microcontroller",
             "request": "launch",
@@ -22,7 +22,7 @@
             "request": "attach",
             "target": ":3333",
             "remote": true,
-            "cwd": "${workspaceRoot}/application/main/project/armgcc/_build/",
+            "cwd": "${workspaceRoot}/application/main/project/_build/",
             "executable": "nrf52810_xxaa.out",
             "valuesFormatting": "parseText",
             "autorun": [
