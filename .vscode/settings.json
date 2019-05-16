@@ -114,7 +114,7 @@
         "SDK/components/ble/ble_services/ble_cts_c",
         "SDK/components/libraries/crc16",
         "SDK/components/libraries/util",
-        "application/main/project/config",
+        "application/main/config",
         "SDK/components/libraries/usbd/class/cdc",
         "SDK/components/libraries/csense",
         "SDK/components/libraries/balloc",
