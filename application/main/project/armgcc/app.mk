@@ -276,7 +276,7 @@ flash_softdevice:
 
 pyocd_flash_softdevice:
 	@echo Flashing: s112_nrf52_6.1.1_softdevice.hex
-	pyocd flash -t nrf52 -e chip -f 2M $(SDK_ROOT)/components/softdevice/s112/hex/s112_nrf52_6.1.1_softdevice.hex
+	pyocd flash -t nrf52 -e sector -f 2M $(SDK_ROOT)/components/softdevice/s112/hex/s112_nrf52_6.1.1_softdevice.hex
 	pyocd cmd -t nrf52 -c reset
 
 erase:

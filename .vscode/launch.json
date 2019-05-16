@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "cwd": "${workspaceRoot}/application/main/project/armgcc/_build/",
+            "executable": "nrf52810_xxaa.out",
+            "name": "Debug Microcontroller",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "pyocd",
+            "armToolchainPath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin",
+            "device": "nrf52810_xxaa",
+            "targetId": "nrf52",
+            "boardId": ""
+        },
+        {
             "name": "Debug Application",
             "type": "gdb",
             "request": "attach",
@@ -14,8 +26,7 @@
             "executable": "nrf52810_xxaa.out",
             "valuesFormatting": "parseText",
             "autorun": [
-                "load nrf52810_xxaa.out",
-                "symbol-file nrf52810_xxaa.out",
+                "file nrf52810_xxaa.out",
                 "mon reset"
             ],
             "gdbpath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-gdb",
