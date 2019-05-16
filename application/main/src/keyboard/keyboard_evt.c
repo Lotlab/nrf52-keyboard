@@ -4,6 +4,32 @@
 #include "sleep_reason.h"
 #include "nrf_delay.h"
 
+enum keyboard_status {
+    kbd_ble,
+    kbd_charge,
+    kbd_usb
+};
+
+static enum keyboard_status status = 0;
+static bool charging_full = false;
+static bool ble_connected = false;
+
+static void led_status_change() {
+    switch (status)
+    {
+    case kbd_ble:
+        keyboard_led_rgb_set(ble_connected ? 0x66ccff : 0xFFFFFF);
+        break;
+    case kbd_charge:
+        keyboard_led_rgb_set(charging_full ? 0x00FF00: 0xFF8000);
+        break;
+    case kbd_usb:
+        keyboard_led_rgb_set(0x0099FF);
+    default:
+        break;
+    }
+}
+
 void user_event_handler(enum user_ble_event arg)
 {
     // 处理各项事件，启用对应的处理程序
@@ -33,28 +59,41 @@ void user_event_handler(enum user_ble_event arg)
     // 这里可以放置用户自定义的处理程序，例如设置灯光等。
     switch (arg) {
     case USER_EVT_INITED:
-        keyboard_led_rgb_set(0x303030); // 黯淡白色
+        led_status_change();
         break;
     case USER_USB_DISCONNECT:
-        keyboard_led_rgb_set(0x66ccff); // 天依蓝
+        status = kbd_ble;
+        led_status_change();
         break;
     case USER_USB_CHARGE:
-        keyboard_led_rgb_set(0x0099ff); // 天蓝色
+        status = kbd_charge;
+        led_status_change();
         break;
     case USER_USB_CONNECTED:
-        keyboard_led_rgb_set(0x009900); // 翠绿色
+        status = kbd_usb;
+        led_status_change();
         break;
-    case USER_BLE_PASSKEY_REQUIRE:
-        keyboard_led_rgb_set(0x993030); // 赭红色（理论）
+    case USER_BAT_CHARGING:
+        charging_full = false;
+        led_status_change();
         break;
-    case USER_BLE_PASSKEY_SEND:
-        keyboard_led_rgb_set(0x99C030); // 青绿色
+    case USER_BAT_FULL:
+        charging_full = true;
+        led_status_change();
         break;
     case USER_BLE_DISCONNECT:
-        keyboard_led_rgb_set(0xFF0000); // 
+        ble_connected = false;
+        led_status_change();
         break;
     case USER_BLE_CONNECTED:
-        keyboard_led_rgb_set(0x66ccff); // 天依蓝
+        ble_connected = true;
+        keyboard_led_rgb_set(0x66ccff);
+        break;
+    case USER_BLE_PASSKEY_REQUIRE:
+        keyboard_led_rgb_set(0xFFFF00);
+        break;
+    case USER_BLE_PASSKEY_SEND:
+        keyboard_led_rgb_set(0xFF0080);
         break;
     case USER_EVT_SLEEP_AUTO:
     case USER_EVT_SLEEP_MANUAL:
