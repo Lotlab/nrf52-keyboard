@@ -19,6 +19,8 @@ static void pwm_handler(void* p_context)
     UNUSED_PARAMETER(p_context);
 }
 
+const uint8_t gamma[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 11, 12, 12, 13, 14, 14, 15, 16, 17, 17, 18, 19, 20, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 47, 48, 49, 51, 52, 53, 55, 56, 58, 59, 60, 62, 63, 65, 67, 68, 70, 71, 73, 75, 76, 78, 80, 81, 83, 85, 87, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 127};
+
 /**
  * @brief 设置RGB灯光值
  * 
@@ -26,9 +28,18 @@ static void pwm_handler(void* p_context)
  */
 static void keyboard_led_rgb_set_internal(uint32_t color)
 {
-    low_power_pwm_duty_set(&led_r, (color & 0xFF0000) >> 16);
-    low_power_pwm_duty_set(&led_g, (color & 0xFF00) >> 8);
-    low_power_pwm_duty_set(&led_b, (color & 0xFF));
+    uint8_t r, g, b;
+    r = (color & 0xFF0000) >> 17;
+    g = (color & 0xFF00) >> 9;
+    b = (color & 0xFF) >> 1;
+
+    r = gamma[r];
+    g = gamma[g];
+    b = gamma[b];
+
+    low_power_pwm_duty_set(&led_r, r * 2);
+    low_power_pwm_duty_set(&led_g, g); // 亮度校正，红色亮度是绿色和蓝色的一半
+    low_power_pwm_duty_set(&led_b, b);
 }
 
 /**
