@@ -106,6 +106,10 @@ void advertising_start(bool erase_bonds)
     }
 }
 
+void advertising_slow() {
+    ret_code_t ret = ble_advertising_start(&m_advertising, BLE_ADV_MODE_SLOW);
+    APP_ERROR_CHECK(ret);
+}
 
 static void disconnect(uint16_t conn_handle, void * p_context)
 {

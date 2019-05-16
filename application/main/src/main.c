@@ -223,9 +223,6 @@ __attribute__((weak)) void user_event_handler(enum user_ble_event arg) {}
 void ble_user_event(enum user_ble_event arg)
 {
     switch (arg) {
-    case USER_BLE_IDLE:
-        sleep(SLEEP_NO_CONNECTION);
-        break;
     case USER_BLE_PASSKEY_REQUIRE:
         passkey_req_handler();
         break;

@@ -3,6 +3,7 @@
 #include "keyboard_led.h"
 #include "sleep_reason.h"
 #include "nrf_delay.h"
+#include  "../ble/ble_services.h"
 
 enum keyboard_status {
     kbd_ble,
@@ -52,6 +53,13 @@ void user_event_handler(enum user_ble_event arg)
         keyboard_led_powersave(true);
         ble_keyboard_powersave(true);
         break;
+    case USER_BLE_IDLE:
+        // 长时间没有连接，若处于蓝牙模式则睡眠
+        if (status == kbd_ble) {
+            sleep(SLEEP_NO_CONNECTION);
+        } else {
+            advertising_slow();
+        }
     default:
         break;
     }

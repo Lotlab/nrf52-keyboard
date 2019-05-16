@@ -34,4 +34,6 @@ void advertising_start(bool erase_bonds);
  */
 void ble_passkey_send(uint8_t const * p_key);
 
+void advertising_slow(void);
+
 #endif
