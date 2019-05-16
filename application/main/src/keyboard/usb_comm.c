@@ -31,13 +31,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_timer.h"
 #include "keymap_storage.h"
 
-/**
- * Communication Protocal
- * CMD DAT ... DAT SUM
- * 
- * 
- **/
-
 #ifdef HAS_USB
 
 static uint8_t recv_buf[62];
@@ -155,6 +148,12 @@ static void set_state(bool host, bool charge)
     }
 }
 
+/**
+ * @brief 直接向 UART 写入数据
+ * 
+ * @param data 
+ * @param len 
+ */
 static void uart_send(uint8_t* data, uint8_t len)
 {
     while (len--) {
@@ -168,6 +167,8 @@ static void uart_send(uint8_t* data, uint8_t len)
  */
 static void uart_on_recv()
 {
+    // 通信协议：
+    // CMD DAT ... DAT SUM
     uint8_t buff;
     while (app_uart_get(&buff) == NRF_SUCCESS) {
         recv_buf[recv_index] = buff;
@@ -267,6 +268,14 @@ static void uart_init_hardware()
     ble_user_event(USER_BAT_CHARGING);
 }
 
+/**
+ * @brief 封装键盘按键数据包
+ * 
+ * @param index 数据包类型
+ * @param len 长度
+ * @param pattern 数据
+ * @return uint8_t* 
+ */
 static uint8_t* pack_packet(uint8_t index, uint8_t len, uint8_t* pattern)
 {
     uint8_t* data = malloc(len + 2);
@@ -295,11 +304,24 @@ static void uart_task(void* context)
     }
 }
 
+/**
+ * @brief 是否已经连接到主机
+ * 
+ * @return true 
+ * @return false 
+ */
 bool usb_working(void)
 {
     return has_host && is_connected && !is_disable;
 }
 
+/**
+ * @brief 通过USB发送按键数据包
+ * 
+ * @param index 数据包类型
+ * @param len 长度
+ * @param pattern 
+ */
 void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 {
     uint8_t* data = pack_packet(index, len, pattern);
@@ -310,6 +332,10 @@ void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 APP_TIMER_DEF(uart_check_timer);
 #define UART_CHECK_INTERVAL APP_TIMER_TICKS(1500)
 
+/**
+ * @brief 初始化USB通信
+ * 
+ */
 void usb_comm_init()
 {
     uint32_t err_code;
@@ -327,18 +353,30 @@ void usb_comm_init()
     }
 }
 
+/**
+ * @brief 启动USB通信计时器
+ * 
+ */
 void usb_comm_timer_start()
 {
     uint32_t err_code = app_timer_start(uart_check_timer, UART_CHECK_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
+/**
+ * @brief USB 准备睡眠
+ * 
+ */
 void usb_comm_sleep_prepare()
 {
     uart_to_idle();
     nrf_gpio_cfg_sense_input(UART_DET, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
 }
 
+/**
+ * @brief 切换USB和蓝牙设备
+ * 
+ */
 void usb_comm_switch()
 {
     if (is_connected && has_host) {

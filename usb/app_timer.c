@@ -21,6 +21,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 volatile __idata timer_info timers[MAX_TIMER_SIZE];
 uint8_t pos = 0;
 
+/**
+ * @brief 计时器的Tick
+ * 
+ */
 void timer_tick()
 {
     for (int i = 0; i < pos; i++)
@@ -42,6 +46,10 @@ void timer_tick()
     }
 }
 
+/**
+ * @brief 空闲时执行计时器的任务
+ * 
+ */
 void timer_task_exec()
 {
     for (int i = 0; i < pos; i++)
@@ -55,6 +63,13 @@ void timer_task_exec()
     }
 }
 
+/**
+ * @brief 创建一个计时器
+ * 
+ * @param task 任务回调
+ * @param repeat 是否重复
+ * @param period 计时周期
+ */
 void timer_create(task_t task, bool repeat, uint16_t period)
 {
     timer_info *timer = &timers[pos++];

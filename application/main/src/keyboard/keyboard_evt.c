@@ -32,6 +32,10 @@ static enum keyboard_status status = 0;
 static bool charging_full = false;
 static bool ble_connected = false;
 
+/**
+ * @brief 按状态更改 LED 样式
+ * 
+ */
 static void led_status_change() {
     switch (status)
     {

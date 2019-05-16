@@ -24,6 +24,7 @@ static uint8_t passkey[6];
 
 void hook_send_keyboard(report_keyboard_t* report)
 {
+    // 处理Passkey的输入
     if (inputed_len < 6) {
         for (uint8_t i = 0; i < sizeof(report->keys); i++) {
             uint8_t keycode = report->keys[i];
@@ -45,6 +46,10 @@ void hook_send_keyboard(report_keyboard_t* report)
     }
 }
 
+/**
+ * @brief 设置需要输入Passkey
+ * 
+ */
 void passkey_req_handler() {
     inputed_len = 0;
 }

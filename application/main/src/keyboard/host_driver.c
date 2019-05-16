@@ -46,6 +46,13 @@ uint8_t keyboard_leds()
     return keyboard_led_val;
 }
 
+/**
+ * @brief 发送按键包
+ * 
+ * @param index 类型Index
+ * @param len 长度
+ * @param keys 按键
+ */
 static void send(uint8_t index, uint8_t len, uint8_t* keys)
 {
 #ifdef HAS_USB

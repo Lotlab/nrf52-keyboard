@@ -36,6 +36,7 @@ static void pwm_handler(void* p_context)
     UNUSED_PARAMETER(p_context);
 }
 
+// Gamma 对应表
 const uint8_t gamma[] = {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 1,
@@ -128,7 +129,10 @@ static void keyboard_led_rgb_init()
     err_code = low_power_pwm_start(&led_b, led_b.bit_mask);
     APP_ERROR_CHECK(err_code);
 }
-
+/**
+ * @brief 关闭 RGB LED 的显示
+ * 
+ */
 static void keyboard_led_rgb_off()
 {
     low_power_pwm_stop(&led_r);
@@ -140,6 +144,13 @@ static void keyboard_led_rgb_off()
     nrf_gpio_pin_set(LED_RGB_B);
 }
 
+/**
+ * @brief 直接设置 RGB LED 的值
+ * 
+ * @remark 在关闭timer后，无法使用原有的PWM调色，仅能使用此方法设置LED颜色
+ * 
+ * @param bit 
+ */
 void keyboard_led_rgb_direct(uint8_t bit)
 {
     nrf_gpio_pin_write(LED_RGB_R, !(bit & 0x04));

@@ -31,6 +31,11 @@ bool usb_evt = false;
 
 static bool uart_check_flag, uart_arrive_flag, last_success;
 
+/**
+ * @brief 发送数据
+ * 
+ * @param c 
+ */
 static void uart_tx(uint8_t c)
 {
     SBUF1 = c;
@@ -38,6 +43,11 @@ static void uart_tx(uint8_t c)
     U1TI = 0;
 }
 
+/**
+ * @brief 接收数据
+ * 
+ * @return uint8_t 
+ */
 static uint8_t uart_rx()
 {
     while (U1RI == 0);
@@ -45,6 +55,11 @@ static uint8_t uart_rx()
     return SBUF1;
 }
 
+/**
+ * @brief 检查接收数据的校验和
+ * 
+ * @return uint8_t 
+ */
 static uint8_t checksum()
 {
     uint8_t sum = 0x00;
@@ -54,6 +69,10 @@ static uint8_t checksum()
     return sum == recv_buff[len - 1];
 }
 
+/**
+ * @brief 初始化UART
+ * 
+ */
 void uart_init()
 {
     U1SM0 = 0;  // 8Bit
@@ -63,6 +82,10 @@ void uart_init()
     IE_UART1 = 1; //启用串口中断
 }
 
+/**
+ * @brief 解析发来的UART数据包
+ * 
+ */
 static void uart_data_parser(void)
 {
     uint8_t command = recv_buff[0];
@@ -79,10 +102,15 @@ static void uart_data_parser(void)
                 last_success = true;
             }
         } else {
+            // 不做任何事情，等待下次重发
         }
     }
 }
 
+/**
+ * @brief 发送当前主机的状态
+ * 
+ */
 static void uart_send_status() {
     uint8_t data = 0x10;
     if (!CHARGING && STANDBY)
@@ -97,6 +125,10 @@ static void uart_send_status() {
 static uint8_t __xdata send_buff[64];
 static uint8_t send_len = 0;
 
+/**
+ * @brief UART状态的定期检测
+ * 
+ */
 void uart_check()
 {
     if (uart_check_flag)
@@ -132,6 +164,10 @@ void uart_check()
     uart_check_flag = true;
 }
 
+/**
+ * @brief 接收数据
+ * 
+ */
 void uart_recv(void)
 {
     /**
@@ -168,11 +204,22 @@ void uart_recv(void)
     uart_check_flag = false;
 }
 
+/**
+ * @brief 下发LED信号
+ * 
+ * @param val 
+ */
 void uart_send_led(uint8_t val) {
     send_buff[0] = 0x40 + (val & 0x3F);
     send_len = 1;
 }
 
+/**
+ * @brief 下发keymap数据
+ * 
+ * @param data 
+ * @param len 
+ */
 void uart_send_keymap(uint8_t* data, uint8_t len) {
     data[0] = (data[0] & 0x7F) + 0x80;
     for (uint8_t i = 0; i<len; i++)

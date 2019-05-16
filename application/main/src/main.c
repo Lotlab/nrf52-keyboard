@@ -252,6 +252,11 @@ void ble_user_event(enum user_ble_event arg)
     user_event_handler(arg);
 }
 
+/**
+ * @brief 使键盘进入睡眠状态
+ * 
+ * @param reason 
+ */
 void sleep(enum SLEEP_REASON reason)
 {
     switch (reason) {

@@ -21,6 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define BIT_MASK 0x02
 
+/**
+ * @brief 读取睡眠原因
+ * 
+ * @return true 自动睡眠
+ * @return false 手动睡眠或首次开机
+ */
 bool sleep_reason_get(void)
 {
     uint32_t data;
@@ -28,6 +34,11 @@ bool sleep_reason_get(void)
     return data & BIT_MASK;
 }
 
+/**
+ * @brief 设置睡眠原因
+ * 
+ * @param val 是否为自动睡眠
+ */
 void sleep_reason_set(bool val)
 {
     uint32_t data;
