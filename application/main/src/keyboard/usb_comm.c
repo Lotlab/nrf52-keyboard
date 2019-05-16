@@ -324,11 +324,13 @@ void usb_comm_sleep_prepare()
 
 void usb_comm_switch()
 {
-    is_disable = !is_disable;
-    if (is_disable) {
-        ble_user_event(USER_USB_CHARGE);
-    } else {
-        ble_user_event(is_connected ? USER_BLE_CONNECTED : USER_USB_CHARGE);
+    if (is_connected && has_host) {
+        is_disable = !is_disable;
+        if (is_disable) {
+            ble_user_event(USER_USB_CHARGE);
+        } else {
+            ble_user_event(USER_USB_CONNECTED);
+        }
     }
 }
 
