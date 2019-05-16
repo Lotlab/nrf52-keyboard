@@ -25,10 +25,23 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 
 ## 编译
 
+首先下载 [nRF5 SDK 15.3](https://www.nordicsemi.com/Software-and-Tools/Software/nRF5-SDK/Download#infotabs), 解压并放入SDK文件夹。
+然后安装 gcc-arm-none-eabi-7-2018-q2-update，将template目录中对应平台的配置文件模板复制一份，重命名为`Makefile.posix`或`Makefile.windows`，修改里面工具路径为你的安装目录。
+
+### Bootloader 的编译
+参见[这篇文章](https://devzone.nordicsemi.com/b/blog/posts/getting-started-with-nordics-secure-dfu-bootloader)，先编译uECC库，然后再编译Bootloader
+
 ```
-cd application/main/project/armgcc
-make flash
+cd application/bootloader/project/armgcc
+make
 ```
+### 主程序的编译
+```
+cd application/main/project
+make
+```
+### USB控制器的编译
+安装CodeBlocks与GCC，打开工程编译即可。
 
 ## 目录结构
 - application/ 固件相关
@@ -52,8 +65,9 @@ make flash
 - [x] Keymap 存储
 - [x] 关机原因存储并快速恢复
 - [ ] 多设备切换（？）
-- [x] 自定义各种灯光（？）
+- [x] 自定义各种灯光
 - [x] UART 通讯
+- [ ] USB 主控程序使用 Make 编译
 
 ## 默认指示灯颜色表
 
