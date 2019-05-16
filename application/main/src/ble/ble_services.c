@@ -192,10 +192,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
     {
         case PM_EVT_CONN_SEC_SUCCEEDED:
             m_peer_id = p_evt->peer_id;
-            break;
-        
-        case PM_EVT_CONN_SEC_PARAMS_REQ:
-            // todo: what's this?
+            event_handler(USER_BLE_CONNECTED);
             break;
 
         case PM_EVT_PEERS_DELETE_SUCCEEDED:
@@ -532,8 +529,6 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
-
-            event_handler(USER_BLE_CONNECTED);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
@@ -691,6 +686,7 @@ void ble_passkey_send(uint8_t const * p_key) {
 void ble_services_init(evt_handler handler) {
     event_handler = handler;
 
+    peer_manager_init();
     gap_params_init();
     gatt_init();
     whitelist_load();
@@ -700,5 +696,4 @@ void ble_services_init(evt_handler handler) {
     dis_init();
     dfu_init();
     conn_params_init();
-    peer_manager_init();
 }
