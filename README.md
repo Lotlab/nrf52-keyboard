@@ -6,7 +6,9 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 
 ## 概述
 
-这是一个基于nrf52810蓝牙键盘的固件，使用了nRF SDK 10.0作为底层硬件驱动，并使用TMK键盘库作为键盘功能的上部实现。
+这是一个基于nrf52810蓝牙键盘的固件，使用了nRF SDK 15.3作为底层硬件驱动，并使用TMK键盘库作为键盘功能的上部实现。
+
+此固件中的USB部分和KeymapDownloader部分重用了 [nrf51822-keyboard](https://github.com/Lotlab/nrf51822-keyboard) 的代码。
 
 ## 软件
 
@@ -17,7 +19,7 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 - sdk：nRF SDK
 - tmk_core：TMK源码
 - usb：双模的USB部分
-- [KeymapDownloader](https://github.com/Lotlab/nrf51822-keyboard/tree/master/KeymapDownloader)：配列下载器
+- KeymapDownloader：配列下载器
 
 ## 硬件
 
@@ -79,3 +81,61 @@ make
 - <span style="color: #FFFF00">黄色</span>：输入配对密码
 - <span style="color: #FF0080">紫红色</span>：配对密码输入完毕
 - <span style="color: #FF00FF">紫色</span>：休眠
+
+## UART 通讯协议
+
+### 基础格式
+
+CMD DAT ... DAT SUM
+
+- CMD：命令
+- DAT：数据
+- SUM：前面所有数据和命令的校验和
+
+其中，根据CMD的不同，DAT的长度可能有所变化。若DAT长度为0，则不需要SUM。
+
+主机(CH554)会定期向从机(nRF52810)发送状态数据包，请求从机上传。
+
+### 主机命令
+
+#### Ping 包与当前状态
+```
+0b0001 xxxx
+       ||||
+       |||+--- 上次接收数据是否成功（成功置为1）
+       ||+---- 充电状态（充满置为1）
+       |+----- 主机状态（与主机连接成功置为1）
+       +------ 预留
+```
+
+无DAT
+
+#### LED 下传
+```
+0b010x xxxx
+     + ++++--- 5Bit的LED状态
+```
+
+无DAT
+
+#### Keymap 下传
+```
+0b1xxx xxxx 
+   ||| ||||
+   +++-++++--- 当前Keymap分包的ID，从0开始
+```
+
+DAT长度为60，存储着Keymap数据
+
+### 从机命令
+
+#### 按键数据包上传
+```
+0b10aa bbbb 
+    || ++++--- 数据包的数据部分长度
+    ++-------- 数据包类型: 0: keyboard, 1: consumer, 2: system
+```
+DAT长度由上面定义
+
+#### Keymap 响应
+同 [Ping 包与当前状态](#Ping 包与当前状态)
