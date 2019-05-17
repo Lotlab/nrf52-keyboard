@@ -243,6 +243,15 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
                 }
             }
             break;
+        
+        case PM_EVT_CONN_SEC_CONFIG_REQ:
+        {
+            // allow pairing request from an already bonded peer.
+            pm_conn_sec_config_t conn_sec_config = {.allow_repairing = true};
+            pm_conn_sec_config_reply(p_evt->conn_handle, &conn_sec_config);
+
+            break;
+        }
 
         default:
             break;
