@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 void hook_bootmagic() {
     if (!bootmagic_scan_key(BOOTMAGIC_KEY_BOOT)) {
         bool sleep_flag = true;
-#ifdef DEBUG
+#ifdef DEBUG_SKIP_PWRON_CHECK
         // debug状态下自动开机
         sleep_flag = false;
 #endif

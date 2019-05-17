@@ -32,6 +32,15 @@
         },
         {
             "type": "shell",
+            "label": "package main",
+            "command": "cd application/main/project/ && make package -j",
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "type": "shell",
             "label": "build bootloader",
             "command": "cd application/bootloader/project/armgcc/ && make -j",
             "group": "build",

@@ -42,7 +42,11 @@ EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
 # NKRO_ENABLE = yes	# USB Nkey Rollover
 USB_6KRO_ENABLE = yes # USB 6Key Rollover
 
-# OPT_DEFS += -DDEBUG
+# OPT_DEFS += -DDEBUG_SKIP_PWRON_CHECK
+
+# Version string
+VERSION := $(shell (git describe --always --dirty || echo 'unknown') 2> /dev/null)
+OPT_DEFS += -DVERSION=$(VERSION)
 
 include tmk.mk
 include app.mk

@@ -172,7 +172,6 @@ OPT += $(OPT_DEFS)
 
 # C flags common to all targets
 CFLAGS += $(OPT)
-CFLAGS += -DDEVELOP_IN_NRF52832
 CFLAGS += -DFLOAT_ABI_SOFT
 CFLAGS += -DNRF52810_XXAA
 CFLAGS += -DNRF52_PAN_74
@@ -202,7 +201,6 @@ ASMFLAGS += -g3
 ASMFLAGS += -mcpu=cortex-m4
 ASMFLAGS += -mthumb -mabi=aapcs
 ASMFLAGS += -mfloat-abi=soft
-ASMFLAGS += -DDEVELOP_IN_NRF52832
 ASMFLAGS += -DFLOAT_ABI_SOFT
 ASMFLAGS += -DNRF52810_XXAA
 ASMFLAGS += -DNRF52_PAN_74
@@ -266,6 +264,11 @@ pyocd_flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52810_xxaa.hex
 	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52810_xxaa.hex
 	pyocd cmd -t nrf52 -c reset
+
+package: default
+	@echo Packing: $(OUTPUT_DIRECTORY)/nrf52810_xxaa.hex
+	nrfutil pkg generate --hw-version 52 --application-version 1 --application $(OUTPUT_DIRECTORY)/nrf52810_xxaa.hex \
+	--sd-req 0xb8 --key-file private.key $(OUTPUT_DIRECTORY)/nrf52810_xxaa_$(VERSION).zip
 
 # Flash softdevice
 flash_softdevice:

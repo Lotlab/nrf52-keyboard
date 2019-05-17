@@ -78,9 +78,5 @@ ifeq (yes,$(strip $(KEYMAP_SECTION_ENABLE)))
     OPT_DEFS += -DKEYMAP_SECTION_ENABLE
 endif
 
-# Version string
-VERSION := $(shell (git describe --always --dirty || echo 'unknown') 2> /dev/null)
-OPT_DEFS += -DVERSION=$(VERSION)
-
 # Search Path
 VPATH += $(TMK_DIR)/common
