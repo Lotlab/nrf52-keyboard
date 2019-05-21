@@ -12,8 +12,7 @@ SRC_FILES +=	$(COMMON_DIR)/host.c \
 	$(COMMON_DIR)/util.c \
 	$(COMMON_DIR)/hook.c \
 
-INC_FOLDERS += $(COMMON_DIR) \
-	$(COMMON_DIR)/avr
+INC_FOLDERS += $(COMMON_DIR)
 
 # Option modules
 ifeq (yes,$(strip $(UNIMAP_ENABLE)))
