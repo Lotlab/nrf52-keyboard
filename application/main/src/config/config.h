@@ -75,20 +75,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 启用keymap存储
 #define KEYMAP_STORAGE
 
-/*
- * Feature disable options
- *  These options are also useful to firmware size reduction.
- */
-
-/* disable debug print */
-//#define NO_DEBUG
-
-/* disable print */
-//#define NO_PRINT
-
-#ifndef xprintf
-    // #define xprintf printf
-#endif
+// 直接开机而跳过开机条件检测，用于调试
+// #define DEBUG_SKIP_PWRON_CHECK
 
 /* disable action features */
 //#define NO_ACTION_LAYER

@@ -2,9 +2,6 @@ TMK_CORE_DIR = ../../../tmk/tmk_core
 PROJ_DIR := ../src
 
 # project specific files
-SRC =	matrix.c \
-	led.c
-
 SRC_FILES += $(PROJ_DIR)/keyboard/keyboard_matrix.c \
     $(PROJ_DIR)/keyboard/host_driver.c \
     $(PROJ_DIR)/keyboard/eeconfig.c \
@@ -21,12 +18,6 @@ SRC_FILES += $(PROJ_DIR)/keyboard/keyboard_matrix.c \
     $(PROJ_DIR)/keyboard/keyboard_evt.c \
     $(PROJ_DIR)/keyboard/usb_comm.c \
 
-ifdef KEYMAP
-    SRC := keymap_$(KEYMAP).c $(SRC)
-else
-    SRC := keymap_poker.c $(SRC)
-endif
-
 CONFIG_H = $(PROJ_DIR)/config/config.h
 
 INC_FOLDERS += $(PROJ_DIR)/keyboard 
@@ -35,14 +26,9 @@ INC_FOLDERS += $(PROJ_DIR)/keyboard
 #   comment out to disable the options.
 #
 BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration(+1000)
-# MOUSEKEY_ENABLE = yes	# Mouse keys(+4700)
 EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
-# CONSOLE_ENABLE = yes	# Console for debug(+400)
-# COMMAND_ENABLE = yes    # Commands for debug and configuration
-# NKRO_ENABLE = yes	# USB Nkey Rollover
+# NKRO_ENABLE = yes	# USB Nkey Rollover [Not impliment yet]
 USB_6KRO_ENABLE = yes # USB 6Key Rollover
-
-# OPT_DEFS += -DDEBUG_SKIP_PWRON_CHECK
 
 # Version string
 VERSION := $(shell (git describe --always --dirty || echo 'unknown') 2> /dev/null)

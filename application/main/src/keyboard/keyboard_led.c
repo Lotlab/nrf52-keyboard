@@ -72,8 +72,9 @@ static void keyboard_led_rgb_set_internal(uint32_t color)
     g = gamma[g];
     b = gamma[b];
 
-    low_power_pwm_duty_set(&led_r, r * 2);
-    low_power_pwm_duty_set(&led_g, g); // 亮度校正，红色亮度是绿色和蓝色的一半
+    // 红色灯光的亮度在同样电流下是其他两个的一半，故需要校正颜色
+    low_power_pwm_duty_set(&led_r, r * 2); 
+    low_power_pwm_duty_set(&led_g, g); 
     low_power_pwm_duty_set(&led_b, b);
 }
 
@@ -180,7 +181,7 @@ static void keyboard_led_set_internal(uint8_t led_val)
 static uint8_t saved_led_val;
 
 /**
- * @brief 设置LED灯的值步并启用自动熄灭
+ * @brief 设置LED灯的值并启用自动熄灭
  * 
  * @param led_val 
  */
