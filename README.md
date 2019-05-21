@@ -43,7 +43,12 @@ cd application/main/project
 make
 ```
 ### USB控制器的编译
-安装CodeBlocks与GCC，打开工程编译即可。
+安装CodeBlocks与SDCC，打开工程编译即可。
+或使用make编译，输出文件在`_build/main.hex`。
+```
+cd usb
+make
+```
 
 ## 目录结构
 - application/ 固件相关
@@ -138,4 +143,4 @@ DAT长度为60，存储着Keymap数据
 DAT长度由上面定义
 
 #### Keymap 响应
-同 [Ping 包与当前状态](#Ping 包与当前状态)
+同 Ping 包与当前状态的格式。0x11为成功，0x10为失败。
