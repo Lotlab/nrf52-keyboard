@@ -17,12 +17,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "uart.h"
 #include "CH554_SDCC.h"
-#include "usb_comm.h"
 #include "system.h"
+#include "usb_comm.h"
 #include <stdbool.h>
 
-#define CHARGING !UCC1
-#define STANDBY !UCC2
+#define PIN_CHARGING !UCC1
+#define PIN_STANDBY !UCC2
+
+#ifdef PIN_STANDBY
+    #define IS_CHARGING (PIN_CHARGING && !PIN_STANDBY)
+#else
+    #define IS_CHARGING (PIN_CHARGING)
+#endif
 
 uart_state uart_rx_state;
 static uint8_t len, pos;
@@ -39,7 +45,8 @@ static bool uart_check_flag, uart_arrive_flag, last_success;
 static void uart_tx(uint8_t c)
 {
     SBUF1 = c;
-    while (U1TI == 0);
+    while (U1TI == 0)
+        ;
     U1TI = 0;
 }
 
@@ -50,7 +57,8 @@ static void uart_tx(uint8_t c)
  */
 static uint8_t uart_rx()
 {
-    while (U1RI == 0);
+    while (U1RI == 0)
+        ;
     U1RI = 0;
     return SBUF1;
 }
@@ -75,9 +83,9 @@ static uint8_t checksum()
  */
 void uart_init()
 {
-    U1SM0 = 0;  // 8Bit
+    U1SM0 = 0; // 8Bit
     U1SMOD = 1; // fast mode
-    U1REN = 1;  //串口0接收使能
+    U1REN = 1; //串口0接收使能
     SBAUD1 = 256 - FREQ_SYS / 16 / 57600;
     IE_UART1 = 1; //启用串口中断
 }
@@ -111,13 +119,14 @@ static void uart_data_parser(void)
  * @brief 发送当前主机的状态
  * 
  */
-static void uart_send_status() {
+static void uart_send_status()
+{
     uint8_t data = 0x10;
-    if (!CHARGING && STANDBY)
+    if (!IS_CHARGING) // 是否充满
         data |= 0x02;
-    if (usb_evt)
+    if (usb_evt) // 是否连接主机
         data |= 0x04;
-    if (last_success)
+    if (last_success) // 上次接收状态
         data |= 0x01;
     uart_tx(data);
 }
@@ -131,25 +140,21 @@ static uint8_t send_len = 0;
  */
 void uart_check()
 {
-    if (uart_check_flag)
-    {
-        if (uart_rx_state == STATE_DATA)
-        {
+    if (uart_check_flag) {
+        if (uart_rx_state == STATE_DATA) {
             // 接收超时强制退出
             uart_rx_state = STATE_IDLE;
-        }
-        else if ((uart_rx_state == STATE_IDLE) && uart_arrive_flag)
-        {
+        } else if ((uart_rx_state == STATE_IDLE) && uart_arrive_flag) {
             uart_arrive_flag = false;
             uart_data_parser();
         }
 
         if (uart_rx_state == STATE_IDLE) {
             if (send_len > 0) {
-                for (uint8_t i = 0; i<send_len; i++) {
+                for (uint8_t i = 0; i < send_len; i++) {
                     uart_tx(send_buff[i]);
                 }
-                send_len=0;
+                send_len = 0;
             } else {
                 // 发送定期Query状态包
                 if (last_success) {
@@ -178,24 +183,21 @@ void uart_recv(void)
      */
     uint8_t data = uart_rx();
 
-    switch (uart_rx_state)
-    {
+    switch (uart_rx_state) {
     case STATE_IDLE:
         if (data >= 0x80) {
             len = (data & 0x0F) + 2; // 实际大小加上1byte 的头和1byte的 Checksum
             pos = 0;
             recv_buff[pos++] = data;
             uart_rx_state = STATE_DATA;
-        }
-        else if (data >= 0x10) {
+        } else if (data >= 0x10) {
             ResponseConfigurePacket(&data, 1);
         }
         break;
 
     case STATE_DATA:
         recv_buff[pos++] = data;
-        if (pos >= len)
-        {
+        if (pos >= len) {
             uart_rx_state = STATE_IDLE;
             uart_arrive_flag = true;
         }
@@ -209,7 +211,8 @@ void uart_recv(void)
  * 
  * @param val 
  */
-void uart_send_led(uint8_t val) {
+void uart_send_led(uint8_t val)
+{
     send_buff[0] = 0x40 + (val & 0x3F);
     send_len = 1;
 }
@@ -220,9 +223,10 @@ void uart_send_led(uint8_t val) {
  * @param data 
  * @param len 
  */
-void uart_send_keymap(uint8_t* data, uint8_t len) {
+void uart_send_keymap(uint8_t* data, uint8_t len)
+{
     data[0] = (data[0] & 0x7F) + 0x80;
-    for (uint8_t i = 0; i<len; i++)
+    for (uint8_t i = 0; i < len; i++)
         send_buff[i] = data[i];
 
     send_buff[len - 1] += 0x80; // fix checksum
