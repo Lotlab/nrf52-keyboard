@@ -21,6 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nrf.h"
 #include "nrf_gpio.h"
 
+static void off_timer_start();
+
 #ifdef LED_RGB
 #include "low_power_pwm.h"
 
@@ -28,8 +30,6 @@ static low_power_pwm_t led_r;
 static low_power_pwm_t led_g;
 static low_power_pwm_t led_b;
 static uint32_t saved_color;
-
-static void off_timer_start();
 
 static void pwm_handler(void* p_context)
 {
