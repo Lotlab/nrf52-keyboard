@@ -40,13 +40,19 @@ static void led_status_change() {
     switch (status)
     {
     case kbd_ble:
+#ifdef LED_RGB
         keyboard_led_rgb_set(ble_connected ? 0x66ccff : 0xFFFFFF);
+#endif
         break;
     case kbd_charge:
+#ifdef LED_RGB
         keyboard_led_rgb_set(charging_full ? 0x00FF00: 0xFF8000);
+#endif
         break;
     case kbd_usb:
+#ifdef LED_RGB
         keyboard_led_rgb_set(0x0099FF);
+#endif
     default:
         break;
     }
@@ -116,18 +122,27 @@ void user_event_handler(enum user_ble_event arg)
         break;
     case USER_BLE_CONNECTED:
         ble_connected = true;
+#ifdef LED_RGB
         keyboard_led_rgb_set(0x66ccff);
         break;
+#endif
     case USER_BLE_PASSKEY_REQUIRE:
+#ifdef LED_RGB
         keyboard_led_rgb_set(0xFFFF00);
         break;
+#endif
     case USER_BLE_PASSKEY_SEND:
+#ifdef LED_RGB
         keyboard_led_rgb_set(0xFF0080);
         break;
+#endif
     case USER_EVT_SLEEP_AUTO:
     case USER_EVT_SLEEP_MANUAL:
+#ifdef LED_RGB
         keyboard_led_rgb_direct(0b00000101);
-        nrf_delay_ms(200);
+		nrf_delay_ms(200);
+#endif
+        break;
     default:
         break;
     }
