@@ -168,13 +168,13 @@ void keyboard_led_rgb_direct(uint8_t bit)
 static void keyboard_led_set_internal(uint8_t led_val)
 {
 #ifdef LED_NUM
-    LED_WRITE(LED_NUM, led_val && (1 << 0));
+    LED_WRITE(LED_NUM, led_val & (1 << 0));
 #endif
 #ifdef LED_CAPS
-    LED_WRITE(LED_CAPS, led_val && (1 << 1));
+    LED_WRITE(LED_CAPS, led_val & (1 << 1));
 #endif
 #ifdef LED_SCLK
-    LED_WRITE(LED_SCLK, led_val && (1 << 2));
+    LED_WRITE(LED_SCLK, led_val & (1 << 2));
 #endif
 }
 
