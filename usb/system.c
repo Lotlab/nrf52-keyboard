@@ -15,7 +15,7 @@ void CfgSysClock()
 {
     SAFE_MOD = 0x55; //Enter unsafe mode
     SAFE_MOD = 0xAA;
-    CLOCK_CFG = CLOCK_CFG & ~MASK_SYS_CK_SEL | 0x04; // 12MHz
+    CLOCK_CFG = CLOCK_CFG & ~MASK_SYS_CK_SEL | 0x06; // 24MHz
     SAFE_MOD = 0x00;
 }
 

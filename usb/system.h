@@ -1,7 +1,7 @@
 #ifndef __SYSTEM_H__
 #define __SYSTEM_H__
 
-#define FREQ_SYS 12000000
+#define FREQ_SYS 24000000
 
 void InitUART();
 void CfgSysClock();

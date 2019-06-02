@@ -32,7 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 uint8_t const DeviceDescriptor[SIZEOF_DEVICE_DESCRIPTOR] = {
     SIZEOF_DEVICE_DESCRIPTOR,               // Length of this descriptor
     0x01,                                   // Type code of this descriptor
-    0x00, 0x02,                             // Release of USB spec
+    0x10, 0x01,                             // Release of USB spec
     0x00,                                   // Device's base class code
     0x00,                                   // Device's sub class code
     0x00,                                   // Device's protocol type code
