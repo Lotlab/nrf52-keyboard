@@ -33,6 +33,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #ifdef HAS_USB
 
+#define MAX_ITEM_SIZE 10
+#define QUEUE_SIZE 5
+
 static uint8_t recv_buf[62];
 static uint8_t recv_index;
 
@@ -40,44 +43,12 @@ static bool has_host;
 static bool is_full, is_connected, is_checked, is_disable;
 
 struct queue_item {
-    uint8_t* data;
+    uint8_t data[MAX_ITEM_SIZE];
     uint8_t len;
-    struct queue_item* next;
 };
 
-static struct queue_item* queue = NULL;
-
-/**
- * @brief 寻找队列末尾
- * 
- * @param item 
- * @return struct queue_item* 
- */
-static struct queue_item* queue_end(struct queue_item* item)
-{
-    if (item->next == NULL)
-        return item;
-    return queue_end(item->next);
-}
-
-/**
- * @brief 入队
- * 
- * @param data 
- */
-static void queue_push(uint8_t* data, uint8_t len)
-{
-    struct queue_item* item = malloc(sizeof(struct queue_item));
-    item->data = data;
-    item->len = len;
-    item->next = NULL;
-
-    if (queue == NULL)
-        queue = item;
-    else {
-        queue_end(queue)->next = item;
-    }
-}
+static struct queue_item queue[QUEUE_SIZE];
+static int queue_index = 0;
 
 /**
  * @brief 出队
@@ -85,12 +56,8 @@ static void queue_push(uint8_t* data, uint8_t len)
  */
 static void queue_pop()
 {
-    if (queue != NULL) {
-        struct queue_item* item = queue;
-        queue = item->next;
-        free(item->data);
-        free(item);
-    }
+    if (queue_index > 0)
+        queue_index--;
 }
 
 /**
@@ -99,9 +66,7 @@ static void queue_pop()
  */
 static void queue_clear()
 {
-    while (queue != NULL) {
-        queue_pop();
-    }
+    queue_index = 0;
 }
 
 /**
@@ -190,8 +155,8 @@ static void uart_on_recv()
                     queue_pop();
                 }
                 // 尝试发送下一个
-                if (queue != NULL) {
-                    uart_send(queue->data, queue->len);
+                if (queue_index > 0) {
+                    uart_send(queue[queue_index - 1].data, queue[queue_index - 1].len);
                 }
             }
         } else {
@@ -268,24 +233,6 @@ static void uart_init_hardware()
     ble_user_event(USER_BAT_CHARGING);
 }
 
-/**
- * @brief 封装键盘按键数据包
- * 
- * @param index 数据包类型
- * @param len 长度
- * @param pattern 数据
- * @return uint8_t* 
- */
-static uint8_t* pack_packet(uint8_t index, uint8_t len, uint8_t* pattern)
-{
-    uint8_t* data = malloc(len + 2);
-    data[0] = 0x80 + ((index) << 4) + len;
-    memcpy(&data[1], pattern, len);
-
-    data[len + 1] = checksum(data, len + 1);
-    return data;
-}
-
 static void uart_task(void* context)
 {
     UNUSED_PARAMETER(context);
@@ -324,9 +271,16 @@ bool usb_working(void)
  */
 void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 {
-    uint8_t* data = pack_packet(index, len, pattern);
-    // 入队列，等待主机queue.
-    queue_push(data, len + 2);
+    if (len > 8)
+        return;
+    // 入队
+    if (queue_index < QUEUE_SIZE) {
+        uint8_t* data = queue[queue_index].data;
+        queue[queue_index].len = len + 2;
+        data[0] = 0x80 + ((index) << 4) + len;
+        memcpy(&data[1], pattern, len);
+        data[len + 1] = checksum(data, len + 1);
+    }
 }
 
 APP_TIMER_DEF(uart_check_timer);
