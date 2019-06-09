@@ -98,17 +98,18 @@ static void uart_ack(bool success)
 /**
  * @brief 设置状态
  * 
- * @param host 
- * @param charge 
+ * @param host 是否连接到主机
+ * @param charge_full 电量是否充满
+ * @param force 强制更新状态
  */
-static void set_state(bool host, bool charge)
+static void set_state(bool host, bool charge_full, bool force)
 {
-    if (host != has_host) {
+    if (host != has_host || force) {
         has_host = host;
         ble_user_event(host ? USER_USB_CONNECTED : USER_USB_CHARGE);
     }
-    if (charge != is_full) {
-        is_full = charge;
+    if (charge_full != is_full || force) {
+        is_full = charge_full;
         ble_user_event(is_full ? USER_BAT_FULL : USER_BAT_CHARGING);
     }
 }
@@ -148,7 +149,7 @@ static void uart_on_recv()
                 bool usb_status = buff & 0x04;
 
                 // 设置当前状态
-                set_state(usb_status, charging_status);
+                set_state(usb_status, charging_status, false);
 
                 // 成功接收，出队。
                 if (success) {
@@ -229,8 +230,7 @@ static void uart_init_hardware()
     APP_ERROR_CHECK(err_code);
 
     is_connected = true;
-    ble_user_event(USER_USB_CHARGE);
-    ble_user_event(USER_BAT_CHARGING);
+    set_state(false, false, true); // 重置为默认状态
 }
 
 static void uart_task(void* context)
@@ -280,6 +280,7 @@ void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
         data[0] = 0x80 + ((index) << 4) + len;
         memcpy(&data[1], pattern, len);
         data[len + 1] = checksum(data, len + 1);
+        queue_index++;
     }
 }
 
