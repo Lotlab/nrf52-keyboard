@@ -13,9 +13,13 @@ LIBS = $(OUTPUT_DIR)/system.rel \
 
 OUTPUT_IHX := $(OUTPUT_DIR)/main.ihx
 OUTPUT_HEX := $(OUTPUT_DIR)/main.hex
+OUTPUT_BIN := $(OUTPUT_DIR)/main.bin
 
 $(OUTPUT_HEX): $(OUTPUT_IHX)
 	packihx $(OUTPUT_IHX) > $(OUTPUT_HEX)
+
+$(OUTPUT_BIN): $(OUTPUT_IHX)
+	makebin -p $(OUTPUT_IHX) $(OUTPUT_BIN)
 
 $(OUTPUT_IHX): main.c $(LIBS)
 	mkdir -p $(OUTPUT_DIR)
@@ -43,3 +47,6 @@ $(OUTPUT_DIR)/interrupt.rel: interrupt.c
 .PHONY:clean
 clean:
 	rm -r $(OUTPUT_DIR)
+
+flash: $(OUTPUT_BIN)
+	wchisptool -f $(OUTPUT_BIN)
