@@ -15,17 +15,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include "CH554_SDCC.h"
+#include "app_timer.h"
 #include "compiler.h"
-#include "system.h"
 #include "endpoints.h"
 #include "interrupt.h"
-#include "usb_comm.h"
+#include "system.h"
 #include "uart.h"
-#include "app_timer.h"
+#include "usb_comm.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 bool usb_sleep = false;
 
@@ -64,8 +64,7 @@ static void DeviceInterrupt(void) __interrupt INT_NO_USB __using 1 //USB中断�
  */
 static void UsbOnKeySend()
 {
-    if (usb_sleep)
-    {
+    if (usb_sleep) {
         usb_sleep = false;
         CH554USBDevWakeup();
     }
@@ -77,7 +76,7 @@ static void UsbOnKeySend()
  * @param packet 数据包
  * @param len 长度。必须是8
  */
-void KeyboardGenericUpload(uint8_t *packet, uint8_t len)
+void KeyboardGenericUpload(uint8_t* packet, uint8_t len)
 {
     if (len != 8)
         return;
@@ -94,7 +93,7 @@ void KeyboardGenericUpload(uint8_t *packet, uint8_t len)
  * @param packet 数据包
  * @param len 长度。必须是3，第一个byte为ID
  */
-void KeyboardExtraUpload(uint8_t *packet, uint8_t len)
+void KeyboardExtraUpload(uint8_t* packet, uint8_t len)
 {
     if (len != 3)
         return;
@@ -111,7 +110,7 @@ void KeyboardExtraUpload(uint8_t *packet, uint8_t len)
  * @param packet 数据包
  * @param len 长度
  */
-void ResponseConfigurePacket(uint8_t *packet, uint8_t len)
+void ResponseConfigurePacket(uint8_t* packet, uint8_t len)
 {
     if (len > 64)
         return;
@@ -127,8 +126,7 @@ void ResponseConfigurePacket(uint8_t *packet, uint8_t len)
  */
 static void UARTInterrupt(void) __interrupt INT_NO_UART1
 {
-    if (U1RI)
-    {
+    if (U1RI) {
         uart_recv();
         // U1RI = 0;
     }
@@ -141,8 +139,7 @@ static void UARTInterrupt(void) __interrupt INT_NO_UART1
 void EP3_OUT()
 {
     uint8_t checksum = 0x00;
-    for (int i = 1; i < 62; i++)
-    {
+    for (int i = 1; i < 62; i++) {
         checksum += Ep3Buffer[i];
     }
     Ep3Buffer[62] = checksum;
@@ -166,10 +163,10 @@ void EP1_OUT()
 static void EnableWatchDog()
 {
     SAFE_MOD = 0x55;
-    SAFE_MOD = 0xaa;        //进入安全模式
+    SAFE_MOD = 0xaa; //进入安全模式
     GLOBAL_CFG |= bWDOG_EN; //启动看门狗复位
-    SAFE_MOD = 0x00;        //退出安全模式
-    WDOG_COUNT = 0;         //看门狗赋初值
+    SAFE_MOD = 0x00; //退出安全模式
+    WDOG_COUNT = 0; //看门狗赋初值
 }
 
 /**
@@ -218,7 +215,7 @@ static void main()
     timer_init();
     USBDeviceInit(); //USB设备模式初始化
     EnableWatchDog();
-    EA = 1;         //允许单片机中断
+    EA = 1; //允许单片机中断
     UEP1_T_LEN = 0; //预使用发送长度一定要清空
     UEP2_T_LEN = 0; //预使用发送长度一定要清空
 
@@ -226,8 +223,7 @@ static void main()
     P1_MOD_OC -= (P1_MOD_OC & bMOSI);
     MOSI = false;
 
-    while (1)
-    {
+    while (1) {
         timer_task_exec();
     }
 }

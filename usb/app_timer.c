@@ -27,18 +27,14 @@ uint8_t pos = 0;
  */
 void timer_tick()
 {
-    for (int i = 0; i < pos; i++)
-    {
-        timer_info *timer = &timers[i];
-        if (timer->is_start)
-        {
+    for (int i = 0; i < pos; i++) {
+        timer_info* timer = &timers[i];
+        if (timer->is_start) {
             timer->time_count++;
-            if (timer->time_count >= timer->period)
-            {
+            if (timer->time_count >= timer->period) {
                 timer->time_count = 0;
                 timer->exec_flag = true;
-                if (!timer->repeat)
-                {
+                if (!timer->repeat) {
                     timer->is_start = false;
                 }
             }
@@ -52,11 +48,9 @@ void timer_tick()
  */
 void timer_task_exec()
 {
-    for (int i = 0; i < pos; i++)
-    {
-        timer_info *timer = &timers[i];
-        if (timer->exec_flag)
-        {
+    for (int i = 0; i < pos; i++) {
+        timer_info* timer = &timers[i];
+        if (timer->exec_flag) {
             (*(timer->task))();
             timer->exec_flag = false;
         }
@@ -72,7 +66,7 @@ void timer_task_exec()
  */
 void timer_create(task_t task, bool repeat, uint16_t period)
 {
-    timer_info *timer = &timers[pos++];
+    timer_info* timer = &timers[pos++];
     timer->exec_flag = false;
     timer->is_start = true;
     timer->period = period;

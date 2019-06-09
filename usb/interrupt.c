@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "interrupt.h"
-#include "endpoints.h"
 #include "CH554_SDCC.h"
+#include "endpoints.h"
 // #include <stdio.h>
 
 const __code void (*EndpointPacketOutHandler[5])(void) = {
@@ -25,28 +25,32 @@ const __code void (*EndpointPacketOutHandler[5])(void) = {
     USB_OUT_EP1,
     USB_OUT_EP2,
     USB_OUT_EP3,
-    USB_OUT_EP4};
+    USB_OUT_EP4
+};
 
 const __code void (*EndpointPacketInHandler[5])(void) = {
     USB_IN_EP0,
     USB_IN_EP1,
     USB_IN_EP2,
     USB_IN_EP3,
-    USB_IN_EP4};
+    USB_IN_EP4
+};
 
 const __code void (*EndpointPacketSetupHandler[5])(void) = {
     USB_SETUP_EP0,
     USB_SETUP_EP1,
     USB_SETUP_EP2,
     USB_SETUP_EP3,
-    USB_SETUP_EP4};
+    USB_SETUP_EP4
+};
 
 const __code void (*EndpointPacketSofHandler[5])(void) = {
     USB_SOF_EP0,
     USB_SOF_EP1,
     USB_SOF_EP2,
     USB_SOF_EP3,
-    USB_SOF_EP4};
+    USB_SOF_EP4
+};
 
 /** \brief USB 传输完成中断处理
  */
@@ -56,8 +60,7 @@ static void UsbTransfurEventHandler()
     {
         uint8_t ep = USB_INT_ST & MASK_UIS_ENDP;
 
-        switch (USB_INT_ST & MASK_UIS_TOKEN)
-        {
+        switch (USB_INT_ST & MASK_UIS_TOKEN) {
         case UIS_TOKEN_IN:
             (*EndpointPacketInHandler[ep])();
             break;
@@ -109,8 +112,7 @@ static void UsbBusSuspendEventHandler()
         {
             UsbSuspendEvt();
         }
-    }
-    else //意外的中断，产生中断必然会设置此标志位
+    } else //意外的中断，产生中断必然会设置此标志位
     {
         USB_INT_FG = 0xFF; //清中断标志
     }

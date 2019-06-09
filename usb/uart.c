@@ -25,9 +25,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define PIN_STANDBY !UCC2
 
 #ifdef PIN_STANDBY
-    #define IS_CHARGING (PIN_CHARGING && !PIN_STANDBY)
+#define IS_CHARGING (PIN_CHARGING && !PIN_STANDBY)
 #else
-    #define IS_CHARGING (PIN_CHARGING)
+#define IS_CHARGING (PIN_CHARGING)
 #endif
 
 uart_state uart_rx_state;

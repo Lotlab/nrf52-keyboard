@@ -15,8 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
 #include "usb_descriptor.h"
+#include <stdint.h>
 // #include <stdio.h>
 
 /** \brief 获取文本描述符
@@ -26,11 +26,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * \return uint8_t 文本描述符长度
  *
  */
-static uint8_t getStringDescriptor(uint8_t order, uint8_t **strPtor)
+static uint8_t getStringDescriptor(uint8_t order, uint8_t** strPtor)
 {
     uint8_t header = 0, strlen = 0;
-    do
-    {
+    do {
         header += strlen;
         if (header >= sizeof(StringDescriptor)) // 超过长度就直接返回
         {
@@ -39,7 +38,7 @@ static uint8_t getStringDescriptor(uint8_t order, uint8_t **strPtor)
         strlen = StringDescriptor[header];
     } while (order--);
 
-    *strPtor = (uint8_t *)&StringDescriptor[header];
+    *strPtor = (uint8_t*)&StringDescriptor[header];
     return strlen;
 }
 
@@ -52,19 +51,18 @@ static uint8_t getStringDescriptor(uint8_t order, uint8_t **strPtor)
  * \return uint8_t 是否为最后一个描述符
  *
  */
-uint8_t GetUsbDescriptor(uint8_t type1, uint8_t type2, uint8_t index, uint8_t *len, uint8_t **strPtr)
+uint8_t GetUsbDescriptor(uint8_t type1, uint8_t type2, uint8_t index, uint8_t* len, uint8_t** strPtr)
 {
     // printf_tiny("getDesc:%x, %x\n", type1, type2);
-    switch (type1)
-    {
+    switch (type1) {
     /**< 设备描述符 */
     case 1:
-        *strPtr = (uint8_t *)&DeviceDescriptor[0];
+        *strPtr = (uint8_t*)&DeviceDescriptor[0];
         *len = sizeof(DeviceDescriptor);
         break;
     /**< 配置描述符 */
     case 2:
-        *strPtr = (uint8_t *)&ConfigDescriptor[0];
+        *strPtr = (uint8_t*)&ConfigDescriptor[0];
         *len = sizeof(ConfigDescriptor);
         break;
     /**< 字符串描述符 */
@@ -73,17 +71,14 @@ uint8_t GetUsbDescriptor(uint8_t type1, uint8_t type2, uint8_t index, uint8_t *l
         break;
     /**< HID 报告描述符 */
     case 0x22:
-        if (index < sizeof(ReportDescriptor))
-        {
+        if (index < sizeof(ReportDescriptor)) {
             *strPtr = ReportDescriptor[index].pointer;
             *len = ReportDescriptor[index].length;
 
-            if (index == sizeof(ReportDescriptor) - 1)
-            {
+            if (index == sizeof(ReportDescriptor) - 1) {
                 return 1; // 设备准备就绪
             }
-        }
-        else // 接口超出上限
+        } else // 接口超出上限
         {
             *len = 0xff;
         }

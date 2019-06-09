@@ -1,6 +1,6 @@
+#include "system.h"
 #include "CH554_SDCC.h"
 #include "compiler.h"
-#include "system.h"
 #include <stdio.h>
 
 #define UART0_BUAD 57600
@@ -46,9 +46,9 @@ void InitUART()
     x = FREQ_SYS / UART0_BUAD / 16;
 
     TMOD = TMOD & ~bT1_GATE & ~bT1_CT & ~MASK_T1_MOD | bT1_M1; //0X20，Timer1作为8位自动重载定时器
-    T2MOD = T2MOD | bTMR_CLK | bT1_CLK;                        //Timer1时钟选择
-    TH1 = 0 - x;                                               //12MHz晶振,buad/12为实际需设置波特率
-    TR1 = 1;                                                   //启动定时器1
+    T2MOD = T2MOD | bTMR_CLK | bT1_CLK; //Timer1时钟选择
+    TH1 = 0 - x; //12MHz晶振,buad/12为实际需设置波特率
+    TR1 = 1; //启动定时器1
     TI = 1;
     REN = 1; //串口0接收使能
 }
@@ -62,8 +62,7 @@ void InitUART()
 void DelayMs(uint16_t n) // 以mS为单位延时
 {
     // md为何会用这么dirty的方法做延时啊
-    while (n--)
-    {
+    while (n--) {
         while ((TKEY_CTRL & bTKC_IF) == 0)
             ;
         while (TKEY_CTRL & bTKC_IF)
@@ -71,10 +70,9 @@ void DelayMs(uint16_t n) // 以mS为单位延时
     }
 }
 
-void PrintHex(uint8_t *data, uint8_t len)
+void PrintHex(uint8_t* data, uint8_t len)
 {
-    for (int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
         printf_tiny("%x ", data[i]);
     }
 }
