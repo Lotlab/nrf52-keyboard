@@ -285,7 +285,7 @@ void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 }
 
 APP_TIMER_DEF(uart_check_timer);
-#define UART_CHECK_INTERVAL APP_TIMER_TICKS(1500)
+#define UART_CHECK_INTERVAL APP_TIMER_TICKS(500)
 
 /**
  * @brief 初始化USB通信
