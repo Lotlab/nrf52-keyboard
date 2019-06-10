@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #ifndef __USB_DESCRIPTOR__
 #define __USB_DESCRIPTOR__
+#include <stdint.h>
 
 #define USB_VID               0x3D41    // Vendor ID (VID)
 #define USB_PID               0x1919        // Product ID (PID)
