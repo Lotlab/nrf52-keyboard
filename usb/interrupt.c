@@ -56,28 +56,26 @@ const __code void (*EndpointPacketSofHandler[5])(void) = {
  */
 static void UsbTransfurEventHandler()
 {
-    if (UIF_TRANSFER) //USB传输完成标志
-    {
-        uint8_t ep = USB_INT_ST & MASK_UIS_ENDP;
 
-        switch (USB_INT_ST & MASK_UIS_TOKEN) {
-        case UIS_TOKEN_IN:
-            (*EndpointPacketInHandler[ep])();
-            break;
-        case UIS_TOKEN_OUT:
-            (*EndpointPacketOutHandler[ep])();
-            break;
-        case UIS_TOKEN_SETUP:
-            (*EndpointPacketSetupHandler[ep])();
-            break;
-        case UIS_TOKEN_SOF:
-            (*EndpointPacketSofHandler[ep])();
-            break;
-        default:
-            break;
-        }
-        UIF_TRANSFER = 0; //写0清空中断
+    uint8_t ep = USB_INT_ST & MASK_UIS_ENDP;
+
+    switch (USB_INT_ST & MASK_UIS_TOKEN) {
+    case UIS_TOKEN_IN:
+        (*EndpointPacketInHandler[ep])();
+        break;
+    case UIS_TOKEN_OUT:
+        (*EndpointPacketOutHandler[ep])();
+        break;
+    case UIS_TOKEN_SETUP:
+        (*EndpointPacketSetupHandler[ep])();
+        break;
+    case UIS_TOKEN_SOF:
+        (*EndpointPacketSofHandler[ep])();
+        break;
+    default:
+        break;
     }
+    UIF_TRANSFER = 0; //写0清空中断
 }
 
 /** \brief USB 总线复位事件中断处理
@@ -85,17 +83,14 @@ static void UsbTransfurEventHandler()
  */
 static void UsbBusResetEventHandler()
 {
-    if (UIF_BUS_RST) //设备模式USB总线复位中断
-    {
-        UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;
-        UEP1_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;
-        UEP2_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;
-        UEP3_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;
-        USB_DEV_AD = 0x00;
-        UIF_SUSPEND = 0;
-        UIF_TRANSFER = 0;
-        UIF_BUS_RST = 0; //清中断标志
-    }
+    UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;
+    UEP1_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;
+    UEP2_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;
+    UEP3_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;
+    USB_DEV_AD = 0x00;
+    UIF_SUSPEND = 0;
+    UIF_TRANSFER = 0;
+    UIF_BUS_RST = 0; //清中断标志
 }
 
 /** \brief USB 总线挂起或唤醒事件处理
@@ -105,16 +100,10 @@ static void UsbBusResetEventHandler()
  */
 static void UsbBusSuspendEventHandler()
 {
-    if (UIF_SUSPEND) //USB总线挂起/唤醒完成
+    UIF_SUSPEND = 0;
+    if (USB_MIS_ST & bUMS_SUSPEND) //挂起
     {
-        UIF_SUSPEND = 0;
-        if (USB_MIS_ST & bUMS_SUSPEND) //挂起
-        {
-            UsbSuspendEvt();
-        }
-    } else //意外的中断，产生中断必然会设置此标志位
-    {
-        USB_INT_FG = 0xFF; //清中断标志
+        UsbSuspendEvt();
     }
 }
 
@@ -125,7 +114,17 @@ static void UsbBusSuspendEventHandler()
  */
 void UsbIsr()
 {
-    UsbTransfurEventHandler();
-    UsbBusResetEventHandler();
-    UsbBusSuspendEventHandler();
+    if (UIF_TRANSFER) {
+        //USB传输完成标志
+        UsbTransfurEventHandler();
+    } else if (UIF_BUS_RST) {
+        //设备模式USB总线复位中断
+        UsbBusResetEventHandler();
+    } else if (UIF_SUSPEND) {
+        //USB总线挂起/唤醒完成
+        UsbBusSuspendEventHandler();
+    } else {
+        //意外的中断，产生中断必然会设置此标志位
+        USB_INT_FG = 0xFF; //清中断标志
+    }
 }
