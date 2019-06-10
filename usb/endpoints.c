@@ -52,7 +52,8 @@ uint8_t __xdata __at(0x54) Ep2Buffer[2];
  */
 uint8_t __xdata __at(0x58) Ep3Buffer[2]; //端点3 IN缓冲区,必须是偶地址
 
-static uint8_t SetupReq, SetupLen, Ready, Count, UsbConfig;
+bool usb_ready = false;
+static uint8_t SetupReq, SetupLen, Count, UsbConfig;
 static uint8_t* pDescr;
 static uint8_t len = 0;
 
@@ -136,7 +137,7 @@ void EP0_SETUP()
             case USB_SET_CONFIGURATION:
                 UsbConfig = UsbSetupBuf->wValueL;
                 if (UsbConfig) // USB枚举完毕
-                    Ready = 1;
+                    usb_ready = true;
                 break;
 
             case USB_GET_INTERFACE:

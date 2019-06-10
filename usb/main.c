@@ -55,7 +55,6 @@ static void CH554USBDevWakeup()
 static void DeviceInterrupt(void) __interrupt INT_NO_USB __using 1 //USB中断服务程序,使用寄存器组1
 {
     UsbIsr();
-    usb_evt = true;
 }
 
 /**

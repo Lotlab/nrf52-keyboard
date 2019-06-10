@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "CH554_SDCC.h"
 #include "system.h"
 #include "usb_comm.h"
+#include "endpoints.h"
 #include <stdbool.h>
 
 #define PIN_CHARGING !UCC1
@@ -33,7 +34,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 uart_state uart_rx_state;
 static uint8_t len, pos;
 static uint8_t __xdata recv_buff[64];
-bool usb_evt = false;
 
 static bool uart_check_flag, uart_arrive_flag, last_success;
 
@@ -124,7 +124,7 @@ static void uart_send_status()
     uint8_t data = 0x10;
     if (!IS_CHARGING) // 是否充满
         data |= 0x02;
-    if (usb_evt) // 是否连接主机
+    if (usb_ready) // 是否连接主机
         data |= 0x04;
     if (last_success) // 上次接收状态
         data |= 0x01;
