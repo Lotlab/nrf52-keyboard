@@ -113,7 +113,7 @@ void EP0_SETUP()
             switch (SetupReq) //请求码
             {
             case USB_GET_DESCRIPTOR:
-                Ready = GetUsbDescriptor(UsbSetupBuf->wValueH, UsbSetupBuf->wValueL, UsbSetupBuf->wIndexL, &len, &pDescr);
+                len = GetUsbDescriptor(UsbSetupBuf->wValueH, UsbSetupBuf->wValueL, UsbSetupBuf->wIndexL, &pDescr);
 
                 if (SetupLen > len)
                     SetupLen = len; //限制总长度
@@ -135,6 +135,8 @@ void EP0_SETUP()
 
             case USB_SET_CONFIGURATION:
                 UsbConfig = UsbSetupBuf->wValueL;
+                if (UsbConfig) // USB枚举完毕
+                    Ready = 1;
                 break;
 
             case USB_GET_INTERFACE:
