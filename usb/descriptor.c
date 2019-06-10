@@ -78,5 +78,4 @@ uint8_t GetUsbDescriptor(uint8_t type1, uint8_t type2, uint8_t index, uint8_t** 
     default:
         return 0xff; //不支持的命令或者出错
     }
-    return 0xff;
 }

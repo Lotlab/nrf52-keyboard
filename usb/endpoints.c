@@ -40,17 +40,17 @@ uint8_t __xdata __at(0x00) Ep0Buffer[THIS_ENDP0_SIZE];
  * 地址0xC8-0xCF为端点1IN缓冲区 (8byte)
  *
  */
-uint8_t __xdata __at(0x0A) Ep1Buffer[MAX_PACKET_SIZE + 8]; //端点1 IN缓冲区,必须是偶地址
+uint8_t __xdata __at(0x0A) Ep1Buffer[MAX_PACKET_SIZE * 2]; //端点1 IN缓冲区,必须是偶地址
 /**
  * @brief 端点2IN缓冲区，用于System包和Consumer包的发送
  *
  */
-uint8_t __xdata __at(0x54) Ep2Buffer[2];
+uint8_t __xdata __at(0x90) Ep2Buffer[MAX_PACKET_SIZE];
 /**
  * @brief 端点3IN&OUT缓冲区，用于传递配置
  *
  */
-uint8_t __xdata __at(0x58) Ep3Buffer[2]; //端点3 IN缓冲区,必须是偶地址
+uint8_t __xdata __at(0xB0) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
 
 bool usb_ready = false;
 static uint8_t SetupReq, SetupLen, Count, UsbConfig;
