@@ -187,9 +187,9 @@ static void TimerInterrupt(void) __interrupt INT_NO_TKEY
  * @brief USB睡眠事件
  *
  */
-void UsbSuspendEvt()
+void UsbSuspendEvt(bool suspend)
 {
-    usb_sleep = true;
+    usb_sleep = suspend;
 }
 
 /**

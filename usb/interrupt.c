@@ -101,10 +101,7 @@ static void UsbBusResetEventHandler()
 static void UsbBusSuspendEventHandler()
 {
     UIF_SUSPEND = 0;
-    if (USB_MIS_ST & bUMS_SUSPEND) //挂起
-    {
-        UsbSuspendEvt();
-    }
+    UsbSuspendEvt(USB_MIS_ST & bUMS_SUSPEND); //挂起
 }
 
 /** \brief USB 中断服务函数
