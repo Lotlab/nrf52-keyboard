@@ -22,14 +22,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ble_config.h"
 #include "ble_bas.h"
 
+#include "../config/keyboard_config.h"
+
 #define __STATIC_INLINE static inline
 #include "nrf_drv_saadc.h"
 #include "nrfx_saadc.h"
 
 #define BATTERY_LEVEL_MEAS_INTERVAL APP_TIMER_TICKS(2000) /**< Battery level measurement interval (ticks). */
 #define SAMPLES_IN_BUFFER 5
-
-#define ADC_PIN NRF_SAADC_INPUT_AIN0
 
 static nrf_saadc_value_t m_buffer_pool[2][SAMPLES_IN_BUFFER];
 
@@ -149,7 +149,7 @@ static void adc_init(void)
 {
     ret_code_t err_code;
 
-    nrf_saadc_channel_config_t channel_config = NRFX_SAADC_DEFAULT_CHANNEL_CONFIG_SE(ADC_PIN);
+    nrf_saadc_channel_config_t channel_config = NRFX_SAADC_DEFAULT_CHANNEL_CONFIG_SE(BATTERY_ADC_PIN);
     channel_config.gain = NRF_SAADC_GAIN1_2;
 
     err_code = nrfx_saadc_init(&config, saadc_callback);
