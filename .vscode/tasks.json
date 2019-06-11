@@ -73,6 +73,23 @@
             "group": "none",
             "isBackground": true,
             "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "build usb",
+            "command": "cd usb && make",
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },{
+            "type": "shell",
+            "label": "flash usb",
+            "command": "cd usb && make flash",
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
         }
     ]
 }

@@ -24,8 +24,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define THIS_ENDP0_SIZE DEFAULT_ENDP0_SIZE
 
-/*键盘数据*/
-static uint8_t __xdata HIDData[8] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 /**
  * @brief 端点0缓冲区。
  *
@@ -55,7 +53,6 @@ uint8_t __xdata __at(0xB0) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区
 bool usb_ready = false;
 static uint8_t SetupReq, SetupLen, Count, UsbConfig;
 static uint8_t* pDescr;
-static uint8_t len = 0;
 
 // 键盘报文类型。0为Boot，1为Report
 static uint8_t keyboard_protocol = 1;
@@ -70,7 +67,6 @@ void nop() {}
 
 void EP0_OUT()
 {
-    len = USB_RX_LEN;
     switch (SetupReq) {
     case USB_GET_DESCRIPTOR:
         UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK; // 准备下一控制传输
@@ -79,6 +75,7 @@ void EP0_OUT()
 }
 void EP0_IN()
 {
+    uint8_t len = 0;
     switch (SetupReq) {
     case USB_GET_DESCRIPTOR:
         len = SetupLen >= THIS_ENDP0_SIZE ? THIS_ENDP0_SIZE : SetupLen; //本次传输长度
@@ -100,7 +97,7 @@ void EP0_IN()
 }
 void EP0_SETUP()
 {
-    len = USB_RX_LEN;
+    uint8_t len = USB_RX_LEN;
     if (len == (sizeof(USB_SETUP_REQ))) {
         SetupLen = UsbSetupBuf->wLengthL;
         if (UsbSetupBuf->wLengthH || SetupLen > 0x7F) {
@@ -108,8 +105,8 @@ void EP0_SETUP()
         }
         len = 0; // 默认为成功并且上传0长度
         SetupReq = UsbSetupBuf->bRequest;
-        switch (UsbSetupBuf->bRequestType & USB_REQ_TYP_MASK) {
-        case USB_REQ_TYP_STANDARD: //标准请求
+        uint8_t type = UsbSetupBuf->bRequestType & USB_REQ_TYP_MASK;
+        if(type == USB_REQ_TYP_STANDARD)  //标准请求
         {
             switch (SetupReq) //请求码
             {
@@ -191,13 +188,16 @@ void EP0_SETUP()
                         // Zero, Interface endpoint
                         switch (((uint16_t)UsbSetupBuf->wIndexH << 8) | UsbSetupBuf->wIndexL) {
                         case 0x83:
-                            UEP3_CTRL = UEP3_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL; /* 设置端点2 IN STALL */
+                            UEP3_CTRL = UEP3_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL; /* 设置端点3 IN STALL */
                             break;
                         case 0x82:
                             UEP2_CTRL = UEP2_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL; /* 设置端点2 IN STALL */
                             break;
                         case 0x81:
                             UEP1_CTRL = UEP1_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL; /* 设置端点1 IN STALL */
+                            break;
+                        case 0x02:
+                            UEP2_CTRL = UEP2_CTRL & (~bUEP_R_TOG) | UEP_R_RES_STALL; /* 设置断点2 OUT STALL */
                             break;
                         default:
                             len = 0xFF; //操作失败
@@ -240,18 +240,11 @@ void EP0_SETUP()
                 len = 0xff; //操作失败
                 break;
             }
-            break;
         }
-        case USB_REQ_TYP_CLASS: //HID类请求
+        else if (type == USB_REQ_TYP_CLASS) //HID类请求
         {
             len = ClassRequestHandler(UsbSetupBuf);
-            break;
-        }
-        case USB_REQ_TYP_VENDOR:
-            break;
-        case USB_REQ_TYP_RESERVED:
-        default:
-            break;
+            if (len != 0xFF) len = 0; // ignore hid request
         }
     } else {
         len = 0xff; //包长度错误
