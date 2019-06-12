@@ -30,11 +30,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../main.h"
 #include "app_timer.h"
 #include "keymap_storage.h"
+#include "queue.h"
 
 #ifdef HAS_USB
 
 #define MAX_ITEM_SIZE 10
-#define QUEUE_SIZE 5
+#define QUEUE_SIZE 10
 
 static uint8_t recv_buf[62];
 static uint8_t recv_index;
@@ -47,27 +48,7 @@ struct queue_item {
     uint8_t len;
 };
 
-static struct queue_item queue[QUEUE_SIZE];
-static int queue_index = 0;
-
-/**
- * @brief 出队
- * 
- */
-static void queue_pop()
-{
-    if (queue_index > 0)
-        queue_index--;
-}
-
-/**
- * @brief 清空队列
- * 
- */
-static void queue_clear()
-{
-    queue_index = 0;
-}
+QUEUE(struct queue_item, queue, QUEUE_SIZE);
 
 /**
  * @brief 计算校验值
@@ -156,8 +137,9 @@ static void uart_on_recv()
                     queue_pop();
                 }
                 // 尝试发送下一个
-                if (queue_index > 0) {
-                    uart_send(queue[queue_index - 1].data, queue[queue_index - 1].len);
+                if (!queue_empty()) {
+                    struct queue_item* next = queue_peek();
+                    uart_send(next->data, next->len);
                 }
             }
         } else {
@@ -273,15 +255,15 @@ void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 {
     if (len > 8)
         return;
+
     // 入队
-    if (queue_index < QUEUE_SIZE) {
-        uint8_t* data = queue[queue_index].data;
-        queue[queue_index].len = len + 2;
-        data[0] = 0x80 + ((index) << 4) + len;
-        memcpy(&data[1], pattern, len);
-        data[len + 1] = checksum(data, len + 1);
-        queue_index++;
-    }
+    struct queue_item item;
+    item.len = len + 2;
+    item.data[0] = 0x80 + ((index) << 4) + len;
+    memcpy(&item.data[1], pattern, len);
+    item.data[len + 1] = checksum(item.data, len + 1);
+
+    queue_push(item);
 }
 
 APP_TIMER_DEF(uart_check_timer);
