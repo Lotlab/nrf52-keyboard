@@ -43,7 +43,12 @@ host_driver_t driver = {
 
 uint8_t keyboard_leds()
 {
-    return keyboard_led_val;
+#ifdef HAS_USB
+    if (usb_working()) 
+        return keyboard_led_val_usb;
+    else
+#endif
+    return keyboard_led_val_ble;
 }
 
 /**

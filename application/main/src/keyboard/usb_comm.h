@@ -46,4 +46,9 @@ void usb_comm_timer_start(void);
  */
 void usb_comm_switch(void);
 
+/**
+ * @brief 当前USB的键盘状态灯
+ */
+extern uint8_t keyboard_led_val_usb;
+
 #endif // __USB_COMM_H__

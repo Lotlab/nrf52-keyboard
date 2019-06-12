@@ -96,7 +96,7 @@ BLE_HIDS_DEF(m_hids, /**< Structure used to identify the HID service. */
     OUTPUT_REPORT_MAX_LEN,
     FEATURE_REPORT_MAX_LEN);
 
-uint8_t keyboard_led_val;
+uint8_t keyboard_led_val_ble;
 
 static void on_hids_evt(ble_hids_t* p_hids, ble_hids_evt_t* p_evt);
 
@@ -458,7 +458,7 @@ static void on_hid_rep_char_write(ble_hids_evt_t* p_evt)
                 m_conn_handle,
                 &report_val);
             APP_ERROR_CHECK(err_code);
-            keyboard_led_val = report_val;
+            keyboard_led_val_ble = report_val;
         }
     }
 }

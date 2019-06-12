@@ -37,6 +37,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MAX_ITEM_SIZE 10
 #define QUEUE_SIZE 10
 
+uint8_t keyboard_led_val_usb;
+
 static uint8_t recv_buf[62];
 static uint8_t recv_index;
 
@@ -123,7 +125,7 @@ static void uart_on_recv()
             if (buff >= 0x80) { // keymap sending
                 recv_index++;
             } else if (buff >= 0x40) { // led
-                keyboard_led_val = buff & 0x1F; // 5bit
+                keyboard_led_val_usb = buff & 0x1F; // 5bit
             } else if (buff >= 0x10) { // status
                 bool success = buff & 0x01;
                 bool charging_status = buff & 0x02;
