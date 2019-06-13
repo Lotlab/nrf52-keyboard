@@ -139,7 +139,7 @@ static void advertising_config_get(ble_adv_modes_config_t * p_config)
 {
     memset(p_config, 0, sizeof(ble_adv_modes_config_t));
 
-    p_config->ble_adv_whitelist_enabled          = true;
+    p_config->ble_adv_whitelist_enabled          = false;
     p_config->ble_adv_directed_high_duty_enabled = true;
     p_config->ble_adv_directed_enabled           = false;
     p_config->ble_adv_directed_interval          = 0;
@@ -243,15 +243,6 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
                 }
             }
             break;
-        
-        case PM_EVT_CONN_SEC_CONFIG_REQ:
-        {
-            // allow pairing request from an already bonded peer.
-            pm_conn_sec_config_t conn_sec_config = {.allow_repairing = true};
-            pm_conn_sec_config_reply(p_evt->conn_handle, &conn_sec_config);
-
-            break;
-        }
 
         default:
             break;
@@ -518,7 +509,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
                                                        irk_cnt);
             APP_ERROR_CHECK(err_code);
         } break; //BLE_ADV_EVT_WHITELIST_REQUEST
-
+        
         case BLE_ADV_EVT_PEER_ADDR_REQUEST:
         {
             pm_peer_data_bonding_t peer_bonding_data;
