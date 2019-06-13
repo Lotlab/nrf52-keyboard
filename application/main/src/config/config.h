@@ -57,12 +57,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KEYBOARD_FAST_SCAN_INTERVAL 10      // 通常模式下，多久扫描一次键盘 (ms)
 #define KEYBOARD_SLOW_SCAN_INTERVAL 100     // 慢速模式下，多久扫描一次键盘 (ms)
 
-/**
- * 在检测到有按键改变后即立刻退出慢速扫描模式，而不是等待完整一轮消抖后再退出。
- * 可能可以缓解慢速扫描模式下第一次按键后响应时间过长的问题。
- **/
-#define SLOW_MODE_EARLY_EXIT
-
 // LED自动熄灭时长(ms)，设为0则不自动熄灭
 #define LED_AUTOOFF_TIME 1000
 

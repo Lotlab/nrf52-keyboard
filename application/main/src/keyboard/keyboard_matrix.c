@@ -142,7 +142,6 @@ uint8_t matrix_scan(void)
         matrix_row_t cols = read_cols();
         if (matrix_debouncing[i] != cols) {
             matrix_debouncing[i] = cols;
-            hook_key_change();
             if (debouncing) {
                 dprint("bounce!: ");
                 debug_hex(debouncing);

@@ -109,15 +109,6 @@ void hook_matrix_change(keyevent_t event)
 {
     keyboard_sleep_counter_reset();
 }
-/**
- * @brief 键盘按键按下的Hook
- */
-void hook_key_change()
-{
-#ifdef SLOW_MODE_EARLY_EXIT
-    keyboard_sleep_counter_reset();
-#endif
-}
 
 /**
  * @brief 初始化键盘计时器
