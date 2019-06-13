@@ -40,9 +40,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ble_config.h"
 
 #define PNP_ID_VENDOR_ID_SOURCE             0x02                                       /**< Vendor ID Source. */
-#define PNP_ID_VENDOR_ID                    0x1915                                     /**< Vendor ID. */
-#define PNP_ID_PRODUCT_ID                   0xEEEE                                     /**< Product ID. */
-#define PNP_ID_PRODUCT_VERSION              0x0001                                     /**< Product Version. */
 
 #define APP_BLE_OBSERVER_PRIO               3                                          /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG                1                                          /**< A tag identifying the SoftDevice BLE configuration. */
@@ -296,7 +293,7 @@ static void whitelist_load(void)
 }
 
 static void get_device_name(char * device_name, int offset) {
-    char lookup_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'}; 
+    const char lookup_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'}; 
 
     strcpy(device_name, DEVICE_NAME);
     device_name[offset] = '_';
@@ -396,9 +393,9 @@ static void dis_init(void)
     ble_dis_pnp_id_t pnp_id;
 
     pnp_id.vendor_id_source = PNP_ID_VENDOR_ID_SOURCE;
-    pnp_id.vendor_id        = PNP_ID_VENDOR_ID;
-    pnp_id.product_id       = PNP_ID_PRODUCT_ID;
-    pnp_id.product_version  = PNP_ID_PRODUCT_VERSION;
+    pnp_id.vendor_id        = VENDOR_ID;
+    pnp_id.product_id       = PRODUCT_ID;
+    pnp_id.product_version  = DEVICE_VER;
 
     memset(&dis_init_obj, 0, sizeof(dis_init_obj));
 
