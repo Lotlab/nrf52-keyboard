@@ -20,8 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 /* USB Device descriptor parameter */
-#define VENDOR_ID       0xFEED
-#define PRODUCT_ID      0x6060
+#define VENDOR_ID       0x1209
+#define PRODUCT_ID      0x0514
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    "Lotlab"
 #define PRODUCT         "BLE60-Rev.C"
