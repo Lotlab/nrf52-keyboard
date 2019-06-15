@@ -242,7 +242,7 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     hids_init_obj.error_handler = err_handler;
     hids_init_obj.is_kb = true;
     hids_init_obj.is_mouse = false;
-    hids_init_obj.inp_rep_count = 1;
+    hids_init_obj.inp_rep_count = 3;
     hids_init_obj.p_inp_rep_array = input_report_array;
     hids_init_obj.outp_rep_count = 1;
     hids_init_obj.p_outp_rep_array = output_report_array;
