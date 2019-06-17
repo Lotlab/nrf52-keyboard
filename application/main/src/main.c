@@ -320,10 +320,6 @@ int main(void)
     ble_stack_init();
     scheduler_init();
     services_init();
-#ifdef HAS_USB
-    usb_comm_init();
-#endif
-    keyboard_led_init();
     ble_keyboard_init();
 
     // Start execution.

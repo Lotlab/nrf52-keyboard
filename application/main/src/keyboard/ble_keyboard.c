@@ -26,6 +26,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "custom_hook.h"
 #include "hook.h"
 #include "keymap_storage.h"
+#include "usb_comm.h"
+#include "keyboard_led.h"
 
 #include "nrf_drv_wdt.h"
 
@@ -191,10 +193,12 @@ void ble_keyboard_init(void)
 {
     keyboard_setup(); // 初始化各按键阵列
     // - martix_setup();
-    // led_init(); // 初始化led
+    keyboard_led_init(); // 初始化LED
     keymap_init(); // 初始化自定义keymap
-    // uart_init(); // 初始化外部USB通信协议
-    keyboard_init();
+#ifdef HAS_USB
+    usb_comm_init(); // 初始化USB通讯
+#endif
+    keyboard_init(); // 初始化键盘所需的其他东西，包括按键阵列和Bootmagic
     // - timer_init();
     // - matrix_init();
     host_set_driver(&driver); // 设置 host driver
