@@ -430,7 +430,12 @@ void keys_send(uint8_t report_index, uint8_t key_pattern_len, uint8_t* p_key_pat
         UNUSED_VARIABLE(buffer_enqueue(&m_hids, report_index, p_key_pattern, key_pattern_len));
     }
 
-    if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_INVALID_STATE) && (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_BUSY) && (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)) {
+    if ((err_code != NRF_SUCCESS) && 
+        (err_code != NRF_ERROR_INVALID_STATE) && 
+        (err_code != NRF_ERROR_RESOURCES) && 
+        (err_code != NRF_ERROR_BUSY) && 
+        (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING) &&
+        (err_code != NRF_ERROR_FORBIDDEN)) {
         APP_ERROR_HANDLER(err_code);
     }
 }
