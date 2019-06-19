@@ -27,7 +27,7 @@ INC_FOLDERS += $(PROJ_DIR)/keyboard
 #
 BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration(+1000)
 EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
-NKRO_ENABLE = yes	# USB Nkey Rollover [Not impliment yet]
+NKRO_ENABLE = yes	# USB Nkey Rollover
 USB_6KRO_ENABLE = yes # USB 6Key Rollover
 
 # Version string
