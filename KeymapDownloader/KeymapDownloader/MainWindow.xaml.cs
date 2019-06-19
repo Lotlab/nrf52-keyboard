@@ -40,7 +40,7 @@ namespace KeymapDownloader
             Devices.Items.Clear();
 
             var list = DeviceList.Local;
-            var HidDeviceList = list.GetHidDevices(0x3d41, 0x1919);
+            var HidDeviceList = list.GetHidDevices(0x1209, 0x0514);
             foreach (var item in HidDeviceList)
             {
                 if (item.DevicePath.IndexOf("mi_02") != -1)
