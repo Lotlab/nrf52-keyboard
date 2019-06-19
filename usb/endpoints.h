@@ -8,6 +8,7 @@ extern uint8_t __xdata __at(0x0a) Ep1Buffer[];
 extern uint8_t __xdata __at(0x90) Ep2Buffer[];
 extern uint8_t __xdata __at(0xB0) Ep3Buffer[];
 
+extern uint8_t keyboard_protocol;
 extern bool usb_ready;
 
 extern void USBDeviceInit();

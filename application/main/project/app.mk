@@ -125,6 +125,7 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/crc16 \
 	$(SDK_ROOT)/components/libraries/util \
 	$(PROJ_DIR)/config \
+	$(PROJ_DIR) \
 	$(SDK_ROOT)/components/libraries/csense \
 	$(SDK_ROOT)/components/libraries/balloc \
 	$(SDK_ROOT)/components/libraries/ecc \

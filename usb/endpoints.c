@@ -55,7 +55,7 @@ static uint8_t SetupReq, SetupLen, Count, UsbConfig;
 static uint8_t* pDescr;
 
 // 键盘报文类型。0为Boot，1为Report
-static uint8_t keyboard_protocol = 1;
+uint8_t keyboard_protocol = 1;
 static uint8_t keyboard_idle = 0;
 
 static USB_SETUP_REQ SetupReqBuf; //暂存Setup包

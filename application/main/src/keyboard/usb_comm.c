@@ -29,12 +29,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../ble/ble_hid_service.h"
 #include "../main.h"
 #include "app_timer.h"
+#include "host.h"
 #include "keymap_storage.h"
 #include "queue.h"
 
 #ifdef HAS_USB
 
-#define MAX_ITEM_SIZE 10
+#define MAX_ITEM_SIZE 34 // id + data(32) + checksum
 #define QUEUE_SIZE 10
 
 uint8_t keyboard_led_val_usb;
@@ -44,6 +45,7 @@ static uint8_t recv_index;
 
 static bool has_host;
 static bool is_full, is_connected, is_checked, is_disable;
+static bool usb_protocol;
 
 struct queue_item {
     uint8_t data[MAX_ITEM_SIZE];
@@ -79,21 +81,53 @@ static void uart_ack(bool success)
 }
 
 /**
+ * @brief 发送事件
+ * 
+ * @param 事件类型
+ */
+static void send_event(enum user_ble_event arg)
+{
+#ifdef NKRO_ENABLE
+    switch (arg) {
+    case USER_USB_DISCONNECT:
+    case USER_USB_CHARGE:
+        // 设置为Boot protocol，防止键盘发送nkro包
+        keyboard_protocol = 0;
+        break;
+    case USER_USB_CONNECTED:
+    case USER_USB_PROTOCOL_BOOT:
+    case USER_USB_PROTOCOL_REPORT:
+        // 设置为实际的protocol
+        keyboard_protocol = usb_protocol;
+        break;
+    default:
+        break;
+    }
+#endif
+    ble_user_event(arg);
+}
+
+/**
  * @brief 设置状态
  * 
  * @param host 是否连接到主机
  * @param charge_full 电量是否充满
+ * @param protocol USB 当前协议类型
  * @param force 强制更新状态
  */
-static void set_state(bool host, bool charge_full, bool force)
+static void set_state(bool host, bool charge_full, bool protocol, bool force)
 {
     if (host != has_host || force) {
         has_host = host;
-        ble_user_event(host ? USER_USB_CONNECTED : USER_USB_CHARGE);
+        send_event(host ? USER_USB_CONNECTED : USER_USB_CHARGE);
     }
     if (charge_full != is_full || force) {
         is_full = charge_full;
-        ble_user_event(is_full ? USER_BAT_FULL : USER_BAT_CHARGING);
+        send_event(is_full ? USER_BAT_FULL : USER_BAT_CHARGING);
+    }
+    if (usb_protocol != protocol || force) {
+        usb_protocol = protocol;
+        send_event(protocol ? USER_USB_PROTOCOL_REPORT : USER_USB_PROTOCOL_BOOT);
     }
 }
 
@@ -130,9 +164,10 @@ static void uart_on_recv()
                 bool success = buff & 0x01;
                 bool charging_status = buff & 0x02;
                 bool usb_status = buff & 0x04;
+                bool protocol = buff & 0x08;
 
                 // 设置当前状态
-                set_state(usb_status, charging_status, false);
+                set_state(usb_status, charging_status, protocol, false);
 
                 // 成功接收，出队。
                 if (success) {
@@ -173,7 +208,7 @@ static void uart_to_idle()
     queue_clear();
     app_uart_close();
     is_connected = false;
-    ble_user_event(USER_USB_DISCONNECT);
+    send_event(USER_USB_DISCONNECT);
 }
 
 static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
@@ -214,7 +249,7 @@ static void uart_init_hardware()
     APP_ERROR_CHECK(err_code);
 
     is_connected = true;
-    set_state(false, false, true); // 重置为默认状态
+    set_state(false, false, false, true); // 重置为默认状态
 }
 
 static void uart_task(void* context)
@@ -255,13 +290,13 @@ bool usb_working(void)
  */
 void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 {
-    if (len > 8)
+    if (len > 32)
         return;
 
     // 入队
     struct queue_item item;
     item.len = len + 2;
-    item.data[0] = 0x80 + ((index) << 4) + len;
+    item.data[0] = 0x80 + ((index) << 5) + len;
     memcpy(&item.data[1], pattern, len);
     item.data[len + 1] = checksum(item.data, len + 1);
 
@@ -321,9 +356,9 @@ void usb_comm_switch()
     if (is_connected && has_host) {
         is_disable = !is_disable;
         if (is_disable) {
-            ble_user_event(USER_USB_CHARGE);
+            send_event(USER_USB_CHARGE);
         } else {
-            ble_user_event(USER_USB_CONNECTED);
+            send_event(USER_USB_CONNECTED);
         }
     }
 }

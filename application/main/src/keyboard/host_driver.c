@@ -19,13 +19,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdint.h>
 
 #include "../ble/ble_hid_service.h"
+#include "../config/keyboard_config.h"
 #include "custom_hook.h"
 #include "usb_comm.h"
-#include "../config/keyboard_config.h"
 
 // todo: impliment
-uint8_t keyboard_idle;
-uint8_t keyboard_protocol;
+uint8_t keyboard_idle = 0;
+uint8_t keyboard_protocol = 0;
 
 uint8_t keyboard_leds(void);
 void send_keyboard(report_keyboard_t* report);
@@ -44,11 +44,11 @@ host_driver_t driver = {
 uint8_t keyboard_leds()
 {
 #ifdef HAS_USB
-    if (usb_working()) 
+    if (usb_working())
         return keyboard_led_val_usb;
     else
 #endif
-    return keyboard_led_val_ble;
+        return keyboard_led_val_ble;
 }
 
 /**
@@ -72,8 +72,15 @@ static void send(uint8_t index, uint8_t len, uint8_t* keys)
 
 void send_keyboard(report_keyboard_t* report)
 {
-    hook_send_keyboard(report);
-    send(0, KEYBOARD_REPORT_SIZE, report->raw);
+#if defined(NKRO_ENABLE) && defined(HAS_USB)
+    if (keyboard_protocol && keyboard_nkro) {
+        send(3, NKRO_EPSIZE, report->raw);
+    } else
+#endif
+    {
+        hook_send_keyboard(report);
+        send(0, 8, report->raw);
+    }
 }
 
 void send_mouse(report_mouse_t* report)

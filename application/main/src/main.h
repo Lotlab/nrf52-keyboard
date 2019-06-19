@@ -37,6 +37,8 @@ enum user_ble_event {
     USER_USB_CONNECTED, // 连接至主机
     USER_USB_DISCONNECT, // 没有连接
     USER_USB_CHARGE, // 仅充电
+    USER_USB_PROTOCOL_BOOT, // USB protocol 设置为0
+    USER_USB_PROTOCOL_REPORT // USB protocol 设置为1
 };
 
 void ble_user_event(enum user_ble_event arg);

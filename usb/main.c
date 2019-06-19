@@ -89,13 +89,11 @@ void KeyboardGenericUpload(uint8_t* packet, uint8_t len)
 /**
  * @brief 上传键盘特殊按键数据包
  *
- * @param packet 数据包
- * @param len 长度。必须是3，第一个byte为ID
+ * @param packet 数据包，第一个byte为ID
+ * @param len 长度
  */
 void KeyboardExtraUpload(uint8_t* packet, uint8_t len)
 {
-    if (len != 3)
-        return;
     UsbOnKeySend();
 
     memcpy(Ep2Buffer, packet, len);

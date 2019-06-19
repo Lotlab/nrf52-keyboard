@@ -17,9 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "uart.h"
 #include "CH554_SDCC.h"
+#include "endpoints.h"
 #include "system.h"
 #include "usb_comm.h"
-#include "endpoints.h"
 #include <stdbool.h>
 
 #define PIN_CHARGING !UCC1
@@ -98,15 +98,17 @@ static void uart_data_parser(void)
 {
     uint8_t command = recv_buff[0];
     if (command & 0x80) {
-        uint8_t index = (command & 0x30) >> 4;
-        uint8_t kplen = (command & 0x0F);
+        uint8_t index = (command & 0x60) >> 5;
+        uint8_t kplen = (command & 0x1F);
         if (checksum()) {
             if (index == 0) {
+                // 通常键盘数据包
                 KeyboardGenericUpload(&recv_buff[1], kplen);
                 last_success = true;
-            } else if (index == 1 || index == 2) {
-                recv_buff[0] = index + 1;
-                KeyboardExtraUpload(recv_buff, 3);
+            } else if (index == 1 || index == 2 || index == 3) {
+                // system或consumer数据包
+                recv_buff[0] = index + 1; // 数据包的id分别是2和3，直接用这个加1就好
+                KeyboardExtraUpload(recv_buff, kplen + 1);
                 last_success = true;
             }
         } else {
@@ -126,6 +128,8 @@ static void uart_send_status()
         data |= 0x02;
     if (usb_ready) // 是否连接主机
         data |= 0x04;
+    if (keyboard_protocol)
+        data |= 0x08;
     if (last_success) // 上次接收状态
         data |= 0x01;
     uart_tx(data);
@@ -142,27 +146,27 @@ void uart_check()
 {
     if (uart_check_flag) {
         if (uart_rx_state == STATE_DATA) {
-            // 接收超时强制退出
+            // UART接收超时强制退出
             uart_rx_state = STATE_IDLE;
         } else if ((uart_rx_state == STATE_IDLE) && uart_arrive_flag) {
+            // UART数据接收完毕，准备解析
             uart_arrive_flag = false;
             uart_data_parser();
         }
 
+        // 当前不在接收数据
         if (uart_rx_state == STATE_IDLE) {
             if (send_len > 0) {
+                // 有等待发送的数据则发送数据
                 for (uint8_t i = 0; i < send_len; i++) {
                     uart_tx(send_buff[i]);
                 }
                 send_len = 0;
             } else {
-                // 发送定期Query状态包
-                if (last_success) {
-                    uart_send_status();
+                // 没有等待发送的数据，发送定期Query状态包
+                uart_send_status();
+                if (last_success)
                     last_success = false;
-                } else {
-                    uart_send_status();
-                }
             }
         }
     }
@@ -186,11 +190,13 @@ void uart_recv(void)
     switch (uart_rx_state) {
     case STATE_IDLE:
         if (data >= 0x80) {
-            len = (data & 0x0F) + 2; // 实际大小加上1byte 的头和1byte的 Checksum
+            // 数据的最高Bit是1，则为下面上传的键盘数据包
+            len = (data & 0x1F) + 2; // 实际大小加上1byte 的头和1byte的 Checksum
             pos = 0;
             recv_buff[pos++] = data;
             uart_rx_state = STATE_DATA;
         } else if (data >= 0x10) {
+            // 状态包
             ResponseConfigurePacket(&data, 1);
         }
         break;

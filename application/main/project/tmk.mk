@@ -58,6 +58,7 @@ endif
 
 ifeq (yes,$(strip $(NKRO_ENABLE)))
     OPT_DEFS += -DNKRO_ENABLE
+    OPT_DEFS += -DPROTOCOL_LUFA
 endif
 
 ifeq (yes,$(strip $(USB_6KRO_ENABLE)))

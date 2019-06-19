@@ -26,7 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define USB_STR_INDEX_SERNUM  3
 #define SIZEOF_DEVICE_DESCRIPTOR  0x12
 #define EP0_PACKET_SIZE       0x08
-
+#define NKRO_REPORT_KEYS      27
 #define MAX_PACKET_SIZE       64
 
 
@@ -296,9 +296,11 @@ uint8_t const report_desc_HID0[]=
     0x75, 0x01,                        // Report Size (1)
     0x95, 0x08,                        // Report Count (8)
     0x81, 0x02,                        // Input (Data, Variable, Absolute) -- Modifier byte
+
     0x95, 0x01,                        // Report Count (1)
     0x75, 0x08,                        // Report Size (8)
     0x81, 0x03,                        // (81 01) Input (Constant) -- Reserved byte
+
     0x95, 0x05,                        // Report Count (5)
     0x75, 0x01,                        // Report Size (1)
     0x05, 0x08,                        // Usage Page (Page# for LEDs)
@@ -308,6 +310,7 @@ uint8_t const report_desc_HID0[]=
     0x95, 0x01,                        // Report Count (1)
     0x75, 0x03,                        // Report Size (3)
     0x91, 0x03,                        // (91 03) Output (Constant) -- LED report padding
+
     0x95, 0x06,                        // Report Count (6)
     0x75, 0x08,                        // Report Size (8)
     0x15, 0x00,                        // Logical Minimum (0)
@@ -321,32 +324,56 @@ uint8_t const report_desc_HID0[]=
 };
 uint8_t const report_desc_HID1[]=
 {
-  /* system control */
-  0x05, 0x01,                      // USAGE_PAGE (Generic Desktop)
-  0x09, 0x80,                      // USAGE (System Control)
-  0xa1, 0x01,                      // COLLECTION (Application)
-  0x85, 2,                         //   REPORT_ID (2)
-  0x15, 0x01,                      //   LOGICAL_MINIMUM (0x1)
-  0x26, 0xb7, 0x00,                //   LOGICAL_MAXIMUM (0xb7)
-  0x19, 0x01,                      //   USAGE_MINIMUM (0x1)
-  0x29, 0xb7,                      //   USAGE_MAXIMUM (0xb7)
-  0x75, 0x10,                      //   REPORT_SIZE (16)
-  0x95, 0x01,                      //   REPORT_COUNT (1)
-  0x81, 0x00,                      //   INPUT (Data,Array,Abs)
-  0xc0,                            // END_COLLECTION
-  /* consumer */
-  0x05, 0x0c,                      // USAGE_PAGE (Consumer Devices)
-  0x09, 0x01,                      // USAGE (Consumer Control)
-  0xa1, 0x01,                      // COLLECTION (Application)
-  0x85, 3,                         //   REPORT_ID (3)
-  0x15, 0x01,                      //   LOGICAL_MINIMUM (0x1)
-  0x26, 0x9c, 0x02,                //   LOGICAL_MAXIMUM (0x29c)
-  0x19, 0x01,                      //   USAGE_MINIMUM (0x1)
-  0x2a, 0x9c, 0x02,                //   USAGE_MAXIMUM (0x29c)
-  0x75, 0x10,                      //   REPORT_SIZE (16)
-  0x95, 0x01,                      //   REPORT_COUNT (1)
-  0x81, 0x00,                      //   INPUT (Data,Array,Abs)
-  0xc0,                            // END_COLLECTION
+    /* system control */
+    0x05, 0x01,                      // USAGE_PAGE (Generic Desktop)
+    0x09, 0x80,                      // USAGE (System Control)
+    0xa1, 0x01,                      // COLLECTION (Application)
+    0x85, 2,                         //   REPORT_ID (2)
+    0x15, 0x01,                      //   LOGICAL_MINIMUM (0x1)
+    0x26, 0xb7, 0x00,                //   LOGICAL_MAXIMUM (0xb7)
+    0x19, 0x01,                      //   USAGE_MINIMUM (0x1)
+    0x29, 0xb7,                      //   USAGE_MAXIMUM (0xb7)
+    0x75, 0x10,                      //   REPORT_SIZE (16)
+    0x95, 0x01,                      //   REPORT_COUNT (1)
+    0x81, 0x00,                      //   INPUT (Data,Array,Abs)
+    0xc0,                            // END_COLLECTION
+    /* consumer */
+    0x05, 0x0c,                      // USAGE_PAGE (Consumer Devices)
+    0x09, 0x01,                      // USAGE (Consumer Control)
+    0xa1, 0x01,                      // COLLECTION (Application)
+    0x85, 3,                         //   REPORT_ID (3)
+    0x15, 0x01,                      //   LOGICAL_MINIMUM (0x1)
+    0x26, 0x9c, 0x02,                //   LOGICAL_MAXIMUM (0x29c)
+    0x19, 0x01,                      //   USAGE_MINIMUM (0x1)
+    0x2a, 0x9c, 0x02,                //   USAGE_MAXIMUM (0x29c)
+    0x75, 0x10,                      //   REPORT_SIZE (16)
+    0x95, 0x01,                      //   REPORT_COUNT (1)
+    0x81, 0x00,                      //   INPUT (Data,Array,Abs)
+    0xc0,                            // END_COLLECTION
+    /* nkro */
+    0x05, 0x01,                      // Usage Page (Generic Desktop),
+    0x09, 0x06,                      // Usage (Keyboard),
+    0xA1, 0x01,                      // Collection (Application),
+    0x85, 4,                         //   REPORT_ID (3)
+    // bitmap of modifiers
+    0x75, 0x01,                      //   Report Size (1),
+    0x95, 0x08,                      //   Report Count (8),
+    0x05, 0x07,                      //   Usage Page (Key Codes),
+    0x19, 0xE0,                      //   Usage Minimum (224),
+    0x29, 0xE7,                      //   Usage Maximum (231),
+    0x15, 0x00,                      //   Logical Minimum (0),
+    0x25, 0x01,                      //   Logical Maximum (1),
+    0x81, 0x02,                      //   Input (Data, Variable, Absolute), ;Modifier byte
+    // bitmap of keys
+    0x95, NKRO_REPORT_KEYS * 8,      //   Report Count (),
+    0x75, 0x01,                      //   Report Size (1),
+    0x15, 0x00,                      //   Logical Minimum (0),
+    0x25, 0x01,                      //   Logical Maximum(1),
+    0x05, 0x07,                      //   Usage Page (Key Codes),
+    0x19, 0x00,                      //   Usage Minimum (0),
+    0x29, NKRO_REPORT_KEYS * 8 - 1,  //   Usage Maximum (),
+    0x81, 0x02,                      //   Input (Data, Variable, Absolute),
+    0xc0                             // End Collection
 };
 
 uint8_t const report_desc_HID2[]=
