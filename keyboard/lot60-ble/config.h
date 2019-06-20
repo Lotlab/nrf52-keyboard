@@ -1,5 +1,6 @@
 /*
 Copyright 2012 Jun Wako <wakojun@gmail.com>
+Copyright 2019 Jim Jiang <jim@lotlab.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stdint.h>
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0x1209
@@ -78,5 +80,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define NO_ACTION_ONESHOT
 //#define NO_ACTION_MACRO
 //#define NO_ACTION_FUNCTION
+
+// LED 配置
+#define LED_CAPS 21
+
+// 启用 RGB
+#define LED_RGB
+#define LED_RGB_R 22
+#define LED_RGB_G 23
+#define LED_RGB_B 24
+
+// UART 传输配置
+#define HAS_USB
+#define UART_RXD 17
+#define UART_TXD 18
+#define UART_DET 19
+#define UART_BAUDRATE NRF_UART_BAUDRATE_57600
+
+// 电量检测配置
+#define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0
+
+static const uint8_t row_pin_array[MATRIX_ROWS] = { 25, 28, 29, 30, 26 };
+static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 27, 3, 4, 5, 6, 7, 8, 9 };
+
+#define ROW_IN // 二极管方向是从COL->ROW
+
+#define LED_POSITIVE
 
 #endif

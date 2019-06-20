@@ -1,7 +1,7 @@
 #if !defined(__BLE_CONFIG_H__)
 #define __BLE_CONFIG_H__
 
-#include "../config/config.h"
+#include "../config/keyboard_config.h"
 
 #ifdef PASSKEY_REQUIRED
 #define SEC_CURRENT SEC_MITM

@@ -2,11 +2,15 @@ PROJECT_NAME     := ble_app_hids_keyboard_pca10040e_s112
 TARGETS          := nrf52810_xxaa
 OUTPUT_DIRECTORY := _build
 
-SDK_ROOT := ../../../SDK
-TEMPLATE_PATH := ../../../template
+ifndef ROOT_DIR
+	ROOT_DIR := ../../..
+endif
+
+SDK_ROOT := $(ROOT_DIR)/SDK
+TEMPLATE_PATH := $(ROOT_DIR)/template
 
 $(OUTPUT_DIRECTORY)/nrf52810_xxaa.out: \
-	LINKER_SCRIPT  := ble_app_hids_keyboard_gcc_nrf52.ld
+	LINKER_SCRIPT  := $(APP_PROJ_DIR)/ble_app_hids_keyboard_gcc_nrf52.ld
 
 # Source files common to all targets
 SRC_FILES += \
@@ -47,10 +51,10 @@ SRC_FILES += \
 	$(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_saadc.c \
 	$(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_wdt.c \
 	$(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uart.c \
-	$(PROJ_DIR)/main.c \
-	$(PROJ_DIR)/ble/ble_services.c \
-	$(PROJ_DIR)/ble/ble_hid_service.c \
-	$(PROJ_DIR)/ble/ble_bas_service.c \
+	$(APP_SRC_DIR)/main.c \
+	$(APP_SRC_DIR)/ble/ble_services.c \
+	$(APP_SRC_DIR)/ble/ble_hid_service.c \
+	$(APP_SRC_DIR)/ble/ble_bas_service.c \
 	$(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
 	$(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \
 	$(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -124,8 +128,8 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/cli \
 	$(SDK_ROOT)/components/libraries/crc16 \
 	$(SDK_ROOT)/components/libraries/util \
-	$(PROJ_DIR)/config \
-	$(PROJ_DIR) \
+	$(APP_SRC_DIR)/config \
+	$(APP_SRC_DIR) \
 	$(SDK_ROOT)/components/libraries/csense \
 	$(SDK_ROOT)/components/libraries/balloc \
 	$(SDK_ROOT)/components/libraries/ecc \

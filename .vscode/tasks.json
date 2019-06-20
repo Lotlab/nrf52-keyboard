@@ -6,7 +6,7 @@
         {
             "type": "shell",
             "label": "build main",
-            "command": "cd application/main/project/ && make -j",
+            "command": "cd keyboard/lot60-ble && make -j",
             "group": "build",
             "problemMatcher": [
                 "$gcc"
@@ -15,7 +15,7 @@
         {
             "type": "shell",
             "label": "flash main",
-            "command": "cd application/main/project/ && make flash -j",
+            "command": "cd keyboard/lot60-ble && make flash -j",
             "group": "build",
             "problemMatcher": [
                 "$gcc"
@@ -24,7 +24,7 @@
         {
             "type": "shell",
             "label": "flash main (pyOCD)",
-            "command": "cd application/main/project/ && make pyocd_flash -j",
+            "command": "cd keyboard/lot60-ble && make pyocd_flash -j",
             "group": "build",
             "problemMatcher": [
                 "$gcc"
@@ -33,7 +33,7 @@
         {
             "type": "shell",
             "label": "package main",
-            "command": "cd application/main/project/ && make package -j",
+            "command": "cd keyboard/lot60-ble && make package -j",
             "group": "build",
             "problemMatcher": [
                 "$gcc"

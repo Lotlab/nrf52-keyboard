@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../config/keymap_common.h"
+#include "keymap_common.h"
 #include "keyboard_fn.h"
 
 const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {

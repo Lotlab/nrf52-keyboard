@@ -230,7 +230,7 @@ static void sleep_mode_enter(void)
  * @brief 用户定义的事件处理方法
  * 
  */
-__attribute__((weak)) void user_event_handler(enum user_ble_event arg) {}
+void user_event_handler(enum user_ble_event arg);
 
 /**
  * @brief 用户蓝牙事件处理函数

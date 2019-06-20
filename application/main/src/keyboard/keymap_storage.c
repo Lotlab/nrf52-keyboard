@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "keymap_storage.h"
-#include "../config/keymap_common.h"
+#include "keymap_common.h"
 #include "fds.h"
 #include "keymap.h"
 #include "nrf.h"
