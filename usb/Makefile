@@ -1,19 +1,20 @@
+PROJ_NAME := ch554
 OUTPUT_DIR = _build
+OBJ_DIR = $(OUTPUT_DIR)/$(PROJ_NAME)
 
 CC := sdcc
-CFLAGS := -mmcs51 --model-small --std-c11 -o $(OUTPUT_DIR)/ --opt-code-size
+CFLAGS := -mmcs51 --model-small --std-c11 -o $(OBJ_DIR)/ --opt-code-size
 LDFLAGS := --xram-size 1024 --iram-size 256 --code-size 16384 --out-fmt-ihx
 
-LIBS = $(OUTPUT_DIR)/system.rel \
-		$(OUTPUT_DIR)/uart.rel \
-		$(OUTPUT_DIR)/app_timer.rel \
-		$(OUTPUT_DIR)/descriptor.rel \
-		$(OUTPUT_DIR)/endpoints.rel \
-		$(OUTPUT_DIR)/interrupt.rel
+LIBS := $(patsubst %.c,$(OBJ_DIR)/%.rel,$(wildcard *.c))
 
-OUTPUT_IHX := $(OUTPUT_DIR)/main.ihx
-OUTPUT_HEX := $(OUTPUT_DIR)/main.hex
-OUTPUT_BIN := $(OUTPUT_DIR)/main.bin
+OUTPUT_IHX := $(OBJ_DIR)/$(PROJ_NAME).ihx
+OUTPUT_HEX := $(OUTPUT_DIR)/$(PROJ_NAME).hex
+OUTPUT_BIN := $(OUTPUT_DIR)/$(PROJ_NAME).bin
+
+.PHONY:clean,default
+
+default: $(OUTPUT_HEX) $(OUTPUT_BIN)
 
 $(OUTPUT_HEX): $(OUTPUT_IHX)
 	packihx $(OUTPUT_IHX) > $(OUTPUT_HEX)
@@ -21,30 +22,18 @@ $(OUTPUT_HEX): $(OUTPUT_IHX)
 $(OUTPUT_BIN): $(OUTPUT_IHX)
 	makebin -p $(OUTPUT_IHX) $(OUTPUT_BIN)
 
-$(OUTPUT_IHX): main.c $(LIBS)
-	mkdir -p $(OUTPUT_DIR)
-	$(CC) $(LIBS) main.c $(CFLAGS) $(LDFLAGS) -o $(OUTPUT_IHX)
+$(OUTPUT_DIR):
+	-mkdir $(OUTPUT_DIR)
 
-$(OUTPUT_DIR)/system.rel: system.c
-	mkdir -p $(OUTPUT_DIR)
-	$(CC) -c system.c $(CFLAGS)
+$(OBJ_DIR): $(OUTPUT_DIR)
+	-mkdir $(OBJ_DIR)
 
-$(OUTPUT_DIR)/uart.rel: uart.c
-	$(CC) -c uart.c $(CFLAGS)
+$(OUTPUT_IHX): $(LIBS)
+	$(CC) $(LIBS) $(CFLAGS) $(LDFLAGS) -o $(OUTPUT_IHX)
 
-$(OUTPUT_DIR)/app_timer.rel: app_timer.c
-	$(CC) -c app_timer.c $(CFLAGS)
+$(OBJ_DIR)/%.rel: %.c $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $<
 
-$(OUTPUT_DIR)/descriptor.rel: descriptor.c
-	$(CC) -c descriptor.c $(CFLAGS)
-
-$(OUTPUT_DIR)/endpoints.rel: endpoints.c
-	$(CC) -c endpoints.c $(CFLAGS)
-
-$(OUTPUT_DIR)/interrupt.rel: interrupt.c
-	$(CC) -c interrupt.c $(CFLAGS)
-
-.PHONY:clean
 clean:
 	rm -r $(OUTPUT_DIR)
 
