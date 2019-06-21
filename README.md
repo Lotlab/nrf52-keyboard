@@ -21,9 +21,9 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 - usb：双模的USB部分
 - KeymapDownloader：配列下载器
 
-## 硬件
+## 硬件支持
 
-这个固件是为[BLE60-keyboard](https://github.com/Lotlab/BLE60-keyboard)设计的，请切换至type-c分支查看最新的硬件信息
+此固件支持的键盘列表见Keyboard目录。
 
 ## 编译
 
@@ -74,17 +74,6 @@ make
 - [x] 自定义各种灯光
 - [x] UART 通讯
 - [x] USB 主控程序使用 Make 编译
-
-## 默认指示灯颜色表
-
-- <span style="color: #FFFFFF">白色</span>：无连接
-- <span style="color: #66CCFF">天依蓝</span>：蓝牙已连接
-- <span style="color: #0099FF">天蓝色</span>：USB已连接
-- <span style="color: #FF8000">橙色</span>：充电中
-- <span style="color: #00FF00">绿色</span>：充电完毕
-- <span style="color: #FFFF00">黄色</span>：输入配对密码
-- <span style="color: #FF0080">紫红色</span>：配对密码输入完毕
-- <span style="color: #FF00FF">紫色</span>：休眠
 
 ## UART 通讯协议
 
