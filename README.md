@@ -37,16 +37,11 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 cd application/bootloader/project/armgcc
 make
 ```
-### 主程序的编译
+### 蓝牙程序和USB控制器的编译
+现在蓝牙和USB控制器程序的Makefile都放在一起了。进入对应的硬件目录，直接make即可。
+
 ```
-cd application/main/project
-make
-```
-### USB控制器的编译
-安装CodeBlocks与SDCC，打开工程编译即可。
-或使用make编译，输出文件在`_build/main.hex`。
-```
-cd usb
+cd keyboard/lot60-ble
 make
 ```
 
@@ -61,9 +56,13 @@ make
   - bootloader/ 
     - src/ 源码
     - project/ 工程
+- keyboard/ 各个键盘实现相关
 - SDK/ nRF52 SDK
 - tmk/ tmk core 相关
 - usb/ USB部分代码
+
+## 硬件移植
+若使用的硬件方案与已有的硬件相同，则可以将keyboard文件夹内的配置文件复制一份并修改。
 
 ## Todo
 

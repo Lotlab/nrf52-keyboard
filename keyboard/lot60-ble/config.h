@@ -28,6 +28,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MANUFACTURER    "Lotlab"
 #define PRODUCT         "BLE60-Rev.C"
 
+/* USB HID report parameter */
+#define KEYBOARD_EPSIZE 8
+#define NKRO_EPSIZE 28
+
 /* key matrix size */
 #define MATRIX_ROWS 5
 #define MATRIX_COLS 14
@@ -100,11 +104,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 电量检测配置
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0
 
+// 充电检测配置
+#define PIN_CHARGING !UCC1
+#define PIN_STANDBY !UCC2
+
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 25, 28, 29, 30, 26 };
 static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 27, 3, 4, 5, 6, 7, 8, 9 };
 
 #define ROW_IN // 二极管方向是从COL->ROW
 
-#define LED_POSITIVE
+#define LED_POSITIVE // LED上拉驱动
 
 #endif

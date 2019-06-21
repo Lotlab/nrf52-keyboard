@@ -21,9 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "system.h"
 #include "usb_comm.h"
 #include <stdbool.h>
-
-#define PIN_CHARGING !UCC1
-#define PIN_STANDBY !UCC2
+#include "config.h"
 
 #ifdef PIN_STANDBY
 #define IS_CHARGING (PIN_CHARGING && !PIN_STANDBY)

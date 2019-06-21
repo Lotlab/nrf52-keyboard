@@ -18,15 +18,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef __USB_DESCRIPTOR__
 #define __USB_DESCRIPTOR__
 #include <stdint.h>
+#include "config.h"
 
-#define USB_VID               0x1209        // Vendor ID (VID)
-#define USB_PID               0x0514        // Product ID (PID)
-#define VER_FW_H              0x08          // Device release number, in binary-coded decimal
-#define VER_FW_L              0x10          // Device release number, in binary-coded decimal
+#define USB_VID               VENDOR_ID     // Vendor ID (VID)
+#define USB_PID               PRODUCT_ID    // Product ID (PID)
+#define VER_FW_H              ((DEVICE_VER & 0xFF00) >> 8) // Device release number, in binary-coded decimal
+#define VER_FW_L              (DEVICE_VER & 0xFF) // Device release number, in binary-coded decimal
 #define USB_STR_INDEX_SERNUM  3
 #define SIZEOF_DEVICE_DESCRIPTOR  0x12
 #define EP0_PACKET_SIZE       0x08
-#define NKRO_REPORT_KEYS      27
+#define NKRO_REPORT_KEYS      (NKRO_EPSIZE - 1)
 #define MAX_PACKET_SIZE       64
 
 
