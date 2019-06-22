@@ -10,7 +10,7 @@ SDK_ROOT := $(ROOT_DIR)/SDK
 TEMPLATE_PATH := $(ROOT_DIR)/template
 
 $(OUTPUT_DIRECTORY)/nrf52810_xxaa.out: \
-	LINKER_SCRIPT  := $(APP_PROJ_DIR)/ble_app_hids_keyboard_gcc_nrf52.ld
+	LINKER_SCRIPT  := $(APP_PROJ_DIR)/ble_app_hids_keyboard_gcc_nrf52810.ld
 
 # Source files common to all targets
 SRC_FILES += \
@@ -129,6 +129,7 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/crc16 \
 	$(SDK_ROOT)/components/libraries/util \
 	$(APP_SRC_DIR)/config \
+	$(APP_SRC_DIR)/ble \
 	$(APP_SRC_DIR) \
 	$(SDK_ROOT)/components/libraries/csense \
 	$(SDK_ROOT)/components/libraries/balloc \
@@ -292,7 +293,7 @@ erase:
 pyocd_erase:
 	pyocd erase -t nrf52 -c
 
-SDK_CONFIG_FILE := ../config/sdk_config.h
+SDK_CONFIG_FILE := $(KEYBOARD_DIR)/sdk_config.h
 CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar
 sdk_config:
 	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)
