@@ -185,5 +185,6 @@
     ],
     "C_Cpp.default.forcedInclude": [
         "application/main/src/config/config.h"
-    ]
+    ],
+    "C_Cpp.clang_format_style": "webkit"
 }
