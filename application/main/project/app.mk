@@ -178,7 +178,7 @@ LIB_FILES += \
 # Optimization flags
 OPT = -Os -g3
 # Uncomment the line below to enable link time optimization
-#OPT += -flto
+OPT += -flto
 OPT += $(OPT_DEFS)
 
 # C flags common to all targets
