@@ -6,6 +6,8 @@ USB_SOURCE_DIR := $(ROOT_DIR)/usb
 APP_PROJ_DIR := $(APP_MAIN_DIR)/project
 APP_SRC_DIR := $(APP_MAIN_DIR)/src
 
+NRF_CHIP := nrf52810
+
 CONFIG_H = config.h
 INC_FOLDERS += .
 SRC_FILES += keymap_plain.c user_evt.c led_rgb.c
