@@ -20,21 +20,26 @@ OUTPUT_BIN := $(OUTPUT_DIR)/$(PROJ_NAME).bin
 
 usb: ch554
 ch554: $(OUTPUT_HEX) $(OUTPUT_BIN)
+	@echo DONE ch554
 
 $(OUTPUT_HEX): $(OUTPUT_IHX)
-	packihx $(OUTPUT_IHX) > $(OUTPUT_HEX)
+	@echo Preparing: $(OUTPUT_HEX)
+	@packihx $(OUTPUT_IHX) > $(OUTPUT_HEX)
 
 $(OUTPUT_BIN): $(OUTPUT_IHX)
-	makebin -p $(OUTPUT_IHX) $(OUTPUT_BIN)
+	@echo Preparing: $(OUTPUT_BIN)
+	@makebin -p $(OUTPUT_IHX) $(OUTPUT_BIN)
 
 $(OBJ_DIR):
-	-mkdir -p $(OBJ_DIR)
+	-@mkdir -p $(OBJ_DIR)
 
 $(OUTPUT_IHX): $(LIBS)
-	$(SDCC) $(LIBS) $(SDCC_CFLAGS) $(SDCC_LDFLAGS) -o $(OUTPUT_IHX)
+	@echo Linking target: $(notdir $(OUTPUT_IHX))
+	@$(SDCC) $(LIBS) $(SDCC_CFLAGS) $(SDCC_LDFLAGS) -o $(OUTPUT_IHX)
 
 $(OBJ_DIR)/%.rel: $(USB_SOURCE_DIR)/%.c $(OBJ_DIR)
-	$(SDCC) $(SDCC_CFLAGS) -c $<
+	@echo Compiling usb file: $(notdir $<)
+	@$(SDCC) $(SDCC_CFLAGS) -c $<
 
 flash_usb: $(OUTPUT_BIN)
 	wchisptool -f $(OUTPUT_BIN)
