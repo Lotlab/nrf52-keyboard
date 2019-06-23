@@ -220,6 +220,7 @@ ifeq ($(SOFTDEVICE), S112)
 	CFLAGS += -DS112
 	ASMFLAGS += -DS112
 	SOFTDEVICE_NAME := s112_nrf52_6.1.1_softdevice.hex
+	SOFTDEVICE_VER  := 0xb8
 	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s112/hex/s112_nrf52_6.1.1_softdevice.hex
 	
     INC_FOLDERS += \
@@ -229,6 +230,7 @@ else ifeq ($(SOFTDEVICE), S132)
 	CFLAGS += -DS132
 	ASMFLAGS += -DS132
 	SOFTDEVICE_NAME := s132_nrf52_6.1.1_softdevice.hex
+	SOFTDEVICE_VER  := 0xb7
 	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_6.1.1_softdevice.hex
 	
 	INC_FOLDERS += \
@@ -274,13 +276,22 @@ include $(TEMPLATE_PATH)/Makefile.common
 
 $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
-.PHONY: flash flash_softdevice erase pyocd_flash pyocd_flash_softdevice pyocd_erase
+.PHONY: flash setting flash_setting flash_softdevice erase pyocd_flash pyocd_flash_softdevice pyocd_erase
 
 # Flash the program
 flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52_kbd.hex
 	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52_kbd.hex --sectorerase
 	nrfjprog -f nrf52 --reset
+
+flash_setting: default
+	@echo Flashing Setting: $(OUTPUT_DIRECTORY)/nrf52_settings.hex ====
+	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52_settings.hex --sectorerase
+	nrfjprog -f nrf52 --reset
+	
+setting: default
+	@echo Setting generate $(OUTPUT_DIRECTORY)/nrf52_settings.hex ====
+	nrfutil settings generate --family NRF52 --application $(OUTPUT_DIRECTORY)/nrf52_kbd.hex --application-version 1 --bootloader-version 1 --bl-settings-version 1 $(OUTPUT_DIRECTORY)/nrf52_settings.hex
 
 pyocd_flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52_kbd.hex
@@ -290,7 +301,7 @@ pyocd_flash: default
 package: default
 	@echo Packing: $(OUTPUT_DIRECTORY)/nrf52_kbd.hex
 	nrfutil pkg generate --hw-version 52 --application-version 1 --application $(OUTPUT_DIRECTORY)/nrf52_kbd.hex \
-	--sd-req 0xb8 --key-file $(APP_PROJ_DIR)/private.key $(OUTPUT_DIRECTORY)/nrf52_kbd_$(VERSION).zip
+	--sd-req $(SOFTDEVICE_VER) --key-file $(APP_PROJ_DIR)/private.key $(OUTPUT_DIRECTORY)/nrf52_kbd_$(VERSION).zip
 
 # Flash softdevice
 flash_softdevice:
