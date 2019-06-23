@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "sleep_reason.h"
 #include "usb_comm.h"
 
-void hook_bootmagic() {
+__attribute__((weak)) void hook_bootmagic() {
     if (!bootmagic_scan_key(BOOTMAGIC_KEY_BOOT)) {
         bool sleep_flag = true;
 #ifdef DEBUG_SKIP_PWRON_CHECK

@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../main.h"
 #include "usb_comm.h"
 
-void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
+__attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
 {
     if (record->event.pressed) {
         switch (id) {
