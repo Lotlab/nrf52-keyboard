@@ -11,6 +11,8 @@ TEMPLATE_PATH := $(ROOT_DIR)/template
 
 ifeq ($(NRF_CHIP), nrf52810)
 	include $(APP_PROJ_DIR)/nrf52810.mk
+else ifeq ($(NRF_CHIP), nrf52832)
+	include $(APP_PROJ_DIR)/nrf52832.mk
 else
 	$(error cannot handle NRF_CHIP [$(NRF_CHIP)])
 endif
@@ -20,7 +22,6 @@ $(OUTPUT_DIRECTORY)/nrf52_kbd.out: \
 
 # Source files common to all targets
 SRC_FILES += \
-	$(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52810.S \
 	$(SDK_ROOT)/components/libraries/util/app_error.c \
 	$(SDK_ROOT)/components/libraries/util/app_error_handler_gcc.c \
 	$(SDK_ROOT)/components/libraries/util/app_error_weak.c \
@@ -48,7 +49,6 @@ SRC_FILES += \
 	$(SDK_ROOT)/components/libraries/low_power_pwm/low_power_pwm.c \
 	$(SDK_ROOT)/components/libraries/uart/app_uart_fifo.c \
 	$(SDK_ROOT)/components/libraries/fifo/app_fifo.c \
-	$(SDK_ROOT)/modules/nrfx/mdk/system_nrf52810.c \
 	$(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_clock.c \
 	$(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_uart.c \
 	$(SDK_ROOT)/modules/nrfx/soc/nrfx_atomic.c \
@@ -97,7 +97,6 @@ SRC_FILES += \
 # Include folders common to all targets
 INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/pwm \
-	$(SDK_ROOT)/components/softdevice/s112/headers/nrf52 \
 	$(SDK_ROOT)/modules/nrfx/hal \
 	$(SDK_ROOT)/components/libraries/log \
 	$(SDK_ROOT)/components/libraries/fstorage \
@@ -147,7 +146,6 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/integration/nrfx \
 	$(SDK_ROOT)/components/libraries/sortlist \
 	$(SDK_ROOT)/components/libraries/spi_mngr \
-	$(SDK_ROOT)/components/softdevice/s112/headers \
 	$(SDK_ROOT)/components/libraries/led_softblink \
 	$(SDK_ROOT)/modules/nrfx/mdk \
 	$(SDK_ROOT)/components/ble/ble_link_ctx_manager \
@@ -223,11 +221,19 @@ ifeq ($(SOFTDEVICE), S112)
 	ASMFLAGS += -DS112
 	SOFTDEVICE_NAME := s112_nrf52_6.1.1_softdevice.hex
 	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s112/hex/s112_nrf52_6.1.1_softdevice.hex
+	
+    INC_FOLDERS += \
+		$(SDK_ROOT)/components/softdevice/s112/headers/nrf52 \
+		$(SDK_ROOT)/components/softdevice/s112/headers \
 else ifeq ($(SOFTDEVICE), S132)
 	CFLAGS += -DS132
 	ASMFLAGS += -DS132
 	SOFTDEVICE_NAME := s132_nrf52_6.1.1_softdevice.hex
 	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_6.1.1_softdevice.hex
+	
+	INC_FOLDERS += \
+		$(SDK_ROOT)/components/softdevice/s132/headers/nrf52 \
+		$(SDK_ROOT)/components/softdevice/s132/headers \
 else
 	$(error cannot handle softdevice [$(SOFTDEVICE)])
 endif

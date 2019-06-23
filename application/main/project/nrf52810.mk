@@ -1,3 +1,6 @@
+SRC_FILES += \
+	$(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52810.S \
+	$(SDK_ROOT)/modules/nrfx/mdk/system_nrf52810.c \
 CFLAGS += -DFLOAT_ABI_SOFT
 CFLAGS += -DNRF52810_XXAA
 CFLAGS += -mfloat-abi=soft
