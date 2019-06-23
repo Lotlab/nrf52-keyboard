@@ -178,6 +178,7 @@ static void uart_on_recv()
                     struct queue_item* next = queue_peek();
                     uart_send(next->data, next->len);
                 }
+                is_checked = true;
             }
         } else {
             recv_index++;
@@ -195,7 +196,6 @@ static void uart_on_recv()
                 }
             }
         }
-        is_checked = true;
     }
 }
 
@@ -207,6 +207,9 @@ static void uart_to_idle()
 {
     queue_clear();
     app_uart_close();
+#ifndef UART_DET
+    nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
+#endif
     is_connected = false;
     send_event(USER_USB_DISCONNECT);
 }
@@ -256,15 +259,19 @@ static void uart_task(void* context)
 {
     UNUSED_PARAMETER(context);
     if (is_connected) {
-        // 检查是否断开
+        // 已经连接状态，检查是否断开
         if (!is_checked) {
             uart_to_idle();
         } else {
             is_checked = false;
         }
     } else {
-        // 检查是否连接
+        // 未连接状态，检查是否连接
+#ifdef UART_DET
         if (!nrf_gpio_pin_read(UART_DET)) {
+#else
+        if (nrf_gpio_pin_read(UART_RXD)) {
+#endif
             uart_init_hardware();
         }
     }
@@ -319,10 +326,14 @@ void usb_comm_init()
         uart_task);
 
     APP_ERROR_CHECK(err_code);
-
+#ifdef UART_DET
     nrf_gpio_cfg_input(UART_DET, NRF_GPIO_PIN_PULLUP);
-    // 初始化时启用UART尝试接收事件，若没有主机则在超时处关闭
     if (!nrf_gpio_pin_read(UART_DET)) {
+#else
+    nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
+    if (nrf_gpio_pin_read(UART_RXD)) {
+#endif
+    // 初始化时启用UART尝试接收事件，若没有主机则在超时处关闭
         uart_init_hardware();
     }
 }
@@ -344,7 +355,11 @@ void usb_comm_timer_start()
 void usb_comm_sleep_prepare()
 {
     uart_to_idle();
+#ifdef UART_DET
     nrf_gpio_cfg_sense_input(UART_DET, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+#else
+    nrf_gpio_cfg_sense_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+#endif
 }
 
 /**
