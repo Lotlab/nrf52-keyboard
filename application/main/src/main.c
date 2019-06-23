@@ -137,8 +137,8 @@ void service_error_handler(uint32_t nrf_error)
  */
 static void reset_prepare(void)
 {
-    // 关闭键盘LED
-    keyboard_led_off();
+    // 禁用键盘LED
+    keyboard_led_deinit();
 
     ret_code_t err_code;
     err_code = app_timer_stop_all();
@@ -321,6 +321,9 @@ int main(void)
     scheduler_init();
     services_init();
     ble_keyboard_init();
+
+    // call custom init function
+    ble_user_event(USER_EVT_POST_INIT);
 
     // Start execution.
     timers_start();

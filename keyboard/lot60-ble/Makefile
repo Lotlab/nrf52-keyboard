@@ -8,7 +8,7 @@ APP_SRC_DIR := $(APP_MAIN_DIR)/src
 
 CONFIG_H = config.h
 INC_FOLDERS += .
-SRC_FILES += keymap_plain.c user_evt.c
+SRC_FILES += keymap_plain.c user_evt.c led_rgb.c
 
 # Build Options
 #   comment out to disable the options.

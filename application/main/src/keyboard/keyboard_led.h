@@ -4,16 +4,6 @@
 #include <stdint.h>
 #include "../config/keyboard_config.h"
 
-#ifdef LED_RGB
-/**
- * @brief 设置RGB灯光值
- * 
- * @param color 
- */
-void keyboard_led_rgb_set(uint32_t color);
-void keyboard_led_rgb_direct(uint8_t bit);
-#endif
-
 /**
  * @brief 设置LED灯光值
  * 
@@ -33,9 +23,14 @@ void keyboard_led_init(void);
 void keyboard_led_powersave(bool powersave);
 
 /**
- * @brief 关闭LED，准备进入睡眠模式
+ * @brief 禁用LED，准备进入睡眠模式
  * 
  */
-void keyboard_led_off();
+void keyboard_led_deinit();
+
+/**
+ * @brief 启用自动熄灭的计时器
+ */
+void off_timer_start();
 
 #endif //__KEYBOARD_LED_H_

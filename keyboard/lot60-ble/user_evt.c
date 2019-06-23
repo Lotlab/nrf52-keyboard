@@ -25,6 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "config.h"
 
 #ifdef LED_RGB
+#include "led_rgb.h"
 enum keyboard_status {
     kbd_ble,
     kbd_charge,
@@ -57,6 +58,25 @@ static void led_status_change() {
 
 // 这里可以放置用户自定义的处理程序，例如设置灯光等。
 void custom_event_handler(enum user_ble_event arg) {
+    // 将事件传递给RGB灯光设置
+    switch (arg)
+    {
+    case USER_EVT_POST_INIT:
+        keyboard_led_rgb_init();
+        break;
+    case USER_LED_ON:
+        keyboard_led_rgb_switch(true);
+        break;
+    case USER_LED_OFF:
+        keyboard_led_rgb_switch(false);
+        break;
+    case USER_LED_DEINIT:
+        keyboard_led_rgb_deinit();
+        break;
+    default:
+        break;
+    }
+
     switch (arg) {
     case USER_EVT_INITED:
         led_status_change();

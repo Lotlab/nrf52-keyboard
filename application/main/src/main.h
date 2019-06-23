@@ -32,13 +32,17 @@ enum user_ble_event {
     USER_EVT_SLEEP_AUTO, // 自动准备进入睡眠状态
     USER_EVT_SLEEP_MANUAL, // 手动准备进入睡眠状态
     USER_EVT_INITED, // 初始化完毕
+    USER_EVT_POST_INIT, // 自定义的初始化事件
     USER_BAT_CHARGING, // 正在充电
     USER_BAT_FULL, // 充电完成
     USER_USB_CONNECTED, // 连接至主机
     USER_USB_DISCONNECT, // 没有连接
     USER_USB_CHARGE, // 仅充电
     USER_USB_PROTOCOL_BOOT, // USB protocol 设置为0
-    USER_USB_PROTOCOL_REPORT // USB protocol 设置为1
+    USER_USB_PROTOCOL_REPORT, // USB protocol 设置为1
+    USER_LED_ON, // LED 状态切换至亮起
+    USER_LED_OFF, // LED 状态切换至关闭
+    USER_LED_DEINIT // 禁用 LED，准备睡眠
 };
 
 void ble_user_event(enum user_ble_event arg);
