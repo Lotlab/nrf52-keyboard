@@ -286,20 +286,27 @@ flash: default
 	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52_kbd.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
-flash_setting: default
-	@echo Flashing Setting: $(OUTPUT_DIRECTORY)/nrf52_settings.hex ====
-	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52_settings.hex --sectorerase
-	nrfjprog -f nrf52 --reset
-	
-setting: default
-	@echo Setting generate $(OUTPUT_DIRECTORY)/nrf52_settings.hex ====
-	nrfutil settings generate --family NRF52 --application $(OUTPUT_DIRECTORY)/nrf52_kbd.hex --application-version 1 --bootloader-version 1 --bl-settings-version 1 $(OUTPUT_DIRECTORY)/nrf52_settings.hex
-
 pyocd_flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52_kbd.hex
 	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52_kbd.hex
 	pyocd cmd -t nrf52 -c reset
 
+# Generate and Flash the DFU setting
+setting: default
+	@echo Setting generate $(OUTPUT_DIRECTORY)/nrf52_settings.hex
+	nrfutil settings generate --family NRF52 --application $(OUTPUT_DIRECTORY)/nrf52_kbd.hex --application-version 1 --bootloader-version 1 --bl-settings-version 1 $(OUTPUT_DIRECTORY)/nrf52_settings.hex
+
+flash_setting: setting
+	@echo Flashing Setting: $(OUTPUT_DIRECTORY)/nrf52_settings.hex
+	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52_settings.hex --sectorerase
+	nrfjprog -f nrf52 --reset
+
+pyocd_flash_setting: setting
+	@echo Flashing Setting: $(OUTPUT_DIRECTORY)/nrf52_settings.hex
+	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52_settings.hex
+	pyocd cmd -t nrf52 -c reset
+
+# Package DFU firmware pack
 package: default
 	@echo Packing: $(OUTPUT_DIRECTORY)/nrf52_kbd.hex
 	nrfutil pkg generate --hw-version 52 --application-version 1 --application $(OUTPUT_DIRECTORY)/nrf52_kbd.hex \
@@ -316,6 +323,7 @@ pyocd_flash_softdevice:
 	pyocd flash -t nrf52 -e sector -f 2M $(SOFTDEVICE_PATH)
 	pyocd cmd -t nrf52 -c reset
 
+# Erase chip
 erase:
 	nrfjprog -f nrf52 --eraseall
 
