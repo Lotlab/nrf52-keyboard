@@ -22,25 +22,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 
 /* USB Device descriptor parameter */
-#define VENDOR_ID       0x1209
-#define PRODUCT_ID      0x0514
-#define DEVICE_VER      0x0001
-#define MANUFACTURER    "Lotlab"
-#define PRODUCT         "GT BLE60"
+#define VENDOR_ID 0x1209 /* USB VID. 若修改则需要一并修改KeymapDownloader内的设定，否则无法正常下载配列 */
+#define PRODUCT_ID 0x0514 /* USB PID. 若修改则需要一并修改KeymapDownloader内的设定，否则无法正常下载配列 */
+#define DEVICE_VER 0x0001 /* 硬件版本 */
+#define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
+#define PRODUCT "GT BLE60" /* 硬件名词，用于蓝牙显示 */
 
 /* USB HID report parameter */
-#define KEYBOARD_EPSIZE 8
-#define NKRO_EPSIZE 28
+#define KEYBOARD_EPSIZE 8 /* 键盘上传端点大小，请不要修改 */
+#define NKRO_EPSIZE 28 /* 键盘NKRO端点大小，请不要修改 */
 
 /* key matrix size */
-#define MATRIX_ROWS 5
-#define MATRIX_COLS 14
+#define MATRIX_ROWS 5 /* 硬件阵列行数 */
+#define MATRIX_COLS 14 /* 硬件阵列列数 */
 
 /* define if matrix has ghost */
-//#define MATRIX_HAS_GHOST
+// #define MATRIX_HAS_GHOST /* 按键阵列是否出现Ghost Key，若没有加二极管则需要启用这个项目 */
 
 /* Set 0 if debouncing isn't needed */
-#define DEBOUNCE    5
+#define DEBOUNCE 5 /* 硬件消抖次数 */
 
 /* Mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap */
 #define LOCKING_SUPPORT_ENABLE
@@ -49,19 +49,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* key combination for command */
 #define IS_COMMAND() ( \
-    keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)) \
-)
+    keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)))
 
 // 定义Bootmagic按键
-#define BOOTMAGIC_KEY_BOOT              KC_U /* boot! */
-#define BOOTMAGIC_KEY_ERASE_BOND        KC_E /* erase bond info */
+#define BOOTMAGIC_KEY_BOOT KC_U /* 开机按键 */
+#define BOOTMAGIC_KEY_ERASE_BOND KC_E /* 删除所有绑定的按键 */
 
 // 键盘省电参数
-#define SLEEP_SLOW_TIMEOUT 15               // 键盘闲置多久后转入慢速扫描模式 (s)
-#define SLEEP_OFF_TIMEOUT 600               // 键盘闲置多久后转入自动关机 (s)
-#define KEYBOARD_SCAN_INTERVAL 1            // 唤醒定时器
-#define KEYBOARD_FAST_SCAN_INTERVAL 10      // 通常模式下，多久扫描一次键盘 (ms)
-#define KEYBOARD_SLOW_SCAN_INTERVAL 100     // 慢速模式下，多久扫描一次键盘 (ms)
+#define SLEEP_SLOW_TIMEOUT 15 // 键盘闲置多久后转入慢速扫描模式 (s)
+#define SLEEP_OFF_TIMEOUT 600 // 键盘闲置多久后转入自动关机 (s)
+#define KEYBOARD_SCAN_INTERVAL 1 // 按键消抖时长 (ms)
+#define KEYBOARD_FAST_SCAN_INTERVAL 10 // 通常模式下，多久扫描一次键盘 (ms)
+#define KEYBOARD_SLOW_SCAN_INTERVAL 100 // 慢速模式下，多久扫描一次键盘 (ms)
 
 // LED自动熄灭时长(ms)，设为0则不自动熄灭
 #define LED_AUTOOFF_TIME 5000
@@ -112,6 +111,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PIN_CHARGING !UCC1
 #define PIN_STANDBY !UCC2
 
+// 按键阵列配置
 static const uint8_t row_pin_array[MATRIX_ROWS] = {29, 25, 23, 4, 3};
 static const uint8_t column_pin_array[MATRIX_COLS] = {30, 28, 24, 22, 21, 10, 11, 12, 13, 14, 15, 16, 17, 18};
 
