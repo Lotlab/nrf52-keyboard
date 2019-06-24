@@ -272,6 +272,12 @@ help:
 	@echo		flash_softdevice
 	@echo		sdk_config - starting external tool for editing sdk_config.h
 	@echo		flash      - flashing binary
+	@echo		setting	   - generate dfu setting
+	@echo		flash_setting - flash dfu setting
+	@echo		package	   - pack firmware for DFU
+	@echo		erase	   - erase the chip
+	@echo All targets starts with "flash" could has prefix "pyocd_", which \
+	means use pyocd to flash chip. 
 
 
 include $(TEMPLATE_PATH)/Makefile.common
