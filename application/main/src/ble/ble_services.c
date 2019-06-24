@@ -212,6 +212,10 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
             m_peer_id = p_evt->peer_id;
             event_handler(USER_BLE_CONNECTED);
             break;
+        
+        case PM_EVT_BONDED_PEER_CONNECTED:
+            event_handler(USER_BLE_CONNECTED);
+            break;
 
         case PM_EVT_PEERS_DELETE_SUCCEEDED:
             advertising_start(false);
