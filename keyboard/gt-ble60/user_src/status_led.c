@@ -22,8 +22,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nrf_gpio.h"
 #include <stdint.h>
 
-static void status_led_off_timer_start();
 static void status_led_off_timer_init();
+
+uint8_t saved_status_led_val;
 
 /**
  * @brief 初始化LED
@@ -86,16 +87,7 @@ static void status_led_set_internal(uint8_t status_led_val)
  */
 void status_led_on(void)
 {
-//开启LED状态灯
-#ifdef LED_BLE
-    LED_WRITE(LED_BLE, 1);
-#endif
-#ifdef LED_USB
-    LED_WRITE(LED_USB, 1);
-#endif
-#ifdef LED_CHARGING
-    LED_WRITE(LED_CHARGING, 1);
-#endif
+    status_led_set_internal(saved_status_led_val);
 }
 
 /**
@@ -106,8 +98,6 @@ void status_led_off(void)
 {
     status_led_set_internal(0);
 }
-
-uint8_t saved_status_led_val;
 
 /**
  * @brief 设置系统状态LED灯的状态值
@@ -134,26 +124,12 @@ void status_led_set_val(enum led_bit_usage bit, bool state)
 void status_led_set()
 {
     status_led_set_internal(saved_status_led_val);
-    status_led_off_timer_start();
+    off_timer_start();
 }
 
 #if LED_AUTOOFF_TIME > 0
 
-static bool counting;
-static bool led_autooff = true;
-APP_TIMER_DEF(status_led_off_timer);
 APP_TIMER_DEF(status_led_blink_timer);
-
-/**
- * @brief LED自动关闭的handler
- * 
- * @param context 
- */
-static void status_led_off_timer_handler(void* context)
-{
-    status_led_off();
-    counting = false;
-}
 
 /**
  * @brief LED闪烁并提示状态handler
@@ -164,49 +140,16 @@ static void status_led_blink_timer_handler(void* context)
 {
     status_led_off();
     status_led_set_internal(saved_status_led_val);
-    status_led_off_timer_start();
-}
-
-/**
- * @brief 启动自动关闭计时器
- * 
- */
-void status_led_off_timer_start()
-{
-    if (led_autooff) {
-        if (counting)
-            app_timer_stop(status_led_off_timer);
-        //led_on();
-        app_timer_start(status_led_off_timer, APP_TIMER_TICKS(LED_AUTOOFF_TIME), NULL);
-        counting = true;
-    }
+    off_timer_start();
 }
 
 /**
  * @brief 初始自动关灯计时器
  * 
  */
-void status_led_off_timer_init(void)
+static void status_led_off_timer_init(void)
 {
-    app_timer_create(&status_led_off_timer, APP_TIMER_MODE_SINGLE_SHOT, status_led_off_timer_handler);
     app_timer_create(&status_led_blink_timer, APP_TIMER_MODE_SINGLE_SHOT, status_led_blink_timer_handler);
-}
-
-/**
- * @brief 设置省电模式状态
- * 
- * @param powersave 
- */
-void status_led_powersave(bool powersave)
-{
-    if (counting)
-        app_timer_stop(status_led_off_timer);
-
-    led_autooff = powersave;
-    if (powersave)
-        off_timer_start();
-    else
-        status_led_on();
 }
 
 /**
@@ -221,14 +164,6 @@ void status_led_display()
 #else
 
 static void status_led_off_timer_init()
-{
-}
-
-void status_led_off_timer_start()
-{
-}
-
-void status_led_powersave(bool powersave)
 {
 }
 
