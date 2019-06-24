@@ -5,14 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "cwd": "${workspaceRoot}/application/main/project/_build/",
-            "executable": "nrf52810_xxaa.out",
+            "cwd": "${workspaceRoot}/keyboard/lot60-ble/_build/",
+            "executable": "nrf52_kbd.out",
             "name": "Debug Microcontroller",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "pyocd",
             "armToolchainPath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin",
-            "device": "nrf52810_xxaa",
+            "device": "nrf52_kbd",
             "targetId": "nrf52",
             "boardId": ""
         },
@@ -22,11 +22,11 @@
             "request": "attach",
             "target": ":3333",
             "remote": true,
-            "cwd": "${workspaceRoot}/application/main/project/_build/",
-            "executable": "nrf52810_xxaa.out",
+            "cwd": "${workspaceRoot}/keyboard/lot60-ble/_build/",
+            "executable": "nrf52_kbd.out",
             "valuesFormatting": "parseText",
             "autorun": [
-                "file nrf52810_xxaa.out",
+                "file nrf52_kbd.out",
                 "mon reset"
             ],
             "gdbpath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-gdb",

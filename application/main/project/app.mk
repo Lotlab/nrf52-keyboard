@@ -176,7 +176,7 @@ LIB_FILES += \
 # Optimization flags
 OPT = -Os -g3
 # Uncomment the line below to enable link time optimization
-OPT += -flto
+#OPT += -flto
 OPT += $(OPT_DEFS)
 
 # C flags common to all targets
@@ -224,7 +224,8 @@ ifeq ($(SOFTDEVICE), S112)
 	
     INC_FOLDERS += \
 		$(SDK_ROOT)/components/softdevice/s112/headers/nrf52 \
-		$(SDK_ROOT)/components/softdevice/s112/headers \
+		$(SDK_ROOT)/components/softdevice/s112/headers
+
 else ifeq ($(SOFTDEVICE), S132)
 	CFLAGS += -DS132
 	ASMFLAGS += -DS132
@@ -233,7 +234,8 @@ else ifeq ($(SOFTDEVICE), S132)
 	
 	INC_FOLDERS += \
 		$(SDK_ROOT)/components/softdevice/s132/headers/nrf52 \
-		$(SDK_ROOT)/components/softdevice/s132/headers \
+		$(SDK_ROOT)/components/softdevice/s132/headers
+
 else
 	$(error cannot handle softdevice [$(SOFTDEVICE)])
 endif
