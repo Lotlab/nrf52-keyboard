@@ -143,14 +143,10 @@ void custom_event_handler(enum user_ble_event arg)
         break;
     case USER_USB_DISCONNECT:
         status = kbd_ble;
-        // 断开USB后，切换至省电模式节省电量
-        status_led_powersave(true);
         led_status_change();
         break;
     case USER_USB_CHARGE:
         status = kbd_charge;
-        // 接入USB后，切换至非省电模式防止自动休眠
-        status_led_powersave(false);
         led_status_change();
         break;
     case USER_USB_CONNECTED:
