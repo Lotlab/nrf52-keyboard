@@ -209,6 +209,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
     switch (p_evt->evt_id)
     {
         case PM_EVT_CONN_SEC_SUCCEEDED:
+        case PM_EVT_BONDED_PEER_CONNECTED:
             m_peer_id = p_evt->peer_id;
             event_handler(USER_BLE_CONNECTED);
             break;
