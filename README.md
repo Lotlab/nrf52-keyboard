@@ -1,4 +1,4 @@
-# nrf52810-keyboard
+# nrf52-keyboard
 
 ## Overview
 
@@ -6,24 +6,39 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 
 ## 概述
 
-这是一个基于nrf52810蓝牙键盘的固件，使用了nRF SDK 15.3作为底层硬件驱动，并使用TMK键盘库作为键盘功能的上部实现。
+这是一个基于nrf52蓝牙键盘的固件，使用了nRF SDK 15.3作为底层硬件驱动，并使用TMK键盘库作为键盘功能的上部实现。
 
 此固件中的USB部分和KeymapDownloader部分重用了 [nrf51822-keyboard](https://github.com/Lotlab/nrf51822-keyboard) 的代码。
 
-## 软件
+## 目录结构
+- application/ 固件相关
+  - main/ 主程序
+    - src/ 源码
+      - ble/ 蓝牙相关代码
+      - tmk/ tmk桥接相关
+      - config/ 硬件配置相关
+    - project/ 工程
+  - bootloader/ 
+    - src/ 源码
+    - project/ 工程
+- keyboard/ 各个键盘实现相关
+- SDK/ nRF52 SDK
+- tmk/ tmk core 相关
+- usb/ USB部分代码
 
-目录说明：
+## 功能亮点
 
-- bootloader：用于DFU更新固件的Bootloader
-- main：主程序
-- sdk：nRF SDK
-- tmk_core：TMK源码
-- usb：双模的USB部分
-- KeymapDownloader：配列下载器
+- 蓝牙/USB双模切换
+- USB全键无冲
+- 配列下载更新
+- 电量上传
+- 支持多媒体按键
+- 耗电量低至400ua（使用lot60-ble硬件在关闭所有灯光条件下测得，不代表所有条件下的状态）
+- 高度自定义的事件系统
 
 ## 硬件支持
 
-此固件支持的键盘列表见Keyboard目录。
+当前支持nrf52810和nrf52832两种主控硬件，此固件支持的键盘列表见Keyboard目录。
 
 ## 编译
 
@@ -44,36 +59,8 @@ make
 cd keyboard/lot60-ble
 make
 ```
-
-## 目录结构
-- application/ 固件相关
-  - main/ 主程序
-    - src/ 源码
-      - ble/ 蓝牙相关代码
-      - tmk/ tmk桥接相关
-      - config/ 硬件配置相关
-    - project/ 工程
-  - bootloader/ 
-    - src/ 源码
-    - project/ 工程
-- keyboard/ 各个键盘实现相关
-- SDK/ nRF52 SDK
-- tmk/ tmk core 相关
-- usb/ USB部分代码
-
 ## 硬件移植
-若使用的硬件方案与已有的硬件相同，则可以将keyboard文件夹内的配置文件复制一份并修改。
-
-## Todo
-
-- [x] EEConfig 配置存储
-- [x] Bootloader Jump 跳转至Bootloader
-- [x] Keymap 存储
-- [x] 关机原因存储并快速恢复
-- [ ] 多设备切换（？）
-- [x] 自定义各种灯光
-- [x] UART 通讯
-- [x] USB 主控程序使用 Make 编译
+若使用的硬件方案与已有的硬件相同，则可以将keyboard文件夹内的配置文件复制一份并修改。主要修改项目是Makefile与config.h。
 
 ## UART 通讯协议
 
