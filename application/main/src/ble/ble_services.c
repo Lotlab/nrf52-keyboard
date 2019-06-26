@@ -300,7 +300,7 @@ static void get_device_name(char * device_name, int offset) {
     const char lookup_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'}; 
 
     strcpy(device_name, DEVICE_NAME);
-    device_name[offset] = '_';
+    device_name[offset++] = '_';
 
     ble_gap_addr_t ble_addr;
     sd_ble_gap_addr_get(&ble_addr);
@@ -308,9 +308,10 @@ static void get_device_name(char * device_name, int offset) {
     for (uint8_t i = 0; i < 3; i++)
     {
         uint8_t addr = ble_addr.addr[3+i];
-        device_name[offset+1+i*2] = lookup_table[addr / 16];
-        device_name[offset+2+i*2] = lookup_table[addr % 16];
+        device_name[offset++] = lookup_table[addr / 16];
+        device_name[offset++] = lookup_table[addr % 16];
     }
+    device_name[offset] = 0x00;
 }
 
 
