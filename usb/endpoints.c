@@ -51,6 +51,7 @@ uint8_t __xdata __at(0x90) Ep2Buffer[MAX_PACKET_SIZE];
 uint8_t __xdata __at(0xB0) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
 
 bool usb_ready = false;
+bool usb_busy = false;
 static uint8_t SetupReq, SetupLen, Count, UsbConfig;
 static uint8_t* pDescr;
 
@@ -267,18 +268,21 @@ void EP1_IN()
 {
     UEP1_T_LEN = 0; //预使用发送长度一定要清空
     UEP1_CTRL = UEP1_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_NAK; //默认应答NAK
+    usb_busy = false;
 }
 
 void EP2_IN()
 {
     UEP2_T_LEN = 0; //预使用发送长度一定要清空
     UEP2_CTRL = UEP2_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_NAK; //默认应答NAK
+    usb_busy = false;
 }
 
 void EP3_IN()
 {
     UEP3_T_LEN = 0; //预使用发送长度一定要清空
     UEP3_CTRL = UEP3_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_NAK; //默认应答NAK
+    usb_busy = false;
 }
 
 static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet)

@@ -160,7 +160,7 @@ void uart_check()
                     uart_tx(send_buff[i]);
                 }
                 send_len = 0;
-            } else {
+            } else if (!usb_busy) { // USB 当前空闲，可以轮询下一个数据包
                 // 没有等待发送的数据，发送定期Query状态包
                 uart_send_status();
                 if (last_success)

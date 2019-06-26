@@ -80,7 +80,8 @@ void KeyboardGenericUpload(uint8_t* packet, uint8_t len)
     if (len != 8)
         return;
     UsbOnKeySend();
-
+    
+    usb_busy = true;
     memcpy(&Ep1Buffer[64], packet, len);
     UEP1_T_LEN = len;
     UEP1_CTRL = UEP1_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
@@ -96,6 +97,7 @@ void KeyboardExtraUpload(uint8_t* packet, uint8_t len)
 {
     UsbOnKeySend();
 
+    usb_busy = true;
     memcpy(Ep2Buffer, packet, len);
     UEP2_T_LEN = len;
     UEP2_CTRL = UEP2_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
@@ -111,6 +113,8 @@ void ResponseConfigurePacket(uint8_t* packet, uint8_t len)
 {
     if (len > 64)
         return;
+        
+    usb_busy = true;
     Ep3Buffer[64] = 0x3f; // packet id
     memcpy(&Ep3Buffer[65], packet, len);
     UEP3_T_LEN = len + 1;
