@@ -16,22 +16,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "keymap_storage.h"
-#include "keymap_common.h"
 #include "fds.h"
 #include "keymap.h"
+#include "keymap_common.h"
 #include "nrf.h"
 #include <string.h>
-
-#define KEYMAP_SIZE 660
-#define KEYMAP_SIZE_WORD (KEYMAP_SIZE / 4)
-#define FILE_ID 0x0514 /* The ID of the file to write the records into. */
-#define RECORD_KEY 0x0514 /* A key for the first record. */
 
 #define layer_size (MATRIX_ROWS * MATRIX_COLS)
 #define checksum_offset 0x13
 #define fn_offset (checksum_offset + 2)
 #define layer_offset (fn_offset + 0x40)
-#define layer_end (layer_offset + 14 * 5 * 8)
+#define layer_end (layer_offset + layer_size * 8)
+
+#define KEYMAP_SIZE ((((layer_end - 1) / 60) + 1) * 60)
+#define KEYMAP_SIZE_WORD (KEYMAP_SIZE / 4)
+#define FILE_ID 0x0514 /* The ID of the file to write the records into. */
+#define RECORD_KEY 0x0514 /* A key for the first record. */
 
 #ifdef KEYMAP_STORAGE
 __ALIGN(4)
@@ -130,7 +130,12 @@ void keymap_init(void)
  */
 void keymap_set(uint8_t block, uint8_t size, uint8_t* data)
 {
-    memcpy(&keymap_block[block * size], data, size);
+    if (block * size < KEYMAP_SIZE) {
+        memcpy(&keymap_block[block * size], data, size);
+        if ((block + 1) * size >= KEYMAP_SIZE) {
+            keymap_write();
+        }
+    }
 }
 
 /**
