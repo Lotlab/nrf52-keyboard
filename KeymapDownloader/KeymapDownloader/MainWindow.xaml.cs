@@ -40,12 +40,13 @@ namespace KeymapDownloader
             Devices.Items.Clear();
 
             var list = DeviceList.Local;
-            var HidDeviceList = list.GetHidDevices(0x1209, 0x0514);
+            // var HidDeviceList = list.GetHidDevices(0x1209, 0x0514);
+            var HidDeviceList = list.GetHidDevices();
             foreach (var item in HidDeviceList)
             {
-                if (item.DevicePath.IndexOf("mi_02") != -1)
+                if (CustomHID.IsTarget(item))
                 {
-                    Devices.Items.Add(item);
+                    Devices.Items.Add(new CustomHID(item));
                 }
             }
             if (Devices.Items.Count > 0) Devices.SelectedIndex = 0;
@@ -67,10 +68,26 @@ namespace KeymapDownloader
             }
         }
 
+        bool checkSum(byte[] data)
+        {
+            const int checksum_offset = 0x13;
+            int checksum = (data[checksum_offset]) + (data[checksum_offset + 1] << 8);
+
+            int calc_sum = 0xFEED;
+            for (int i = checksum_offset + 2; i < data.Length - 1; i += 2)
+            {
+                var c = (data[i]) + (data[i + 1] << 8);
+                calc_sum += c;
+                calc_sum %= 0x10000;
+            }
+
+            return calc_sum == checksum;
+        }
+
         private void Download_Click(object sender, RoutedEventArgs e)
         {
             var path = Path.Text;
-            byte[] binary = new Byte[660];
+            byte[] binary = new Byte[1024];
 
             HidStream hidStream = device.Open();
 
@@ -81,11 +98,12 @@ namespace KeymapDownloader
                     lbl_status.Text = "配列文件不存在";
                     return;
                 }
+
                 if (path.EndsWith("bin", StringComparison.CurrentCultureIgnoreCase))
                 {
                     using (var stream = File.Open(path, FileMode.Open))
                     {
-                        stream.Read(binary, 0, 660);
+                        stream.Read(binary, 0, 1024);
                     }
                 }
                 else
@@ -97,29 +115,15 @@ namespace KeymapDownloader
                     foreach (var item in memoryRepresentation.Cells)
                     {
                         binary[index++] = item.Value;
-                        if (index == 660)
-                        {
+                        if (index == 1024)
                             break;
-                        }
                     }
+                }
 
-                    const int checksum_offset = 0x13;
-                    const int total_size = checksum_offset + 2 + 0x40 + (14 * 5 * 8);
-                    int checksum = (binary[checksum_offset]) + (binary[checksum_offset + 1] << 8);
-
-                    int calc_sum = 0xFEED;
-                    for (int i = checksum_offset + 2; i < total_size - 1; i+=2)
-                    {
-                        var c = (binary[i]) + (binary[i + 1] << 8);
-                        calc_sum += c;
-                        calc_sum %= 0x10000;
-                    }
-
-                    if (checksum != calc_sum)
-                    {
-                        lbl_status.Text = "Keymap校验不通过";
-                        return;
-                    }
+                if (!checkSum(binary))
+                {
+                    lbl_status.Text = "Keymap校验不通过";
+                    return;
                 }
             }
 
@@ -166,7 +170,7 @@ namespace KeymapDownloader
 
         private void Devices_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            device = (HidDevice)Devices.SelectedItem;
+            device = ((CustomHID)Devices.SelectedItem).Device;
         }
     }
 }
