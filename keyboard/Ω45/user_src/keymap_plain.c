@@ -21,35 +21,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 const uint8_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* 0: default */
     KEYMAP(
-        TAB, Q,   W,   E,   R,   T,   Y,   U,   I,   O,   P,   BSLS, \
+        TAB, Q,   W,   E,   R,   T,   Y,   U,   I,   O,   P,   BSPC, \
         CAPS,A,   S,   D,   F,   G,   H,   J,   K,   L,   SCLN, ENT,  \
-        LSFT,Z,   X,   C,   V,   B,   N,   M,   COMM,DOT,       FN4,  \
-        LCTL,LGUI,LALT,FN10,     SPC,           FN0, FN1, FN2, FN3),
+        LSFT,Z,   X,   C,   V,   B,   N,   M,   COMM,FN2,       RSFT,  \
+        LCTL,LGUI,LALT,FN1,     SPC,           LEFT, DOWN, RGHT, FN0),
     /* 1: qwerty */
 	KEYMAP(
         ESC, 1,   2,   3,   4,   5,   6,   7,   8,   9,   0,   BSPC, \
-        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS, FN9,  \
+        TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS, FN7,  \
         TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,VOLD,VOLU,MUTE,     TRNS, \
         TRNS,TRNS,TRNS,TRNS,     TRNS,          TRNS,TRNS,TRNS,TRNS),
     /* 2: Poker Fn */
     KEYMAP(
         F1,  F2,  F3,  F4,  F5,  F6,  F7,  F8,  F9,  F10, F11,  F12,  \
-        FN7,TRNS,TRNS,FN8 ,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,  FN5,  \
-        FN6,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,VOLD,VOLU,MUTE,      TRNS, \
+        FN5,TRNS,TRNS,FN6 ,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,  FN3,  \
+        FN4,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,VOLD,VOLU,MUTE,      TRNS, \
         TRNS,TRNS,TRNS,TRNS,     TRNS,          TRNS,TRNS,TRNS,TRNS),
 };
 const action_t PROGMEM fn_actions[] = {
     /* Poker Layout */
     [0] = ACTION_LAYER_TAP_KEY(2, KC_DELETE),
-    [1] = ACTION_MODS_TAP_KEY(MOD_RALT, KC_LEFT),
-    [2] = ACTION_LAYER_TAP_KEY(3, KC_DOWN),
-    [3] = ACTION_MODS_TAP_KEY(MOD_RCTL, KC_RIGHT),
-    [4] = ACTION_MODS_TAP_KEY(MOD_RSFT, KC_UP),
-    [5] = ACTION_FUNCTION(AF_POWER_SLEEP),
-    [6] = ACTION_FUNCTION(AF_SWITCH_MODE),
-    [7] = ACTION_FUNCTION(AF_POWER_OFF),
-    [8] = ACTION_FUNCTION(AF_DELETE_BOND),
-    [9] = ACTION_FUNCTION(AF_LED_DISPLAY),
-    [10] = ACTION_LAYER_TAP_KEY(2, KC_SPACE),
+    [1] = ACTION_LAYER_TAP_KEY(1, KC_SPACE),
+    [2] = ACTION_FUNCTION(AF_TRICKY_SLSH),
+    [3] = ACTION_FUNCTION(AF_POWER_SLEEP),
+    [4] = ACTION_FUNCTION(AF_SWITCH_MODE),
+    [5] = ACTION_FUNCTION(AF_POWER_OFF),
+    [6] = ACTION_FUNCTION(AF_DELETE_BOND),
+    [7] = ACTION_FUNCTION(AF_LED_DISPLAY),
 };
 
