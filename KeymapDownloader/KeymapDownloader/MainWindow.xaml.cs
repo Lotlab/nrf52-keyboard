@@ -77,6 +77,7 @@ namespace KeymapDownloader
             for (int i = checksum_offset + 2; i < data.Length - 1; i += 2)
             {
                 var c = (data[i]) + (data[i + 1] << 8);
+                if (c == 0xFFFF) break; // 数据末端
                 calc_sum += c;
                 calc_sum %= 0x10000;
             }
