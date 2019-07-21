@@ -26,15 +26,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT_ID 0x0514 /* USB PID. 若修改则需要一并修改KeymapDownloader内的设定，否则无法正常下载配列 */
 #define DEVICE_VER 0x0001 /* 硬件版本 */
 #define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
-#define PRODUCT "GT BLE60" /* 硬件名词，用于蓝牙显示 */
+#define PRODUCT "GT Ω45" /* 硬件名词，用于蓝牙显示 */
 
 /* USB HID report parameter */
 #define KEYBOARD_EPSIZE 8 /* 键盘上传端点大小，请不要修改 */
 #define NKRO_EPSIZE 28 /* 键盘NKRO端点大小，请不要修改 */
 
 /* key matrix size */
-#define MATRIX_ROWS 5 /* 硬件阵列行数 */
-#define MATRIX_COLS 14 /* 硬件阵列列数 */
+#define MATRIX_ROWS 4 /* 硬件阵列行数 */
+#define MATRIX_COLS 12 /* 硬件阵列列数 */
 
 /* define if matrix has ghost */
 // #define MATRIX_HAS_GHOST /* 按键阵列是否出现Ghost Key，若没有加二极管则需要启用这个项目 */
@@ -68,6 +68,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 需要输入配对码
 // #define PASSKEY_REQUIRED
 
+// 更改发射功率到+4dBm
+// #define HIGH_TX_POWER
+
 // 启用看门狗
 #define ENABLE_WATCHDOG
 
@@ -75,7 +78,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KEYMAP_STORAGE
 
 // 直接开机而跳过开机条件检测，用于调试
-// #define DEBUG_SKIP_PWRON_CHECK
+#define DEBUG_SKIP_PWRON_CHECK
 
 /* disable action features */
 //#define NO_ACTION_LAYER
@@ -85,24 +88,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define NO_ACTION_FUNCTION
 
 // LED 配置
-#define LED_CAPS 26  //caps led ：5 ； led1、2、3、4：19、20、27、26
+#define LED_CAPS 4  //caps led ：5 ； led1、2、3、4：19、20、27、26
 
 
 //#define RGB_WS2812 8 预留
 
 // 启用 LED 状态灯
-#define LED_BLE 20
-#define LED_CHARGING 19
-#define LED_USB 27
+#define LED_BLE 19
+#define LED_CHARGING 10
+#define LED_USB 20
 
 // 独立硬件按钮
-#define POWER_BUTTON 9
+#define POWER_BUTTON 3
 
 // UART 传输配置
 #define HAS_USB
-#define UART_RXD 6
-#define UART_TXD 7
-#define UART_BAUDRATE NRF_UART_BAUDRATE_57600
+#define UART_RXD 8
+#define UART_TXD 9
+#define UART_BAUDRATE NRF_UART_BAUDRATE_115200
+#define UART0_BUAD 115200
+#define CH55X_FREQ_SYS 24000000
 
 // 电量检测配置 Pin 2
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0
@@ -112,8 +117,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PIN_STANDBY !UCC2
 
 // 按键阵列配置
-static const uint8_t row_pin_array[MATRIX_ROWS] = {29, 25, 23, 4, 3};
-static const uint8_t column_pin_array[MATRIX_COLS] = {30, 28, 24, 22, 21, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+static const uint8_t row_pin_array[MATRIX_ROWS] = {27, 26, 30, 29};
+static const uint8_t column_pin_array[MATRIX_COLS] = {28, 25, 24, 23, 22, 21, 11, 12, 13, 14, 15, 16};
 
 #define ROW_IN // 二极管方向是从COL->ROW
 
