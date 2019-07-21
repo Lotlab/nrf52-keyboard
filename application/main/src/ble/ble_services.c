@@ -504,6 +504,36 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     }
 }
 
+#ifdef DYNAMIC_TX_POWER
+static void ble_conn_handle_change(uint16_t old, uint16_t new)
+{
+    if (old != BLE_CONN_HANDLE_INVALID) {
+        sd_ble_gap_rssi_stop(old);
+    }
+    if (new != BLE_CONN_HANDLE_INVALID) {
+        sd_ble_gap_rssi_start(new, 5, 5);
+    }
+}
+
+static uint8_t current_tx = 6; // 0dbm default.
+
+static void ble_rssi_change(int8_t rssi)
+{
+    const int8_t tx_power_table[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
+    if (rssi >= -65 && current_tx > 0)
+        current_tx--;
+    else if (rssi <= -80 && current_tx < sizeof(tx_power_table) - 1)
+        current_tx++;
+    else
+        return;
+
+    sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, m_conn_handle, tx_power_table[current_tx]);
+}
+#else
+#define ble_conn_handle_change(A,B) 
+#define ble_rssi_change(A) 
+#endif
+
 /**@brief Function for handling BLE events.
  *
  * @param[in]   p_ble_evt   Bluetooth stack event.
@@ -515,12 +545,14 @@ static void ble_evt_handler(ble_evt_t const* p_ble_evt, void* p_context)
 
     switch (p_ble_evt->header.evt_id) {
     case BLE_GAP_EVT_CONNECTED:
+        ble_conn_handle_change(m_conn_handle, p_ble_evt->evt.gap_evt.conn_handle);
         m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
         err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
         APP_ERROR_CHECK(err_code);
         break;
 
     case BLE_GAP_EVT_DISCONNECTED:
+        ble_conn_handle_change(m_conn_handle, BLE_CONN_HANDLE_INVALID);
         m_conn_handle = BLE_CONN_HANDLE_INVALID;
         event_handler(USER_BLE_DISCONNECT);
         break; // BLE_GAP_EVT_DISCONNECTED
@@ -554,6 +586,10 @@ static void ble_evt_handler(ble_evt_t const* p_ble_evt, void* p_context)
 
     case BLE_GAP_EVT_AUTH_KEY_REQUEST:
         event_handler(USER_BLE_PASSKEY_REQUIRE);
+        break;
+
+    case BLE_GAP_EVT_RSSI_CHANGED:
+        ble_rssi_change(p_ble_evt->evt.gap_evt.params.rssi_changed.rssi);
         break;
 
     default:
