@@ -17,8 +17,10 @@ SRC_FILES += keymap_plain.c user_evt.c led_rgb.c
 # 配置项：功能选项
 BOOTMAGIC_ENABLE = yes	# 启用Bootmagic
 EXTRAKEY_ENABLE = yes	# 启用媒体键功能
+
+# 注意：NKRO和6KRO存在冲突，不可以同时启用
 NKRO_ENABLE = yes	# 启用USB的全键无冲功能
-USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
+# USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
 
 all: default ch554
 

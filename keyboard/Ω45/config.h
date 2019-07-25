@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 
 /* USB Device descriptor parameter */
-#define VENDOR_ID 0x1209 /* USB VID. 若修改则需要一并修改KeymapDownloader内的设定，否则无法正常下载配列 */
-#define PRODUCT_ID 0x0514 /* USB PID. 若修改则需要一并修改KeymapDownloader内的设定，否则无法正常下载配列 */
+#define VENDOR_ID 0x1209 /* USB VID */
+#define PRODUCT_ID 0x0514 /* USB PID */
 #define DEVICE_VER 0x0001 /* 硬件版本 */
 #define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
 #define PRODUCT "GT Ω45" /* 硬件名词，用于蓝牙显示 */
