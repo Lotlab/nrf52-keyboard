@@ -102,8 +102,15 @@ static void keymap_read(void)
 static void keymap_update(void)
 {
     // record_desc was create by fds_record_find or fds_record_write
-    ret_code_t code = fds_record_update(&record_desc, &record);
-    APP_ERROR_CHECK(code);
+    ret_code_t err_code = fds_record_update(&record_desc, &record);
+
+    // space full, gc
+    if (err_code == FDS_ERR_NO_SPACE_IN_FLASH)
+    {
+        err_code = fds_gc();
+        APP_ERROR_CHECK(err_code);
+        fds_record_update(&record_desc, &record);
+    }
 }
 
 /**
