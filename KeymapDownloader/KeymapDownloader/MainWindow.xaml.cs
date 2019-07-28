@@ -16,6 +16,7 @@ using System.IO;
 using HidSharp;
 using IntelHexFormatReader;
 using IntelHexFormatReader.Model;
+using System.Threading;
 
 namespace KeymapDownloader
 {
@@ -30,6 +31,12 @@ namespace KeymapDownloader
         {
             InitializeComponent();
             RefreshHIDList();
+            SetCopyright();
+        }
+
+        void SetCopyright()
+        {
+            setStatusText($"配列下载器 {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
         }
 
         /// <summary>
@@ -40,7 +47,6 @@ namespace KeymapDownloader
             Devices.Items.Clear();
 
             var list = DeviceList.Local;
-            // var HidDeviceList = list.GetHidDevices(0x1209, 0x0514);
             var HidDeviceList = list.GetHidDevices();
             foreach (var item in HidDeviceList)
             {
@@ -88,6 +94,12 @@ namespace KeymapDownloader
         private void Download_Click(object sender, RoutedEventArgs e)
         {
             var path = Path.Text;
+            Thread thread = new Thread(() => { DownloadKeymap(path); });
+            thread.Start();
+        }
+
+        private void DownloadKeymap(string path)
+        {
             byte[] binary = new Byte[1024];
 
             HidStream hidStream = device.Open();
@@ -96,7 +108,7 @@ namespace KeymapDownloader
             {
                 if (!File.Exists(path))
                 {
-                    lbl_status.Text = "配列文件不存在";
+                    setStatusText("配列文件不存在");
                     return;
                 }
 
@@ -123,7 +135,7 @@ namespace KeymapDownloader
 
                 if (!checkSum(binary))
                 {
-                    lbl_status.Text = "Keymap校验不通过";
+                    setStatusText("Keymap校验不通过");
                     return;
                 }
             }
@@ -131,21 +143,36 @@ namespace KeymapDownloader
             try
             {
                 byte[] packet = new byte[60];
-
-                for (int i = 0; i < (binary.Length / 60); i++)
+                var count = binary.Length / 60;
+                for (int i = 0; i < count; i++)
                 {
                     Array.Copy(binary, i * 60, packet, 0, 60);
-                    SendPacket(hidStream, (uint)i, packet);
+                    setStatusText($"{i + 1}/{count}");
+
+                    if (SendPacket(hidStream, (uint)i, packet))
+                        break;
                 }
-                lbl_status.Text = "完成";
+                setStatusText("下载完毕");
             }
             catch (Exception exp)
             {
-                lbl_status.Text = exp.Message;
+                setStatusText(exp.Message);
             }
         }
 
-        void SendPacket(HidStream stream, uint id, byte[] data)
+        void setStatusText(string msg)
+        {
+            Dispatcher.Invoke(() => { lbl_status.Text = msg; });
+        }
+
+        /// <summary>
+        /// 发送数据包
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns>是否为最后一个</returns>
+        bool SendPacket(HidStream stream, uint id, byte[] data)
         {
             byte[] send = new byte[63];
 
@@ -160,18 +187,27 @@ namespace KeymapDownloader
             {
                 stream.Write(send);
                 var ret = stream.Read();
-                ret_code = ret[1] == 0x11;
+                var code = ret[1];
+
+                // 0x10: 校验失败
+                // 0x11: 接收成功
+                // 0x12: 全部发送完毕
+                if (code == 0x12)
+                    return true;
+
+                ret_code = code == 0x11;
             } while (!ret_code && retryCount-- > 0);
 
             if (retryCount <= 0)
             {
                 throw new Exception("发送重试次数达到上限");
             }
+            return false;
         }
 
         private void Devices_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            device = ((CustomHID)Devices.SelectedItem).Device;
+            device = ((CustomHID)Devices.SelectedItem)?.Device;
         }
     }
 }
