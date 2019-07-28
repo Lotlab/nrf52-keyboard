@@ -15,9 +15,44 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "config.h"
 #include "usb_descriptor.h"
 #include <stdint.h>
-// #include <stdio.h>
+#include <string.h>
+
+const uint8_t itoa[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+static uint8_t __xdata descBuffer[64];
+
+static uint8_t fillDescBuffer(char* str)
+{
+    uint8_t len = strlen(str);
+
+    descBuffer[0] = len * 2 + 2;
+    descBuffer[1] = 0x03;
+
+    for (uint8_t i = 0; i < len; i++) {
+        descBuffer[(i + 1) * 2] = str[i];
+        descBuffer[(i + 1) * 2 + 1] = 0x00;
+    }
+    return len * 2 + 2;
+}
+
+static uint8_t getSerial()
+{
+    uint8_t i = 1;
+    descBuffer[i++] = 0x03;
+
+    for (uint16_t addr = 0x3FFC; addr <= 0x3FFF; addr++) {
+        uint16_t se = (uint16_t)(*((const uint8_t __code*)(addr)));
+        descBuffer[i++] = itoa[(se >> 4) % 0xF];
+        descBuffer[i++] = 0x00;
+        descBuffer[i++] = itoa[(se >> 0) % 0xF];
+        descBuffer[i++] = 0x00;
+    }
+
+    descBuffer[0] = i;
+    return i;
+}
 
 /** \brief 获取文本描述符
  *
@@ -29,16 +64,42 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 static uint8_t getStringDescriptor(uint8_t order, uint8_t** strPtor)
 {
     uint8_t header = 0, strlen = 0;
-    do {
-        header += strlen;
-        if (header >= sizeof(StringDescriptor)) // 超过长度就直接返回
-        {
-            return 0xFF;
-        }
-        strlen = StringDescriptor[header];
-    } while (order--);
+    switch (order) {
+    case 0:
+        *strPtor = (uint8_t*)&LangStringDesc[0];
+        strlen = LangStringDesc[0];
+        break;
+    case INTF_STRING_INDEX:
+    case INTF_STRING_INDEX + 1:
+    case INTF_STRING_INDEX + 2:
+        order -= INTF_STRING_INDEX;
+        do {
+            header += strlen;
+            if (header >= sizeof(InterfaceStringDesc)) // 超过长度就直接返回
+            {
+                return 0xFF;
+            }
+            strlen = InterfaceStringDesc[header];
+        } while (order--);
+        *strPtor = (uint8_t*)&InterfaceStringDesc[header];
+        break;
+    case 1:
+        strlen = fillDescBuffer(MANUFACTURER);
+        *strPtor = descBuffer;
+        break;
+    case 2:
+        strlen = fillDescBuffer(PRODUCT);
+        *strPtor = descBuffer;
+        break;
+    case 3:
+        strlen = getSerial();
+        *strPtor = descBuffer;
+        break;
+    default:
+        strlen = 0xFF;
+        break;
+    }
 
-    *strPtor = (uint8_t*)&StringDescriptor[header];
     return strlen;
 }
 

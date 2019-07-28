@@ -213,42 +213,14 @@ uint8_t const ConfigDescriptor []=
 /*-----------------------------------------------------------------------------+
 | String Descriptor                                                            |
 |-----------------------------------------------------------------------------*/
-uint8_t const StringDescriptor[] = {
+const uint8_t LangStringDesc[] = {
     // String index0, language support
-
     4,        // Length of language descriptor ID
     3,        // LANGID tag
     0x09, 0x04,    // 0x0409 for English
+};
 
-
-    // String index1, Manufacturer
-
-    14,        // Length of this string descriptor
-    3,        // bDescriptorType
-    'L',0x00,'o',0x00,'t',0x00,'l',0x00,'a',0x00,'b',0x00,
-
-    // String index2, Product
-
-    30,        // Length of this string descriptor
-    3,        // bDescriptorType
-    'n',0x00,'R',0x00,'F',0x00,'5',0x00,'2',0x00,' ',0x00,
-    'K',0x00,'e',0x00,'y',0x00,'b',0x00,'o',0x00,'a',0x00,
-    'r',0x00,'d',0x00,
-
-    // String index3, Serial Number
-
-    14,        // Length of this string descriptor
-    3,        // bDescriptorType
-    '1',0x00,'1',0x00,'4',0x00,'5',0x00,'1',0x00,'4',0x00,
-
-    // String index4, Configuration String
-
-    22,        // Length of this string descriptor
-    3,        // bDescriptorType
-    'M',0x00,'S',0x00,'P',0x00,'4',0x00,'3',0x00,'0',0x00,
-    ' ',0x00,'U',0x00,'S',0x00,'B',0x00,
-
-
+const uint8_t InterfaceStringDesc[] = {
     // String index5, Interface String
     26,        // Length of this string descriptor
     3,        // bDescriptorType
@@ -262,7 +234,7 @@ uint8_t const StringDescriptor[] = {
     'K',0x00,'e',0x00,'y',0x00,' ',0x00,'S',0x00,'u',0x00,
     'p',0x00,'p',0x00,'o',0x00,'r',0x00,'t',0x00,
 
-        // String index6, Interface String
+    // String index7, Interface String
     32,        // Length of this string descriptor
     3,        // bDescriptorType
     'K',0x00,'e',0x00,'y',0x00,'b',0x00,'o',0x00,'a',0x00,
