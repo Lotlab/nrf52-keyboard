@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "user_func.h"
 
 #define MODS_SHIFT_MASK (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT))
+#define MODS_RSHIFT_MASK (MOD_BIT(KC_RSHIFT))
 
 void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
 {
@@ -75,10 +76,10 @@ void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
         break;
     case AF_TRICKY_SLSH:
         if (record->event.pressed) {
-            if (get_mods() & MODS_SHIFT_MASK) {
+            if (get_mods() & MODS_RSHIFT_MASK) {
                 tricky_slsh_registered = KC_SLSH;
             } else {
-                tricky_slsh_registered = KC_UP;
+                tricky_slsh_registered = KC_DOT;
             }
             register_code(tricky_slsh_registered);
             send_keyboard_report();

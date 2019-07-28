@@ -68,9 +68,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 需要输入配对码
 // #define PASSKEY_REQUIRED
 
-// 更改发射功率到+4dBm
-// #define HIGH_TX_POWER
-
 // 启用看门狗
 #define ENABLE_WATCHDOG
 
