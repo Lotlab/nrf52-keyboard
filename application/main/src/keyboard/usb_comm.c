@@ -70,14 +70,20 @@ static uint8_t checksum(uint8_t* data, uint8_t len)
     return (uint8_t)checksum;
 }
 
+enum uart_ack_state {
+    UART_CHECK_FAIL,
+    UART_SUCCESS, 
+    UART_END
+};
+
 /**
  * @brief 回复请求
  * 
  * @param success 
  */
-static void uart_ack(bool success)
+static void uart_ack(enum uart_ack_state state)
 {
-    app_uart_put(0x10 + success);
+    app_uart_put(0x10 + state);
 }
 
 /**
@@ -187,10 +193,13 @@ static void uart_on_recv()
                 uint8_t sum = checksum(recv_buf, 61);
                 if (sum == recv_buf[61]) {
                     uint8_t id = recv_buf[0] & 0x7F;
-                    keymap_set(id, 60, &recv_buf[1]);
-                    uart_ack(true);
+                    if (keymap_set(id, 60, &recv_buf[1])) {
+                        uart_ack(UART_END);
+                    } else {
+                        uart_ack(UART_SUCCESS);
+                    }
                 } else {
-                    uart_ack(false);
+                    uart_ack(UART_CHECK_FAIL);
                 }
             }
         }

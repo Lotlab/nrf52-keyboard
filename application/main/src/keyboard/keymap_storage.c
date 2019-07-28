@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "keymap.h"
 #include "keymap_common.h"
 #include "nrf.h"
+#include "app_scheduler.h"
 #include <string.h>
 
 #define layer_size (MATRIX_ROWS * MATRIX_COLS)
@@ -108,7 +109,6 @@ static void keymap_update(void)
     if (err_code == FDS_ERR_NO_SPACE_IN_FLASH)
     {
         err_code = fds_gc();
-        APP_ERROR_CHECK(err_code);
         fds_record_update(&record_desc, &record);
     }
 }
@@ -129,33 +129,38 @@ void keymap_init(void)
 }
 
 /**
+ * @brief 确认Keymap写入
+ * 
+ */
+static void keymap_write(void *p_event_data, uint16_t event_size)
+{
+    UNUSED_PARAMETER(p_event_data);
+    UNUSED_PARAMETER(event_size);
+    keymap_valid();
+    keymap_update();
+}
+
+/**
  * @brief 写入Keymap
  * 
  * @param block 当前块
  * @param size 块大小
  * @param data 数据
  */
-void keymap_set(uint8_t block, uint8_t size, uint8_t* data)
+bool keymap_set(uint8_t block, uint8_t size, uint8_t* data)
 {
     if (block * size < KEYMAP_SIZE) {
         memcpy(&keymap_block[block * size], data, size);
         if ((block + 1) * size >= KEYMAP_SIZE) {
-            keymap_write();
+            app_sched_event_put(NULL, 0, &keymap_write);
+            return true;
         }
+        return false;
     }
+    return true;
 }
 
-/**
- * @brief 确认Keymap写入
- * 
- */
-void keymap_write(void)
-{
-    keymap_valid();
-    keymap_update();
-}
 #else
 void keymap_init(void) {}
-void keymap_set(uint8_t block, uint8_t size, uint8_t* data) {}
-void keymap_write(void) {}
+bool keymap_set(uint8_t block, uint8_t size, uint8_t* data) {}
 #endif
