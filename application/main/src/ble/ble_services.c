@@ -281,7 +281,7 @@ static void get_device_name(char* device_name, int offset)
     const char lookup_table[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
     strcpy(device_name, DEVICE_NAME);
-    device_name[offset++] = '_';
+    //device_name[offset++] = '_';
 
     ble_gap_addr_t ble_addr;
     sd_ble_gap_addr_get(&ble_addr);

@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT_ID 0x0514 /* USB PID */
 #define DEVICE_VER 0x0001 /* 硬件版本 */
 #define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
-#define PRODUCT "GT BLE60" /* 硬件名词，用于蓝牙显示 */
+#define PRODUCT "GT BLE60 " /* 硬件名词，用于蓝牙显示 */
 
 /* USB HID report parameter */
 #define KEYBOARD_EPSIZE 8 /* 键盘上传端点大小，请不要修改 */
