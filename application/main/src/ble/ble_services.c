@@ -276,12 +276,13 @@ static void whitelist_load(void)
     APP_ERROR_CHECK(ret);
 }
 
+#ifdef MACADDR_SEPRATOR
 static void get_device_name(char* device_name, int offset)
 {
     const char lookup_table[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
     strcpy(device_name, DEVICE_NAME);
-    device_name[offset++] = '_';
+    device_name[offset++] = MACADDR_SEPRATOR;
 
     ble_gap_addr_t ble_addr;
     sd_ble_gap_addr_get(&ble_addr);
@@ -293,6 +294,7 @@ static void get_device_name(char* device_name, int offset)
     }
     device_name[offset] = 0x00;
 }
+#endif
 
 /**@brief Function for the GAP initialization.
  *
@@ -306,7 +308,7 @@ static void gap_params_init(void)
     ble_gap_conn_sec_mode_t sec_mode;
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
-
+#ifdef MACADDR_SEPRATOR
     int orig_len = strlen(DEVICE_NAME);
     int name_len = orig_len + 8;
     char device_name[name_len];
@@ -315,6 +317,9 @@ static void gap_params_init(void)
     err_code = sd_ble_gap_device_name_set(&sec_mode,
         (const uint8_t*)device_name,
         strlen(device_name));
+#else
+    err_code = sd_ble_gap_device_name_set(&sec_mode, (const uint8_t*)DEVICE_NAME, strlen(DEVICE_NAME));
+#endif
 
     APP_ERROR_CHECK(err_code);
 
@@ -530,8 +535,8 @@ static void ble_rssi_change(int8_t rssi)
     sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, m_conn_handle, tx_power_table[current_tx]);
 }
 #else
-#define ble_conn_handle_change(A,B) 
-#define ble_rssi_change(A) 
+#define ble_conn_handle_change(A, B)
+#define ble_rssi_change(A)
 #endif
 
 /**@brief Function for handling BLE events.
