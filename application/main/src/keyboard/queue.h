@@ -1,5 +1,4 @@
-#ifndef __APP_QUEUE_H__
-#define __APP_QUEUE_H__
+#pragma once
 
 #define QUEUE(TYPE, NAME, SIZE) \
     TYPE NAME[SIZE];\
@@ -33,5 +32,3 @@
     {\
         NAME##_front = 0; NAME##_rear = 0; NAME##_full = false;\
     }
-
-#endif // __APP_QUEUE_H__

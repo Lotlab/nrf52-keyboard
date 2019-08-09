@@ -1,5 +1,4 @@
-#ifndef __KEYBOARD_CONFIG_H__
-#define __KEYBOARD_CONFIG_H__
+#pragma once
 
 #include "config.h"
 
@@ -16,5 +15,3 @@
 #define LED_CLEAR(x) nrf_gpio_pin_set(x)
 #define LED_WRITE(x, b) nrf_gpio_pin_write(x, !(b))
 #endif
-
-#endif //__KEYBOARD_CONFIG_H__

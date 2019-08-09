@@ -16,8 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#pragma once
 
 #include <stdint.h>
 
@@ -118,5 +117,3 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 2
 #define ROW_IN // 二极管方向是从COL->ROW
 
 #define LED_POSITIVE // LED上拉驱动
-
-#endif

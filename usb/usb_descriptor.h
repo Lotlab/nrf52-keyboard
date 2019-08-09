@@ -15,8 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __USB_DESCRIPTOR__
-#define __USB_DESCRIPTOR__
+#pragma once
+
 #include <stdint.h>
 #include "config.h"
 
@@ -370,7 +370,3 @@ uint8_t const report_desc_HID2[]=
     0x91 ,0x02,    // Ouput (Data,Var,Abs)
     0xc0    // end Application Collection
 };
-
-
-
-#endif // __USB_DESCRIPTOR__

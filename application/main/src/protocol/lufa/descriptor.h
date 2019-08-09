@@ -1,6 +1,2 @@
-#ifndef __DESCRIPTOR_H_REP__
-#define __DESCRIPTOR_H_REP__
-
+#pragma once
 #include "config.h"
-
-#endif

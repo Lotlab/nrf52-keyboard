@@ -1,5 +1,4 @@
-#ifndef __INTERRUPT_H__
-#define __INTERRUPT_H__
+#pragma once
 
 #include <stdbool.h>
 
@@ -10,5 +9,3 @@
  */
 void UsbIsr();
 void UsbSuspendEvt(bool sleep);
-
-#endif // __INTERRUPT_H__

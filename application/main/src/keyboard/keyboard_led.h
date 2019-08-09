@@ -1,5 +1,4 @@
-#ifndef __KEYBOARD_LED_H_
-#define __KEYBOARD_LED_H_
+#pragma once
 
 #include <stdint.h>
 #include "../config/keyboard_config.h"
@@ -32,5 +31,3 @@ void keyboard_led_deinit();
  * @brief 启用自动熄灭的计时器
  */
 void off_timer_start();
-
-#endif //__KEYBOARD_LED_H_

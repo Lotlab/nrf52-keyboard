@@ -1,5 +1,4 @@
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#pragma once
 
 #include <stdbool.h>
 
@@ -48,5 +47,3 @@ enum user_ble_event {
 void ble_user_event(enum user_ble_event arg);
 void sleep(enum SLEEP_REASON reason);
 extern bool erase_bonds;
-
-#endif // __MAIN_H__

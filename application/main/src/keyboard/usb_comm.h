@@ -1,5 +1,4 @@
-#if !defined(__USB_COMM_H__)
-#define __USB_COMM_H__
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -50,5 +49,3 @@ void usb_comm_switch(void);
  * @brief 当前USB的键盘状态灯
  */
 extern uint8_t keyboard_led_val_usb;
-
-#endif // __USB_COMM_H__

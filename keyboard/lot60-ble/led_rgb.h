@@ -1,5 +1,4 @@
-#ifndef __LED_RGB_H__
-#define __LED_RGB_H__
+#pragma once
 #include <stdbool.h>
 
 /**
@@ -28,5 +27,3 @@ void keyboard_led_rgb_init(void);
  * @param on 
  */
 void keyboard_led_rgb_switch(bool on);
-
-#endif //__LED_RGB_H__

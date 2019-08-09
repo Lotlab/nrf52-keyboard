@@ -1,5 +1,4 @@
-#ifndef WAIT_API_H
-#define WAIT_API_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,6 +10,4 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

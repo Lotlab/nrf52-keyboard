@@ -1,6 +1,2 @@
-#ifndef __KEYBOARD_MATRIX__
-#define __KEYBOARD_MATRIX__
-
+#pragma once
 void matrix_sleep_prepare(void);
-
-#endif

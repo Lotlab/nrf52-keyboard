@@ -1,5 +1,4 @@
-#ifndef __BLE_SERVICES__
-#define __BLE_SERVICES__
+#pragma once
 
 #include "ble.h"
 #include "../main.h"
@@ -35,5 +34,3 @@ void advertising_start(bool erase_bonds);
 void ble_passkey_send(uint8_t const * p_key);
 
 void advertising_slow(void);
-
-#endif

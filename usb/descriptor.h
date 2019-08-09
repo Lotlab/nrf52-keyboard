@@ -1,5 +1,4 @@
-#ifndef __DESCRIPTOR_H__
-#define __DESCRIPTOR_H__
+#pragma once
 
 /** \brief 获取USB各种描述符
  *
@@ -10,5 +9,3 @@
  *
  */
 uint8_t GetUsbDescriptor(uint8_t type1, uint8_t type2, uint8_t index, uint8_t **strPtr);
-
-#endif // __DESCRIPTOR_H__

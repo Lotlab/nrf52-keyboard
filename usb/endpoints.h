@@ -1,5 +1,5 @@
-#ifndef __ENDPOINTS_H__
-#define __ENDPOINTS_H__
+#pragma once
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -54,5 +54,3 @@ extern void nop();
 #define USB_SOF_EP2 nop
 #define USB_SOF_EP3 nop
 #define USB_SOF_EP4 nop
-
-#endif // __ENDPOINTS_H__

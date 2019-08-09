@@ -1,6 +1,4 @@
-#if !defined(__BLE_CONFIG_H__)
-#define __BLE_CONFIG_H__
-
+#pragma once
 #include "../config/keyboard_config.h"
 
 #ifdef PASSKEY_REQUIRED
@@ -22,5 +20,3 @@
 
 #define DEVICE_NAME PRODUCT
 #define MANUFACTURER_NAME MANUFACTURER
-
-#endif // __BLE_CONFIG_H__

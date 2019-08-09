@@ -1,5 +1,4 @@
-#ifndef __UART__DRIVER__
-#define __UART__DRIVER__
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -39,5 +38,3 @@ typedef enum
 extern uart_state uart_rx_state;
 
 extern bool usb_evt;
-
-#endif // __UART__DRIVER__
