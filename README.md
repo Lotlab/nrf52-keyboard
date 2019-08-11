@@ -45,6 +45,8 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 首先下载 [nRF5 SDK 15.3](https://www.nordicsemi.com/Software-and-Tools/Software/nRF5-SDK/Download#infotabs), 解压并放入SDK文件夹。
 然后安装 gcc-arm-none-eabi-7-2018-q2-update，将template目录中对应平台的配置文件模板复制一份，重命名为`Makefile.posix`或`Makefile.windows`，修改里面工具路径为你的安装目录。
 
+然后安装 [SDCC](http://sdcc.sourceforge.net/) 用于编译CH554相关代码。
+
 ### Bootloader 的编译
 参见[这篇文章](https://devzone.nordicsemi.com/b/blog/posts/getting-started-with-nordics-secure-dfu-bootloader)，先编译uECC库，然后再编译Bootloader
 
@@ -59,63 +61,14 @@ make
 cd keyboard/lot60-ble
 make
 ```
+
+### 硬件的烧录
+
+对于nrf52，若要通过JLink直接写入，则需要安装JLink的驱动；若使用DAP-Link写入，则需要安装[pyocd](https://github.com/mbedmicro/pyOCD)；若使用蓝牙DFU进行升级，则需要安装[nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil/)
+
+对于ch554，你可以使用官方的[windows烧写工具](http://www.wch.cn/downloads/WCHISPTool_Setup_exe.html)，或三方的[usbisp](https://github.com/rgwan/librech551)烧写。
+
+请使用`make help`查看所有的烧写和打包指令。
+
 ## 硬件移植
-若使用的硬件方案与已有的硬件相同，则可以将keyboard文件夹内的配置文件复制一份并修改。主要修改项目是Makefile与config.h。
-
-## UART 通讯协议
-
-### 基础格式
-
-CMD DAT ... DAT SUM
-
-- CMD：命令
-- DAT：数据
-- SUM：前面所有数据和命令的校验和
-
-其中，根据CMD的不同，DAT的长度可能有所变化。若DAT长度为0，则不需要SUM。
-
-主机(CH554)会定期向从机(nRF52810)发送状态数据包，请求从机上传。
-
-### 主机命令
-
-#### Ping 包与当前状态
-```
-0b0001 xxxx
-       ||||
-       |||+--- 上次接收数据是否成功（成功置为1）
-       ||+---- 充电状态（充满置为1）
-       |+----- 主机状态（与主机连接成功置为1）
-       +------ 当前Protocol
-```
-
-无DAT
-
-#### LED 下传
-```
-0b010x xxxx
-     + ++++--- 5Bit的LED状态
-```
-
-无DAT
-
-#### Keymap 下传
-```
-0b1xxx xxxx 
-   ||| ||||
-   +++-++++--- 当前Keymap分包的ID，从0开始
-```
-
-DAT长度为60，存储着Keymap数据
-
-### 从机命令
-
-#### 按键数据包上传
-```
-0b1aab bbbb 
-   ||+ ++++--- 数据包的数据部分长度
-   ++--------- 数据包类型: 0: keyboard, 1: consumer, 2: system, 3: nkro keyboard
-```
-DAT长度由上面定义
-
-#### Keymap 响应
-同 Ping 包与当前状态的格式。0x11为成功，0x10为失败。
+请参考Keyboard目录下的template移植模板，并查看doc目录下的对应说明。
