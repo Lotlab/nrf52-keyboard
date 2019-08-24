@@ -1,13 +1,21 @@
 PROJECT_NAME     := ble_app_hids_keyboard_pca10040e_s112
 TARGETS          := nrf52_kbd
-OUTPUT_DIRECTORY := _build
+
+ifndef OUTPUT_DIRECTORY
+	OUTPUT_DIRECTORY := _build
+endif
 
 ifndef ROOT_DIR
 	ROOT_DIR := ../../..
 endif
 
-SDK_ROOT := $(ROOT_DIR)/SDK
-TEMPLATE_PATH := $(ROOT_DIR)/template
+ifndef SDK_ROOT
+	SDK_ROOT := $(ROOT_DIR)/SDK
+endif
+
+ifndef TEMPLATE_PATH
+	TEMPLATE_PATH := $(ROOT_DIR)/template
+endif
 
 ifeq ($(NRF_CHIP), nrf52810)
 	include $(APP_PROJ_DIR)/nrf52810.mk

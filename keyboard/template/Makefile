@@ -6,6 +6,10 @@ USB_SOURCE_DIR := $(ROOT_DIR)/usb
 APP_PROJ_DIR := $(APP_MAIN_DIR)/project
 APP_SRC_DIR := $(APP_MAIN_DIR)/src
 
+# 特殊目录控制
+# SDK_ROOT := /var/nrf52/nRF52_SDK
+# TEMPLATE_PATH := /var/nrf52/template
+
 # 配置项：主控芯片类型
 # 可选：nrf52810 或 nrf52832
 NRF_CHIP := nrf52810

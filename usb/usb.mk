@@ -1,5 +1,12 @@
 PROJ_NAME := ch554
-OUTPUT_DIR = _build
+
+ifndef OUTPUT_DIR
+ifdef OUTPUT_DIRECTORY
+	OUTPUT_DIR = $(OUTPUT_DIRECTORY)
+else
+	OUTPUT_DIR = _build
+endif
+endif
 OBJ_DIR = $(OUTPUT_DIR)/$(PROJ_NAME)
 
 ifndef USB_SOURCE_DIR
