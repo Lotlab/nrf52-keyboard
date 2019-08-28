@@ -1,5 +1,6 @@
 #pragma once
 #include <stdbool.h>
+#include <stdint.h>
 
 /**
  * @brief 设置RGB灯光值

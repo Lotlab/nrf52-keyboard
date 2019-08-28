@@ -203,7 +203,8 @@ CFLAGS += -Wall -Werror
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
 ifdef CONFIG_H
-    CFLAGS += -include $(CONFIG_H)
+	 CFLAGS += -DCONFIG_H=\"$(CONFIG_H)\"
+#    CFLAGS += -include $(CONFIG_H)
 endif
 
 # C++ flags common to all targets
@@ -221,7 +222,7 @@ ASMFLAGS += -DNRF_SD_BLE_API_VERSION=6
 ASMFLAGS += -DSOFTDEVICE_PRESENT
 ASMFLAGS += -DSWI_DISABLE0
 ifdef CONFIG_H
-    ASFLAGS += -include $(CONFIG_H)
+#    ASFLAGS += -include $(CONFIG_H)
 endif
 
 ifeq ($(SOFTDEVICE), S112)
