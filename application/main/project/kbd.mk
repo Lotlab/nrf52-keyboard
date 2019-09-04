@@ -29,4 +29,5 @@ VERSION := $(shell (git describe --always --dirty || echo 'unknown') 2> /dev/nul
 OPT_DEFS += -DVERSION=$(VERSION)
 
 include $(APP_PROJ_DIR)/tmk.mk
+include $(APP_PROJ_DIR)/driver.mk
 include $(APP_PROJ_DIR)/app.mk
