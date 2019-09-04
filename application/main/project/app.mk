@@ -203,7 +203,7 @@ CFLAGS += -Wall -Werror
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
 ifdef CONFIG_H
-	 CFLAGS += -DCONFIG_H=\"$(CONFIG_H)\"
+	 CFLAGS += -DCONFIG_H_FILE=\"$(CONFIG_H)\"
 #    CFLAGS += -include $(CONFIG_H)
 endif
 
