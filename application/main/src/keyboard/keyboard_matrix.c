@@ -71,7 +71,7 @@ void matrix_init(void)
             NRF_GPIO_PIN_INPUT_DISCONNECT,
             NRF_GPIO_PIN_NOPULL,
 #ifdef ROW_IN
-            NRF_GPIO_PIN_S0S1,
+            NRF_GPIO_PIN_S0D1,
 #else
             NRF_GPIO_PIN_D0S1,
 #endif
@@ -123,12 +123,14 @@ static void unselect_rows(void)
     }
 }
 
-static inline void delay_30ns(void)
+static inline void delay_us(void)
 {
 #ifdef __GNUC__
 #define __nop() __asm("NOP")
 #endif
-    __nop(); // 32mhz, 1cycle = 31.25ns
+    for (int i = 0; i < 36; i++) {
+        __nop(); //64mhz, 64cycle = 1us, delay 0.56us
+    }
 }
 
 uint8_t matrix_scan(void)
@@ -138,7 +140,7 @@ uint8_t matrix_scan(void)
 #ifdef HYBRID_MATRIX
         init_cols();
 #endif
-        delay_30ns(); // wait stable
+        delay_us(); // wait stable
         matrix_row_t cols = read_cols();
         if (matrix_debouncing[i] != cols) {
             matrix_debouncing[i] = cols;
