@@ -90,11 +90,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // LED 配置
 #define LED_CAPS 21
 
-// 启用 RGB LED 指示
-#define LED_RGB
+// RGB LED 指示配置引脚
 #define LED_RGB_R 22
 #define LED_RGB_G 23
 #define LED_RGB_B 24
+
+// 3灯指示配置引脚
+#define LED_STATUS_BLE 22
+#define LED_STATUS_CHARGING 23
+#define LED_STATUS_USB 24
 
 // USB UART 传输配置
 #define HAS_USB

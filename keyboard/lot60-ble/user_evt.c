@@ -22,10 +22,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ble_keyboard.h"
 #include "keyboard_led.h"
 #include "nrf_delay.h"
-#include "config.h"
-
-#ifdef LED_RGB
 #include "led_rgb.h"
+
 enum keyboard_status {
     kbd_ble,
     kbd_charge,
@@ -124,4 +122,3 @@ void custom_event_handler(enum user_ble_event arg) {
         break;
     }
 }
-#endif

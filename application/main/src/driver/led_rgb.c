@@ -19,8 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "low_power_pwm.h"
 #include "nrf.h"
 #include "nrf_gpio.h"
+#include "config.h"
 #include <stdint.h>
-#ifdef LED_RGB
+
 static low_power_pwm_t led_r;
 static low_power_pwm_t led_g;
 static low_power_pwm_t led_b;
@@ -94,6 +95,10 @@ void keyboard_led_rgb_init()
     uint32_t err_code;
     low_power_pwm_config_t lppwm_config = LOW_POWER_PWM_DEFAULT_CONFIG(0);
 
+#ifdef LED_RGB_CC
+    lppwm_config.active_high = true;
+#endif
+
     APP_TIMER_DEF(lpp_timer_0);
     lppwm_config.bit_mask = 1 << LED_RGB_R;
     lppwm_config.p_timer_id = &lpp_timer_0;
@@ -161,12 +166,3 @@ void keyboard_led_rgb_switch(bool on)
 {
     keyboard_led_rgb_set_internal(on ? saved_color : 0);
 }
-#else
-
-void keyboard_led_rgb_set(uint32_t color) {}
-void keyboard_led_rgb_direct(uint8_t bit) {}
-void keyboard_led_rgb_deinit(void) {}
-void keyboard_led_rgb_init(void) {}
-void keyboard_led_rgb_switch(bool on) {}
-
-#endif
