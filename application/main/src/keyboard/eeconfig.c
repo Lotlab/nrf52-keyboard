@@ -26,8 +26,8 @@ __ALIGN(4)
 static uint8_t config_buffer[8] __attribute__((aligned(4))) = { EECONFIG_MAGIC_NUMBER >> 8, EECONFIG_MAGIC_NUMBER % 0x100, 0, 0, 0, 0, 0, 0 };
 static bool fds_inited = false;
 
-static fds_record_t record;
-static fds_record_desc_t record_desc;
+static fds_record_t record = {0};
+static fds_record_desc_t record_desc = {0};
 
 static void eeconfig_set_default()
 {
@@ -86,8 +86,8 @@ static void config_write()
  */
 static void config_read()
 {
-    fds_find_token_t ftok;
-    fds_flash_record_t flash_record;
+    fds_find_token_t ftok = {0};
+    fds_flash_record_t flash_record = {0};
     /* It is required to zero the token before first use. */
     memset(&ftok, 0x00, sizeof(fds_find_token_t));
 
