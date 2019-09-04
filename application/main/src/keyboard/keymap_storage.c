@@ -62,8 +62,8 @@ action_t keymap_fn_to_action(uint8_t keycode)
         return fn_actions[FN_INDEX(keycode)];
 }
 
-static fds_record_t record;
-static fds_record_desc_t record_desc;
+static fds_record_t record = {0};
+static fds_record_desc_t record_desc = {0};
 
 static void keymap_valid(void)
 {
@@ -78,8 +78,8 @@ static void keymap_valid(void)
 
 static void keymap_read(void)
 {
-    fds_find_token_t ftok;
-    fds_flash_record_t flash_record;
+    fds_find_token_t ftok = {0};
+    fds_flash_record_t flash_record = {0};
     /* It is required to zero the token before first use. */
     memset(&ftok, 0x00, sizeof(fds_find_token_t));
 
@@ -100,8 +100,20 @@ static void keymap_read(void)
     }
 }
 
+static void keymap_gc(uint8_t num)
+{
+    fds_stat_t stat = { 0 };
+
+    ret_code_t rc = fds_stat(&stat);
+    APP_ERROR_CHECK(rc);
+    if (stat.dirty_records >= num) {
+        fds_gc();
+    }
+}
+
 static void keymap_update(void)
 {
+    keymap_gc(3);
     // record_desc was create by fds_record_find or fds_record_write
     ret_code_t err_code = fds_record_update(&record_desc, &record);
 
@@ -126,6 +138,7 @@ void keymap_init(void)
 
     keymap_read();
     keymap_valid();
+    keymap_gc(4);
 }
 
 /**
@@ -162,5 +175,7 @@ bool keymap_set(uint8_t block, uint8_t size, uint8_t* data)
 
 #else
 void keymap_init(void) {}
-bool keymap_set(uint8_t block, uint8_t size, uint8_t* data) {}
+bool keymap_set(uint8_t block, uint8_t size, uint8_t* data) {
+	return false;
+}
 #endif

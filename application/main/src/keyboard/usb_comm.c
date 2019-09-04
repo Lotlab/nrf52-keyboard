@@ -190,6 +190,7 @@ static void uart_on_recv()
             recv_index++;
             if (recv_index >= 62) {
                 recv_index = 0;
+#ifdef KEYMAP_STORAGE
                 uint8_t sum = checksum(recv_buf, 61);
                 if (sum == recv_buf[61]) {
                     uint8_t id = recv_buf[0] & 0x7F;
@@ -199,8 +200,11 @@ static void uart_on_recv()
                         uart_ack(UART_SUCCESS);
                     }
                 } else {
+#endif
                     uart_ack(UART_CHECK_FAIL);
+#ifdef KEYMAP_STORAGE
                 }
+#endif
             }
         }
     }
