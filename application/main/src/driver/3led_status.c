@@ -172,11 +172,3 @@ void status_led_evt_handler(enum user_ble_event arg)
         break;
     }
 }
-
-/** 
- * 默认状态实现。可以随意覆盖
- **/
-__attribute__((weak)) void custom_event_handler(enum user_ble_event arg)
-{
-    status_led_evt_handler(arg);
-}
