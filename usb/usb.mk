@@ -14,7 +14,7 @@ USB_SOURCE_DIR := ./
 endif
 
 SDCC := sdcc
-SDCC_CFLAGS := -mmcs51 --model-small --std-c11 -o $(OBJ_DIR)/ --opt-code-size -I .
+SDCC_CFLAGS += -mmcs51 --model-small --std-c11 -o $(OBJ_DIR)/ --opt-code-size -I .
 SDCC_LDFLAGS := --xram-size 1024 --iram-size 256 --code-size 16384 --out-fmt-ihx
 
 LIBS := $(patsubst $(USB_SOURCE_DIR)/%.c,$(OBJ_DIR)/%.rel,$(wildcard $(USB_SOURCE_DIR)/*.c))

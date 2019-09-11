@@ -25,6 +25,10 @@ else
 	$(error cannot handle NRF_CHIP [$(NRF_CHIP)])
 endif
 
+ifndef NRF_PACKAGE_NAME
+	NRF_PACKAGE_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_$(VERSION).zip
+endif
+
 $(OUTPUT_DIRECTORY)/nrf52_kbd.out: \
 	LINKER_SCRIPT  := $(APP_PROJ_DIR)/$(LD_NAME)
 
@@ -325,7 +329,7 @@ pyocd_flash_setting: setting
 package: default
 	@echo Packing: $(OUTPUT_DIRECTORY)/nrf52_kbd.hex
 	nrfutil pkg generate --hw-version 52 --application-version 1 --application $(OUTPUT_DIRECTORY)/nrf52_kbd.hex \
-	--sd-req $(SOFTDEVICE_VER) --key-file $(APP_PROJ_DIR)/private.key $(OUTPUT_DIRECTORY)/nrf52_kbd_$(VERSION).zip
+	--sd-req $(SOFTDEVICE_VER) --key-file $(APP_PROJ_DIR)/private.key $(NRF_PACKAGE_NAME)
 
 # Flash softdevice
 flash_softdevice:

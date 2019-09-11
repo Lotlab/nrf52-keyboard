@@ -25,7 +25,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT_ID 0x0514 /* USB PID */
 #define DEVICE_VER 0x0001 /* 硬件版本 */
 #define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
+
+#ifdef HARDWARE_REV_C
 #define PRODUCT "BLE60-Rev.C" /* 硬件名词，用于蓝牙显示 */
+#endif
+
+#ifdef HARDWARE_REV_E
+#define PRODUCT "BLE60-Rev.E" /* 硬件名词，用于蓝牙显示 */
+#endif
+
 #define MACADDR_SEPRATOR '_' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
 
 /* USB HID report parameter */
@@ -88,7 +96,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define NO_ACTION_FUNCTION
 
 // LED 配置
+#ifdef HARDWARE_REV_C
 #define LED_CAPS 21
+#endif
+
+#ifdef HARDWARE_REV_E
+#define LED_CAPS 19
+#endif
 
 // RGB LED 指示配置引脚
 #define LED_RGB_R 22
@@ -118,6 +132,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 25, 28, 29, 30, 26 };
 static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 27, 3, 4, 5, 6, 7, 8, 9 };
 
+#ifdef HARDWARE_REV_C
 #define ROW_IN // 二极管方向是从COL->ROW
+#endif
 
 #define LED_POSITIVE // LED上拉驱动

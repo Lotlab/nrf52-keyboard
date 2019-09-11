@@ -28,6 +28,11 @@ INC_FOLDERS += $(APP_SRC_DIR)/keyboard
 VERSION := $(shell (git describe --always --dirty || echo 'unknown') 2> /dev/null)
 OPT_DEFS += -DVERSION=$(VERSION)
 
+# enable GPIO as RESET PIN
+ifeq (yes,$(strip $(CONFIG_GPIO_AS_PINRESET)))
+    OPT_DEFS += -DCONFIG_GPIO_AS_PINRESET
+endif
+
 include $(APP_PROJ_DIR)/tmk.mk
 include $(APP_PROJ_DIR)/driver.mk
 include $(APP_PROJ_DIR)/app.mk

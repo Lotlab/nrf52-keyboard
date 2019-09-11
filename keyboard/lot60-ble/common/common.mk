@@ -1,4 +1,4 @@
-ROOT_DIR := ../..
+ROOT_DIR := $(COMMON_ROOT)/../../..
 APP_MAIN_DIR := $(ROOT_DIR)/application/main
 TMK_CORE_DIR := $(ROOT_DIR)/tmk/tmk_core
 USB_SOURCE_DIR := $(ROOT_DIR)/usb
@@ -11,8 +11,9 @@ APP_SRC_DIR := $(APP_MAIN_DIR)/src
 NRF_CHIP := nrf52810
 
 CONFIG_H = config.h
-INC_FOLDERS += .
-SRC_FILES += keymap_plain.c
+INC_FOLDERS += $(COMMON_ROOT)
+SDCC_CFLAGS += -I $(COMMON_ROOT)
+SRC_FILES += $(COMMON_ROOT)/keymap_plain.c
 
 # 配置项：功能选项
 BOOTMAGIC_ENABLE = yes	# 启用Bootmagic
@@ -24,8 +25,23 @@ NKRO_ENABLE = yes	# 启用USB的全键无冲功能
 
 # 如果不启用3灯LED状态，则启用内置的 RGB LED 指示
 ifneq (yes,$(strip $(THREE_LED_STATUS_EVT)))
-	SRC_FILES += user_evt.c
+	SRC_FILES += $(COMMON_ROOT)/user_evt.c
 	ONE_RGB_LED = yes
+endif
+
+# 控制各个硬件版本的差异
+ifeq (REV_C,$(strip $(HARDWARE_VERSION)))
+	OPT_DEFS += -DHARDWARE_REV_C
+	SDCC_CFLAGS += -DHARDWARE_REV_C
+else 
+ifeq (REV_E,$(strip $(HARDWARE_VERSION)))
+	OPT_DEFS += -DHARDWARE_REV_E
+	SDCC_CFLAGS += -DHARDWARE_REV_E
+	# 启用RESET PIN
+	CONFIG_GPIO_AS_PINRESET = yes
+else
+	$(error PLEASE SPECIFY HARDWARE_VERSION, AS REV_C OR REV_E)
+endif
 endif
 
 all: default ch554
