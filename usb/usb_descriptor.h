@@ -344,7 +344,7 @@ uint8_t const report_desc_HID1[]=
     0x25, 0x01,                      //   Logical Maximum(1),
     0x05, 0x07,                      //   Usage Page (Key Codes),
     0x19, 0x00,                      //   Usage Minimum (0),
-    0x29, NKRO_REPORT_KEYS * 8 - 1,  //   Usage Maximum (),
+    0x29, (NKRO_REPORT_KEYS * 8 - 1) & 0xFF,  //   Usage Maximum (),
     0x81, 0x02,                      //   Input (Data, Variable, Absolute),
     0xc0                             // End Collection
 };

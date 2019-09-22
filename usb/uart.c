@@ -84,7 +84,7 @@ void uart_init()
     U1SM0 = 0; // 8Bit
     U1SMOD = 1; // fast mode
     U1REN = 1; //串口0接收使能
-    SBAUD1 = 256 - FREQ_SYS / 16 / 57600;
+    SBAUD1 = 256 - (FREQ_SYS / 16 / 57600) & 0xFF;
     IE_UART1 = 1; //启用串口中断
 }
 
