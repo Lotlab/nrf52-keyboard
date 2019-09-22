@@ -25,8 +25,8 @@
 ## 默认指示灯颜色表
 
 - 白色<span style="color: #FFFFFF">■</span>：无连接
-- 天依蓝<span style="color: #66CCFF">■</span>：蓝牙已连接
-- 青绿色<span style="color: #339999">■</span>：USB已连接
+- 青色<span style="color: #66FFFF">■</span>：蓝牙已连接
+- 天蓝色<span style="color: #0099FF">■</span>：USB已连接
 - 橙色<span style="color: #FF8000">■</span>：充电中
 - 绿色<span style="color: #00FF00">■</span>：充电完毕
 - 黄色<span style="color: #FFFF00">■</span>：输入配对密码

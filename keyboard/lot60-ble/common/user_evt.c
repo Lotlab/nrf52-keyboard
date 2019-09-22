@@ -42,13 +42,13 @@ static void led_status_change() {
     switch (status)
     {
     case kbd_ble:
-        keyboard_led_rgb_set(ble_connected ? 0x66ccff : 0xFFFFFF);
+        keyboard_led_rgb_set(ble_connected ? 0x66ffff : 0xFFFFFF);
         break;
     case kbd_charge:
         keyboard_led_rgb_set(charging_full ? 0x00FF00: 0xFF8000);
         break;
     case kbd_usb:
-        keyboard_led_rgb_set(0x339999);
+        keyboard_led_rgb_set(0x0099ff);
     default:
         break;
     }

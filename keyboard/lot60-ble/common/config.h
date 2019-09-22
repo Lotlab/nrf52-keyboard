@@ -105,9 +105,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 // RGB LED 指示配置引脚
+#ifdef HARDWARE_REV_C
 #define LED_RGB_R 22
 #define LED_RGB_G 23
 #define LED_RGB_B 24
+#endif
+
+#ifdef HARDWARE_REV_E
+#define LED_RGB_R 24
+#define LED_RGB_G 23
+#define LED_RGB_B 22
+#endif
 
 // 3灯指示配置引脚
 #define LED_STATUS_BLE 22
