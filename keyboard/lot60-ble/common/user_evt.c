@@ -48,7 +48,7 @@ static void led_status_change() {
         keyboard_led_rgb_set(charging_full ? 0x00FF00: 0xFF8000);
         break;
     case kbd_usb:
-        keyboard_led_rgb_set(0x0099FF);
+        keyboard_led_rgb_set(0x339999);
     default:
         break;
     }
