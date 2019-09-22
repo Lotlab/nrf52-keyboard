@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT_ID 0x0514 /* USB PID */
 #define DEVICE_VER 0x0001 /* 硬件版本 */
 #define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
-#define PRODUCT "BLE Keyboard" /* 硬件名词，用于USB和蓝牙显示 */
+#define PRODUCT "BLE Keyboard" /* 硬件名称，用于USB和蓝牙显示 */
 #define MACADDR_SEPRATOR '_' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
 
 /* USB HID report parameter */

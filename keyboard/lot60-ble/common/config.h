@@ -27,11 +27,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
 
 #ifdef HARDWARE_REV_C
-#define PRODUCT "BLE60-Rev.C" /* 硬件名词，用于蓝牙显示 */
+#define PRODUCT "Lot60.C" /* 硬件名称，用于蓝牙显示 */
 #endif
 
 #ifdef HARDWARE_REV_E
-#define PRODUCT "BLE60-Rev.E" /* 硬件名词，用于蓝牙显示 */
+#define PRODUCT "Lot60.E" /* 硬件名称，用于蓝牙显示 */
 #endif
 
 #define MACADDR_SEPRATOR '_' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
