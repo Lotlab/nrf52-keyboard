@@ -73,7 +73,7 @@ void matrix_init(void)
 #ifdef ROW_IN
             NRF_GPIO_PIN_S0D1,
 #else
-            NRF_GPIO_PIN_D0S1,
+            NRF_GPIO_PIN_S0S1,
 #endif
             NRF_GPIO_PIN_NOSENSE);
 #ifdef ROW_IN
