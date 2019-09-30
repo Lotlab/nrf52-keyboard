@@ -71,13 +71,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KEYBOARD_SLOW_SCAN_INTERVAL 100 // 慢速模式下，多久扫描一次键盘 (ms)
 
 // 自动发射功率调整
-#define DYNAMIC_TX_POWER
+// #define DYNAMIC_TX_POWER
 
 // LED自动熄灭时长(ms)，设为0则不自动熄灭
 #define LED_AUTOOFF_TIME 5000
 
 // 需要输入配对码
-#define PASSKEY_REQUIRED
+// #define PASSKEY_REQUIRED
 
 // 启用看门狗
 #define ENABLE_WATCHDOG
@@ -126,7 +126,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define HAS_USB
 #define UART_RXD 17
 #define UART_TXD 18
+#ifdef HARDWARE_REV_C
 #define UART_DET 19
+#endif
 #define UART_BAUDRATE NRF_UART_BAUDRATE_57600
 
 // 电量检测配置
