@@ -1,6 +1,6 @@
-# вэюю
+# Ф─╩Х╖┬
 
-╠╬ЁлпРн╙╩Л╨ойзх╗║ё
+Ф°╛Г╗▀Е╨▐Д╦╨Ф╥╥Е░┬Ф▌┬Ф²┐Ц─┌
 
 ## Nordic License
 
@@ -43,7 +43,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-╢кLicenseййсцсзртобнд╪Чё╨
+Ф╜╓LicenseИ─┌Г■╗Д╨▌Д╩╔Д╦▀Ф√┤Д╩╤О╪ 
 - application/bootloader/*
 - application/main/src/main.c
 - application/main/src/ble/ble_services.c
@@ -57,7 +57,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## GNU Public License V3 or Later
 
-╢кLicenseййсцсзртобнд╪Чё╨
+Ф╜╓LicenseИ─┌Г■╗Д╨▌Д╩╔Д╦▀Ф√┤Д╩╤О╪ 
 
 - application/main/src/config/config.h
 - application/main/src/config/keyboard_config.h

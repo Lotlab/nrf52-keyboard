@@ -283,12 +283,15 @@ help:
 	@echo following targets are available:
 	@echo		nrf52_kbd
 	@echo		flash_softdevice
-	@echo		sdk_config - starting external tool for editing sdk_config.h
-	@echo		flash      - flashing binary
-	@echo		setting	   - generate dfu setting
-	@echo		flash_setting - flash dfu setting
-	@echo		package	   - pack firmware for DFU
-	@echo		erase	   - erase the chip
+	@echo		sdk_config 			- starting external tool for editing sdk_config.h
+	@echo		flash      			- flashing binary
+	@echo		setting	   			- generate dfu setting
+	@echo		flash_setting		- flash dfu setting
+	@echo		merge_setting		- merge dfu setting with application
+	@echo		merge_softdevice	- merge softdevice with application
+	@echo		merge_all 			- merge softdevice and dfu setting with application
+	@echo		package	   			- pack firmware for DFU
+	@echo		erase	   			- erase the chip
 	@echo All targets starts with "flash" could has prefix "pyocd_", which \
 	means use pyocd to flash chip. 
 
@@ -341,6 +344,19 @@ pyocd_flash_softdevice:
 	@echo Flashing: $(SOFTDEVICE_NAME)
 	pyocd flash -t nrf52 -e sector -f 2M $(SOFTDEVICE_PATH)
 	pyocd cmd -t nrf52 -c reset
+
+# Merge Package for download
+merge_setting: setting
+	@echo Merging program with signature to $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
+	mergehex -m $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
+
+merge_softdevice: default
+	@echo Merging program and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/nrf52_kbd_with_sd.hex
+	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(OUTPUT_DIRECTORY)/nrf52_kbd_with_sd.hex
+
+merge_all: setting
+	@echo Merging program, signature and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/nrf52_kbd_sign_with_sd.hex
+	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(OUTPUT_DIRECTORY)/nrf52_kbd_sign_with_sd.hex
 
 # Erase chip
 erase:
