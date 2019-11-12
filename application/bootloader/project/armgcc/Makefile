@@ -1,18 +1,35 @@
 PROJECT_NAME     := secure_bootloader_ble_s112_pca10040e
-TARGETS          := nrf52810_xxaa_s112
+TARGETS          := nrf52_bootloader
 OUTPUT_DIRECTORY := _build
 
-SDK_ROOT := ../../../../SDK
 PROJ_DIR := ../..
-TEMPLATE_PATH := ../../../../template
+APP_PROJ_DIR := ./
 
-$(OUTPUT_DIRECTORY)/nrf52810_xxaa_s112.out: \
-	LINKER_SCRIPT  := secure_bootloader_gcc_nrf52.ld
+ifndef ROOT_DIR
+	ROOT_DIR := ../../../../
+endif
+
+ifndef SDK_ROOT
+	SDK_ROOT := $(ROOT_DIR)/SDK
+endif
+
+ifndef TEMPLATE_PATH
+	TEMPLATE_PATH := $(ROOT_DIR)/template
+endif
+
+ifeq ($(NRF_CHIP), nrf52810)
+	include $(APP_PROJ_DIR)/nrf52810.mk
+else ifeq ($(NRF_CHIP), nrf52832)
+	include $(APP_PROJ_DIR)/nrf52832.mk
+else
+	$(error cannot handle NRF_CHIP [$(NRF_CHIP)])
+endif
+
+$(OUTPUT_DIRECTORY)/nrf52_bootloader.out: \
+	LINKER_SCRIPT  := $(APP_PROJ_DIR)/$(LD_NAME)
 
 # Source files common to all targets
 SRC_FILES += \
-	$(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52810.S \
-	$(SDK_ROOT)/modules/nrfx/mdk/system_nrf52810.c \
 	$(SDK_ROOT)/components/libraries/util/app_error_weak.c \
 	$(SDK_ROOT)/components/libraries/scheduler/app_scheduler.c \
 	$(SDK_ROOT)/components/libraries/util/app_util_platform.c \
@@ -102,7 +119,6 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/bootloader/dfu \
 	$(SDK_ROOT)/components/ble/common \
 	$(SDK_ROOT)/components/libraries/delay \
-	$(SDK_ROOT)/components/softdevice/s112/headers/nrf52 \
 	$(SDK_ROOT)/components/libraries/svc \
 	$(SDK_ROOT)/components/libraries/stack_info \
 	$(SDK_ROOT)/components/libraries/crypto/backend/nrf_hw \
@@ -110,7 +126,6 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/external/nrf_oberon \
 	$(SDK_ROOT)/components/libraries/strerror \
 	$(SDK_ROOT)/components/libraries/crypto/backend/mbedtls \
-	$(SDK_ROOT)/components/softdevice/s112/headers \
 	$(SDK_ROOT)/components/boards \
 	$(SDK_ROOT)/components/libraries/crypto/backend/cc310 \
 	$(SDK_ROOT)/components/libraries/bootloader \
@@ -146,14 +161,11 @@ OPT = -Os -g3
 CFLAGS += $(OPT)
 CFLAGS += -DBLE_STACK_SUPPORT_REQD
 CFLAGS += -DBOARD_PCA10040
-CFLAGS += -DFLOAT_ABI_SOFT
-CFLAGS += -DNRF52810_XXAA
 CFLAGS += -DNRF52_PAN_74
 CFLAGS += -DNRFX_COREDEP_DELAY_US_LOOP_CYCLES=3
 CFLAGS += -DNRF_DFU_SETTINGS_VERSION=2
 CFLAGS += -DNRF_DFU_SVCI_ENABLED
 CFLAGS += -DNRF_SD_BLE_API_VERSION=6
-CFLAGS += -DS112
 CFLAGS += -DSOFTDEVICE_PRESENT
 CFLAGS += -DSVC_INTERFACE_CALL_AS_NORMAL_FUNCTION
 CFLAGS += -DuECC_ENABLE_VLI_API=0
@@ -164,7 +176,6 @@ CFLAGS += -DuECC_VLI_NATIVE_LITTLE_ENDIAN=1
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mthumb -mabi=aapcs
 CFLAGS += -Wall -Werror
-CFLAGS += -mfloat-abi=soft
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
@@ -176,17 +187,13 @@ CXXFLAGS += $(OPT)
 ASMFLAGS += -g3
 ASMFLAGS += -mcpu=cortex-m4
 ASMFLAGS += -mthumb -mabi=aapcs
-ASMFLAGS += -mfloat-abi=soft
 ASMFLAGS += -DBLE_STACK_SUPPORT_REQD
 ASMFLAGS += -DBOARD_PCA10040
-ASMFLAGS += -DFLOAT_ABI_SOFT
-ASMFLAGS += -DNRF52810_XXAA
 ASMFLAGS += -DNRF52_PAN_74
 ASMFLAGS += -DNRFX_COREDEP_DELAY_US_LOOP_CYCLES=3
 ASMFLAGS += -DNRF_DFU_SETTINGS_VERSION=2
 ASMFLAGS += -DNRF_DFU_SVCI_ENABLED
 ASMFLAGS += -DNRF_SD_BLE_API_VERSION=6
-ASMFLAGS += -DS112
 ASMFLAGS += -DSOFTDEVICE_PRESENT
 ASMFLAGS += -DSVC_INTERFACE_CALL_AS_NORMAL_FUNCTION
 ASMFLAGS += -DuECC_ENABLE_VLI_API=0
@@ -194,6 +201,32 @@ ASMFLAGS += -DuECC_OPTIMIZATION_LEVEL=3
 ASMFLAGS += -DuECC_SQUARE_FUNC=0
 ASMFLAGS += -DuECC_SUPPORT_COMPRESSED_POINT=0
 ASMFLAGS += -DuECC_VLI_NATIVE_LITTLE_ENDIAN=1
+
+ifeq ($(SOFTDEVICE), S112)
+	CFLAGS += -DS112
+	ASMFLAGS += -DS112
+	SOFTDEVICE_NAME := s112_nrf52_6.1.1_softdevice.hex
+	SOFTDEVICE_VER  := 0xb8
+	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s112/hex/s112_nrf52_6.1.1_softdevice.hex
+	
+    INC_FOLDERS += \
+		$(SDK_ROOT)/components/softdevice/s112/headers/nrf52 \
+		$(SDK_ROOT)/components/softdevice/s112/headers
+
+else ifeq ($(SOFTDEVICE), S132)
+	CFLAGS += -DS132
+	ASMFLAGS += -DS132
+	SOFTDEVICE_NAME := s132_nrf52_6.1.1_softdevice.hex
+	SOFTDEVICE_VER  := 0xb7
+	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_6.1.1_softdevice.hex
+	
+	INC_FOLDERS += \
+		$(SDK_ROOT)/components/softdevice/s132/headers/nrf52 \
+		$(SDK_ROOT)/components/softdevice/s132/headers
+
+else
+	$(error cannot handle softdevice [$(SOFTDEVICE)])
+endif
 
 # Linker flags
 LDFLAGS += $(OPT)
@@ -204,10 +237,10 @@ LDFLAGS += -Wl,--gc-sections
 # use newlib in nano version
 LDFLAGS += --specs=nano.specs
 
-nrf52810_xxaa_s112: CFLAGS += -D__HEAP_SIZE=0
-nrf52810_xxaa_s112: CFLAGS += -D__STACK_SIZE=2048
-nrf52810_xxaa_s112: ASMFLAGS += -D__HEAP_SIZE=0
-nrf52810_xxaa_s112: ASMFLAGS += -D__STACK_SIZE=2048
+nrf52_bootloader: CFLAGS += -D__HEAP_SIZE=$(HEAP_SIZE)
+nrf52_bootloader: CFLAGS += -D__STACK_SIZE=$(STACK_SIZE)
+nrf52_bootloader: ASMFLAGS += -D__HEAP_SIZE=$(HEAP_SIZE)
+nrf52_bootloader: ASMFLAGS += -D__STACK_SIZE=$(STACK_SIZE)
 
 # Add standard libraries at the very end of the linker input, after all objects
 # that may need symbols provided by these libraries.
@@ -217,12 +250,12 @@ LIB_FILES += -lc -lnosys -lm
 .PHONY: default help
 
 # Default target - first one defined
-default: nrf52810_xxaa_s112
+default: nrf52_bootloader
 
 # Print all targets that can be built
 help:
 	@echo following targets are available:
-	@echo		nrf52810_xxaa_s112
+	@echo		nrf52_bootloader
 	@echo		flash_softdevice
 	@echo		sdk_config - starting external tool for editing sdk_config.h
 	@echo		flash      - flashing binary
@@ -236,24 +269,24 @@ $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
 # Flash the program
 flash: default
-	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52810_xxaa_s112.hex
-	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52810_xxaa_s112.hex --sectorerase
+	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex
+	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
 pyocd_flash: default
-	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52810_xxaa_s112.hex
-	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52810_xxaa_s112.hex
+	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex
+	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex
 	pyocd cmd -t nrf52 -c reset
 
 # Flash softdevice
 flash_softdevice:
-	@echo Flashing: s112_nrf52_6.1.1_softdevice.hex
-	nrfjprog -f nrf52 --program $(SDK_ROOT)/components/softdevice/s112/hex/s112_nrf52_6.1.1_softdevice.hex --sectorerase
+	@echo Flashing: $(SOFTDEVICE_NAME)
+	nrfjprog -f nrf52 --program $(SOFTDEVICE_PATH) --sectorerase
 	nrfjprog -f nrf52 --reset
 
 pyocd_flash_softdevice:
-	@echo Flashing: s112_nrf52_6.1.1_softdevice.hex
-	pyocd flash -t nrf52 -e sector -f 2M $(SDK_ROOT)/components/softdevice/s112/hex/s112_nrf52_6.1.1_softdevice.hex
+	@echo Flashing: $(SOFTDEVICE_NAME)
+	pyocd flash -t nrf52 -e sector -f 2M $(SOFTDEVICE_PATH)
 	pyocd cmd -t nrf52 -c reset
 
 erase:

@@ -52,7 +52,8 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 
 ```
 cd application/bootloader/project/armgcc
-make
+make SOFTDEVICE=S132 NRF_CHIP=nrf52832 NRF52_DISABLE_FPU=yes -j # nrf52832的编译命令
+make SOFTDEVICE=S112 NRF_CHIP=nrf52810 -j # nrf52810的编译命令
 ```
 ### 蓝牙程序和USB控制器的编译
 现在蓝牙和USB控制器程序的Makefile都放在一起了。进入对应的硬件目录，直接make即可。
