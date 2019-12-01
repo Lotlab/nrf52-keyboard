@@ -15,12 +15,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "usb_comm.h"
 #include "hook.h"
 #include "keycode.h"
 #include "bootmagic.h"
 #include "../main.h"
 #include "sleep_reason.h"
-#include "usb_comm.h"
 
 __attribute__((weak)) void hook_bootmagic() {
     if (!bootmagic_scan_key(BOOTMAGIC_KEY_BOOT)) {
