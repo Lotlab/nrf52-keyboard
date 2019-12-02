@@ -61,7 +61,9 @@
         "led_rgb.h": "c",
         "ch554_sdcc.h": "c",
         "compiler.h": "c",
-        "bootmagic.h": "c"
+        "bootmagic.h": "c",
+        "hook.h": "c",
+        "keycode.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",

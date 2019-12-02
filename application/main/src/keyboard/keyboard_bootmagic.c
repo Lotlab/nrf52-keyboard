@@ -22,25 +22,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../main.h"
 #include "sleep_reason.h"
 
-__attribute__((weak)) void hook_bootmagic() {
-    if (!bootmagic_scan_key(BOOTMAGIC_KEY_BOOT)) {
-        bool sleep_flag = true;
-#ifdef DEBUG_SKIP_PWRON_CHECK
-        // debug状态下自动开机
+#ifndef BOOTMAGIC_KEY_BOOT_TRAP
+#define BOOTMAGIC_KEY_BOOT_TRAP KC_J
+#endif
+#ifndef BOOTMAGIC_KEY_BOOT_TRAP2
+#define BOOTMAGIC_KEY_BOOT_TRAP2 KC_H
+#endif
+
+__attribute__((weak)) void hook_bootmagic() 
+{
+    bool sleep_flag = true;
+    // 仅在按下开机按钮BOOT，且没按下BOOT_TRAP的情况下开机
+    if (bootmagic_scan_key(BOOTMAGIC_KEY_BOOT)
+        && !bootmagic_scan_key(BOOTMAGIC_KEY_BOOT_TRAP) 
+        && !bootmagic_scan_key(BOOTMAGIC_KEY_BOOT_TRAP2)) 
         sleep_flag = false;
+
+#ifdef DEBUG_SKIP_PWRON_CHECK
+    // debug状态下自动开机
+    sleep_flag = false;
 #endif
 #ifdef HAS_USB
-        // 若连接至主机则自动开机
-        if (usb_working())
-            sleep_flag = false;
+    // 若连接至主机则自动开机
+    if (usb_working())
+        sleep_flag = false;
 #endif
-        // 自动休眠则不需要需要使用BOOT按键开机
-        if (sleep_reason_get())
-            sleep_flag = false;
+    // 自动休眠则不需要需要使用BOOT按键开机
+    if (sleep_reason_get())
+        sleep_flag = false;
 
-        if (sleep_flag) {
-            sleep(SLEEP_NOT_PWRON);
-        }
+    if (sleep_flag) {
+        sleep(SLEEP_NOT_PWRON);
     }
     
     if (bootmagic_scan_key(BOOTMAGIC_KEY_ERASE_BOND)) {
