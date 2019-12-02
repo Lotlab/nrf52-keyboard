@@ -1,6 +1,6 @@
 #!/bin/sh
 
-COMPILE_FILES="rev_c rev_e rev_e_3led"
+COMPILE_FILES="rev_c rev_e rev_e_3led rev_f rev_f_3led"
 OUTPUT_DIR="_build"
 
 VERSION=`git describe --always --dirty || echo 'unknown'`

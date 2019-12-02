@@ -34,6 +34,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT "Lot60.E" /* 硬件名称，用于蓝牙显示 */
 #endif
 
+#ifdef HARDWARE_REV_F
+#define PRODUCT "Lot60.F" /* 硬件名称，用于蓝牙显示 */
+#endif
+
 #define MACADDR_SEPRATOR '_' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
 
 /* USB HID report parameter */
@@ -100,7 +104,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_CAPS 21
 #endif
 
-#ifdef HARDWARE_REV_E
+#if defined(HARDWARE_REV_E) || defined(HARDWARE_REV_F)
 #define LED_CAPS 19
 #endif
 
@@ -111,7 +115,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_RGB_B 24
 #endif
 
-#ifdef HARDWARE_REV_E
+#if defined(HARDWARE_REV_E) || defined(HARDWARE_REV_F)
 #define LED_RGB_R 24
 #define LED_RGB_G 23
 #define LED_RGB_B 22
@@ -142,7 +146,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 25, 28, 29, 30, 26 };
 static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 27, 3, 4, 5, 6, 7, 8, 9 };
 
-#ifdef HARDWARE_REV_C
+#if defined(HARDWARE_REV_C) || defined(HARDWARE_REV_F)
 #define ROW_IN // 二极管方向是从COL->ROW
 #endif
 
