@@ -3,10 +3,10 @@ TARGETS          := nrf52_bootloader
 OUTPUT_DIRECTORY := _build
 
 PROJ_DIR := ../..
-APP_PROJ_DIR := ./
+APP_PROJ_DIR := .
 
 ifndef ROOT_DIR
-	ROOT_DIR := ../../../../
+	ROOT_DIR := ../../../..
 endif
 
 ifndef SDK_ROOT
@@ -288,6 +288,10 @@ pyocd_flash_softdevice:
 	@echo Flashing: $(SOFTDEVICE_NAME)
 	pyocd flash -t nrf52 -e sector -f 2M $(SOFTDEVICE_PATH)
 	pyocd cmd -t nrf52 -c reset
+
+merge_softdevice: default
+	@echo Merging program and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/nrf52_bootloader_sd.hex
+	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex -o $(OUTPUT_DIRECTORY)/nrf52_bootloader_sd.hex
 
 erase:
 	nrfjprog -f nrf52 --eraseall
