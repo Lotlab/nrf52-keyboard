@@ -72,7 +72,7 @@ static uint8_t checksum(uint8_t* data, uint8_t len)
 
 enum uart_ack_state {
     UART_CHECK_FAIL,
-    UART_SUCCESS, 
+    UART_SUCCESS,
     UART_END
 };
 
@@ -104,7 +104,8 @@ static void send_event(enum user_ble_event arg)
     case USER_USB_PROTOCOL_BOOT:
     case USER_USB_PROTOCOL_REPORT:
         // 设置为实际的protocol
-        keyboard_protocol = usb_protocol;
+        if (usb_working())
+            keyboard_protocol = usb_protocol;
         break;
     default:
         break;
@@ -344,7 +345,7 @@ void usb_comm_init()
     nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
     if (nrf_gpio_pin_read(UART_RXD)) {
 #endif
-    // 初始化时启用UART尝试接收事件，若没有主机则在超时处关闭
+        // 初始化时启用UART尝试接收事件，若没有主机则在超时处关闭
         uart_init_hardware();
     }
 }
