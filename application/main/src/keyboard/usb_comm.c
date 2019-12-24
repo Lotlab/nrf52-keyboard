@@ -165,7 +165,7 @@ static void uart_on_recv()
         if (!recv_index) {
             if (buff >= 0x80) { // keymap sending
                 recv_index++;
-            } else if (buff >= 0x40) { // led
+            } else if (buff >= 0x20) { // led
                 keyboard_led_val_usb = buff & 0x1F; // 5bit
             } else if (buff >= 0x10) { // status
                 bool success = buff & 0x01;

@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "system.h"
 #include "usb_comm.h"
 #include <stdbool.h>
+#include <string.h>
 #include "config.h"
 
 #ifdef PIN_STANDBY
@@ -32,6 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 uart_state uart_rx_state;
 static uint8_t len, pos;
 static uint8_t __xdata recv_buff[64];
+static uint8_t __xdata keyboard_buffer[8];
 
 static bool uart_check_flag, uart_arrive_flag, last_success;
 
@@ -101,7 +103,8 @@ static void uart_data_parser(void)
         if (checksum()) {
             if (index == 0) {
                 // 通常键盘数据包
-                KeyboardGenericUpload(&recv_buff[2], kplen);
+                memcpy(keyboard_buffer, &recv_buff[2], 8);
+                KeyboardGenericUpload(keyboard_buffer, kplen);
                 last_success = true;
             } else if (index == 1 || index == 2 || index == 3 || index == 0x80) {
                 // system, consumer, mouse数据包
@@ -217,7 +220,7 @@ void uart_recv(void)
  */
 void uart_send_led(uint8_t val)
 {
-    send_buff[0] = 0x40 + (val & 0x3F);
+    send_buff[0] = 0x20 + (val & 0x1F);
     send_len = 1;
 }
 
