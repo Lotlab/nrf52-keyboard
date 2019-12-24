@@ -59,9 +59,9 @@ static void keyboard_switch_scan_mode(bool slow)
 static void keyboard_scan_handler(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
-    scan_counter -= KEYBOARD_SCAN_INTERVAL;
-    if (scan_counter <= 0) {
-        scan_counter = scan_reload;
+    scan_counter += KEYBOARD_SCAN_INTERVAL;
+    if (scan_counter >= scan_reload) {
+        scan_counter = 0;
         keyboard_task();
     }
 }
@@ -154,7 +154,7 @@ static void keyboard_wdt_init(void)
 void keyboard_debounce(void)
 {
     // 下一个计时期间立即扫描用于消抖
-    scan_counter = 0;
+    scan_counter = scan_reload;
 }
 
 /**
