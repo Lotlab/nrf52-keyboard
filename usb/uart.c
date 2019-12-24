@@ -97,7 +97,7 @@ static void uart_data_parser(void)
     uint8_t command = recv_buff[0];
     if (command & 0x40) {
         uint8_t index = recv_buff[1];
-        uint8_t kplen = (command & 0x1F);
+        uint8_t kplen = (command & 0x3F);
         if (checksum()) {
             if (index == 0) {
                 // 通常键盘数据包
