@@ -314,10 +314,12 @@ void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 
     // 入队
     struct queue_item item;
-    item.len = len + 2;
-    item.data[0] = 0x80 + ((index) << 5) + len;
-    memcpy(&item.data[1], pattern, len);
-    item.data[len + 1] = checksum(item.data, len + 1);
+    item.len = len + 3;
+    item.data[0] = 0x40 + len;
+    item.data[1] = index;
+
+    memcpy(&item.data[2], pattern, len);
+    item.data[len + 2] = checksum(item.data, len + 2);
 
     queue_push(item);
 }

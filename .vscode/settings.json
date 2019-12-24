@@ -63,7 +63,9 @@
         "compiler.h": "c",
         "bootmagic.h": "c",
         "hook.h": "c",
-        "keycode.h": "c"
+        "keycode.h": "c",
+        "ble_hid_descriptor.h": "c",
+        "report.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",
@@ -180,7 +182,9 @@
         "SDK/components/libraries/bootloader",
         "SDK/components/libraries/uart",
         "tmk/tmk_core/common",
-        "tmk/tmk_core/common/avr"
+        "tmk/tmk_core/common/avr",
+        "application/main/src/config",
+        "keyboard/template"
     ],
     "C_Cpp.default.defines": [
         "uint8_t=char",
@@ -190,7 +194,7 @@
         "NRF52810"
     ],
     "C_Cpp.default.forcedInclude": [
-        "application/main/src/config/config.h"
+        "keyboard/template/config.h"
     ],
     "C_Cpp.clang_format_style": "webkit"
 }

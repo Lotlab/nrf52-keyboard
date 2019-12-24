@@ -95,18 +95,18 @@ void uart_init()
 static void uart_data_parser(void)
 {
     uint8_t command = recv_buff[0];
-    if (command & 0x80) {
-        uint8_t index = (command & 0x60) >> 5;
+    if (command & 0x40) {
+        uint8_t index = recv_buff[1];
         uint8_t kplen = (command & 0x1F);
         if (checksum()) {
             if (index == 0) {
                 // 通常键盘数据包
-                KeyboardGenericUpload(&recv_buff[1], kplen);
+                KeyboardGenericUpload(&recv_buff[2], kplen);
                 last_success = true;
-            } else if (index == 1 || index == 2 || index == 3) {
-                // system或consumer数据包
-                recv_buff[0] = index + 1; // 数据包的id分别是2和3，直接用这个加1就好
-                KeyboardExtraUpload(recv_buff, kplen + 1);
+            } else if (index == 1 || index == 2 || index == 3 || index == 0x80) {
+                // system, consumer, mouse数据包
+                // 发过来的包的id和reportID一致，不用处理
+                KeyboardExtraUpload(&recv_buff[1], kplen + 1);
                 last_success = true;
             }
         } else {
@@ -187,9 +187,9 @@ void uart_recv(void)
 
     switch (uart_rx_state) {
     case STATE_IDLE:
-        if (data >= 0x80) {
+        if (data >= 0x40) {
             // 数据的最高Bit是1，则为下面上传的键盘数据包
-            len = (data & 0x1F) + 2; // 实际大小加上1byte 的头和1byte的 Checksum
+            len = (data & 0x3F) + 3; // 实际大小加上1byte的头, 1byte的ID和1byte的 Checksum
             pos = 0;
             recv_buff[pos++] = data;
             uart_rx_state = STATE_DATA;

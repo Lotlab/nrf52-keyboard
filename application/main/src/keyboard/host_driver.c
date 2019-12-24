@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../config/keyboard_config.h"
 #include "custom_hook.h"
 #include "usb_comm.h"
+#include "report.h"
 
 // todo: impliment
 uint8_t keyboard_idle = 0;
@@ -54,7 +55,7 @@ uint8_t keyboard_leds()
 /**
  * @brief 发送按键包
  * 
- * @param index 类型Index
+ * @param index 类型Index。0: generic, 1: mouse, 2: system, 3: consumer, 0x80: nkro
  * @param len 长度
  * @param keys 按键
  */
@@ -74,7 +75,7 @@ void send_keyboard(report_keyboard_t* report)
 {
 #if defined(NKRO_ENABLE) && defined(HAS_USB)
     if (keyboard_protocol && keyboard_nkro) {
-        send(3, NKRO_EPSIZE, report->raw);
+        send(0x80, NKRO_EPSIZE, report->raw);
     } else
 #endif
     {
@@ -85,15 +86,15 @@ void send_keyboard(report_keyboard_t* report)
 
 void send_mouse(report_mouse_t* report)
 {
-    // unsupport, and will not support in future.
+    send(REPORT_ID_MOUSE, sizeof(report_mouse_t), (uint8_t*)&report);
 }
 
 void send_system(uint16_t data)
 {
-    send(1, 2, (uint8_t*)&data);
+    send(REPORT_ID_SYSTEM, 2, (uint8_t*)&data);
 }
 
 void send_consumer(uint16_t data)
 {
-    send(2, 2, (uint8_t*)&data);
+    send(REPORT_ID_CONSUMER, 2, (uint8_t*)&data);
 }

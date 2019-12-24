@@ -101,8 +101,8 @@ void EP0_SETUP()
     uint8_t len = USB_RX_LEN;
     if (len == (sizeof(USB_SETUP_REQ))) {
         SetupLen = UsbSetupBuf->wLengthL;
-        if (UsbSetupBuf->wLengthH || SetupLen > 0x7F) {
-            SetupLen = 0x7F; // 限制总长度
+        if (UsbSetupBuf->wLengthH) {
+            SetupLen = 0xFF; // 限制总长度
         }
         len = 0; // 默认为成功并且上传0长度
         SetupReq = UsbSetupBuf->bRequest;

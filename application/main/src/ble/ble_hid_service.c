@@ -28,11 +28,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OUTPUT_REP_KBD_INDEX 0 /**< Index of Output Report. */
 #define OUTPUT_REPORT_MAX_LEN 1 /**< Maximum length of Output Report. */
 #define INPUT_REP_KBD_INDEX 0 /**< Index of Input Report. */
-#define INPUT_REP_REF_ID 1 /**< Id of reference to Keyboard Input Report. */
-#define OUTPUT_REP_REF_ID 1 /**< Id of reference to Keyboard Output Report. */
-#define FEATURE_REP_REF_ID 0 /**< ID of reference to Keyboard Feature Report. */
-#define FEATURE_REPORT_MAX_LEN 2 /**< Maximum length of Feature Report. */
-#define FEATURE_REPORT_INDEX 0 /**< Index of Feature Report. */
+#define INPUT_REP_REF_ID 0 /**< Id of reference to Keyboard Input Report. */
+#define OUTPUT_REP_REF_ID 0 /**< Id of reference to Keyboard Output Report. */
 
 #ifdef MOUSEKEY_ENABLE
 #define INPUT_REP_MOUSE_INDEX INPUT_REP_KBD_INDEX + 1
@@ -50,7 +47,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define INPUT_REP_COUNT INPUT_REP_CONSUMER_INDEX + 1 // In 报文数目
 #define OUTPUT_REP_COUNT OUTPUT_REP_KBD_INDEX + 1 // Out 报文数目
-#define FEATURE_REP_COUNT FEATURE_REPORT_INDEX + 1 // Feature 报文数目
 
 #define MAX_BUFFER_ENTRIES 5 /**< Number of elements that can be enqueued */
 
@@ -59,6 +55,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define INPUT_REPORT_KEYS_MAX_LEN 8 /**< Maximum length of the Input Report characteristic. */
 
 static bool m_in_boot_mode = false; /**< Current protocol mode. */
+
+uint8_t hid_report_map_table[] = { INPUT_REP_KBD_INDEX, INPUT_REP_MOUSE_INDEX, INPUT_REP_SYSTEM_INDEX, INPUT_REP_CONSUMER_INDEX };
 
 /**Buffer queue access macros
  *
@@ -111,8 +109,7 @@ static buffer_list_t buffer_list; /**< List to enqueue not just data to be sent,
 BLE_HIDS_DEF(m_hids, /**< Structure used to identify the HID service. */
     NRF_SDH_BLE_TOTAL_LINK_COUNT,
     INPUT_REPORT_KEYS_MAX_LEN,
-    OUTPUT_REPORT_MAX_LEN,
-    FEATURE_REPORT_MAX_LEN);
+    OUTPUT_REPORT_MAX_LEN);
 
 uint8_t keyboard_led_val_ble;
 
@@ -127,11 +124,9 @@ static void hids_init(ble_srv_error_handler_t err_handler)
 
     static ble_hids_inp_rep_init_t input_report_array[INPUT_REP_COUNT];
     static ble_hids_outp_rep_init_t output_report_array[OUTPUT_REP_COUNT];
-    static ble_hids_feature_rep_init_t feature_report_array[FEATURE_REP_COUNT];
 
     memset((void*)input_report_array, 0, sizeof(ble_hids_inp_rep_init_t) * INPUT_REP_COUNT);
     memset((void*)output_report_array, 0, sizeof(ble_hids_outp_rep_init_t) * OUTPUT_REP_COUNT);
-    memset((void*)feature_report_array, 0, sizeof(ble_hids_feature_rep_init_t) * FEATURE_REP_COUNT);
 
     // Initialize HID Service
     HID_REP_IN_SETUP(
@@ -139,24 +134,18 @@ static void hids_init(ble_srv_error_handler_t err_handler)
         INPUT_REPORT_KEYS_MAX_LEN,
         INPUT_REP_REF_ID);
 
-#ifdef EXTRAKEY_ENABLE
-    // system input report
-    HID_REP_IN_SETUP(input_report_array[INPUT_REP_SYSTEM_INDEX], 2, REPORT_ID_SYSTEM);
-    // consumer input report
-    HID_REP_IN_SETUP(input_report_array[INPUT_REP_CONSUMER_INDEX], 2, REPORT_ID_CONSUMER);
-#endif
-
     // keyboard led report
     HID_REP_OUT_SETUP(
         output_report_array[OUTPUT_REP_KBD_INDEX],
         OUTPUT_REPORT_MAX_LEN,
         OUTPUT_REP_REF_ID);
 
-    // unknown vendor define feature report
-    HID_REP_FEATURE_SETUP(
-        feature_report_array[FEATURE_REPORT_INDEX],
-        FEATURE_REPORT_MAX_LEN,
-        FEATURE_REP_REF_ID);
+#ifdef EXTRAKEY_ENABLE
+    // system input report
+    HID_REP_IN_SETUP(input_report_array[INPUT_REP_SYSTEM_INDEX], 2, REPORT_ID_SYSTEM);
+    // consumer input report
+    HID_REP_IN_SETUP(input_report_array[INPUT_REP_CONSUMER_INDEX], 2, REPORT_ID_CONSUMER);
+#endif
 
     memset(&hids_init_obj, 0, sizeof(hids_init_obj));
 
@@ -168,8 +157,6 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     hids_init_obj.p_inp_rep_array = input_report_array;
     hids_init_obj.outp_rep_count = OUTPUT_REP_COUNT;
     hids_init_obj.p_outp_rep_array = output_report_array;
-    hids_init_obj.feature_rep_count = FEATURE_REP_COUNT;
-    hids_init_obj.p_feature_rep_array = feature_report_array;
     hids_init_obj.rep_map.data_len = sizeof(hid_descriptor);
     hids_init_obj.rep_map.p_data = hid_descriptor;
     hids_init_obj.hid_information.bcd_hid = BASE_USB_HID_SPEC_VERSION;
@@ -325,13 +312,21 @@ static uint32_t buffer_dequeue(bool tx_flag)
 
 /**@brief Function for sending sample key presses to the peer.
  *
- * @param[in]   report_index      Packet report index. 0:keyboard, 1:system, 2:consumer.
+ * @param[in]   report_id         Packet report ID. 0:keyboard, 1:mouse, 2:system, 3:consumer.
  * @param[in]   key_pattern_len   Pattern length.
  * @param[in]   p_key_pattern     Pattern to be sent.
  */
-void keys_send(uint8_t report_index, uint8_t key_pattern_len, uint8_t* p_key_pattern)
+void keys_send(uint8_t report_id, uint8_t key_pattern_len, uint8_t* p_key_pattern)
 {
     ret_code_t err_code;
+    // check if report id overflow
+    if (report_id >= sizeof(hid_report_map_table))
+        return;
+    // convert report id to index
+    uint8_t report_index = hid_report_map_table[report_id];
+    // check if this function is disable
+    if (report_id > 0 && report_index == hid_report_map_table[report_id - 1])
+        return;
 
     err_code = send_key(&m_hids, report_index, p_key_pattern, key_pattern_len);
     // check if send success, otherwise enqueue this.
