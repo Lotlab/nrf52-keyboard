@@ -6,7 +6,7 @@ static uint8_t hid_descriptor[] = {
     0x05, 0x01, // Usage Page (Generic Desktop)
     0x09, 0x06, // Usage (Keyboard)
     0xA1, 0x01, // Collection (Application)
-    0x85, 0x00, // Report ID 0
+    0x85, 0x7f, // Report ID 0x7F
     0x05, 0x07, // Usage Page (Key Codes)
     0x19, 0xe0, // Usage Minimum (224)
     0x29, 0xe7, // Usage Maximum (231)

@@ -86,7 +86,7 @@ void send_keyboard(report_keyboard_t* report)
 
 void send_mouse(report_mouse_t* report)
 {
-    send(REPORT_ID_MOUSE, sizeof(report_mouse_t), (uint8_t*)&report);
+    send(REPORT_ID_MOUSE, sizeof(report_mouse_t), (uint8_t*)report);
 }
 
 void send_system(uint16_t data)

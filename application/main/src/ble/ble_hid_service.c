@@ -28,8 +28,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OUTPUT_REP_KBD_INDEX 0 /**< Index of Output Report. */
 #define OUTPUT_REPORT_MAX_LEN 1 /**< Maximum length of Output Report. */
 #define INPUT_REP_KBD_INDEX 0 /**< Index of Input Report. */
-#define INPUT_REP_REF_ID 0 /**< Id of reference to Keyboard Input Report. */
-#define OUTPUT_REP_REF_ID 0 /**< Id of reference to Keyboard Output Report. */
+#define INPUT_REP_REF_ID 0x7f /**< Id of reference to Keyboard Input Report. */
+#define OUTPUT_REP_REF_ID 0x7f /**< Id of reference to Keyboard Output Report. */
 
 #ifdef MOUSEKEY_ENABLE
 #define INPUT_REP_MOUSE_INDEX INPUT_REP_KBD_INDEX + 1
@@ -140,6 +140,9 @@ static void hids_init(ble_srv_error_handler_t err_handler)
         OUTPUT_REPORT_MAX_LEN,
         OUTPUT_REP_REF_ID);
 
+#ifdef MOUSEKEY_ENABLE
+    HID_REP_IN_SETUP(input_report_array[INPUT_REP_MOUSE_INDEX], 5, REPORT_ID_MOUSE);
+#endif
 #ifdef EXTRAKEY_ENABLE
     // system input report
     HID_REP_IN_SETUP(input_report_array[INPUT_REP_SYSTEM_INDEX], 2, REPORT_ID_SYSTEM);
