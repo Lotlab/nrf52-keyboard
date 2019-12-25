@@ -13,6 +13,17 @@ SECTIONS
 {
 }
 
+/* Module init section */
+SECTIONS
+{
+  .modules_init :
+  {
+    PROVIDE(__start_modules_init = .);
+    KEEP(*(.modules_init))
+    PROVIDE(__stop_modules_init = .);
+  } > RAM
+} INSERT AFTER .data;
+
 SECTIONS
 {
   . = ALIGN(4);

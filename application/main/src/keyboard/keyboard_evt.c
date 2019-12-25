@@ -15,15 +15,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../main.h"
+#include "keyboard_evt.h"
+#include "../ble/ble_services.h"
 #include "ble_keyboard.h"
 #include "keyboard_led.h"
 #include "sleep_reason.h"
-#include  "../ble/ble_services.h"
 
 static bool usb_connected = false;
 
-__attribute__((weak)) void custom_event_handler(enum user_ble_event arg){}
+__attribute__((weak)) void custom_event_handler(enum user_ble_event arg) {}
 
 __attribute__((weak)) void user_event_handler(enum user_ble_event arg)
 {
@@ -61,4 +61,40 @@ __attribute__((weak)) void user_event_handler(enum user_ble_event arg)
     }
 
     custom_event_handler(arg);
+}
+
+NRF_SECTION_DEF(modules_init, UserEventHandler);
+
+/**
+ * 调用外部模块的事件处理
+ */
+static void external_event_handler(enum user_ble_event event, void* arg)
+{
+    int vars_cnt = NRF_SECTION_ITEM_COUNT(modules_init, UserEventHandler);
+    for (int i = 0; i < vars_cnt; i++) {
+        UserEventHandler* p_var_name = NRF_SECTION_ITEM_GET(modules_init, UserEventHandler, i);
+        (*p_var_name)(event, arg);
+    }
+}
+
+/**
+ * 触发一个事件
+ * 
+ * @param event: 事件类型
+ * @param arg: 事件参数
+ */
+void trig_event(enum user_event event, void* arg)
+{
+    external_event_handler(event, arg);
+}
+
+/**
+ * 触发一个事件
+ * 
+ * @param event: 事件类型
+ * @param arg: 事件参数
+ */
+void trig_event_param(enum user_event event, uint8_t arg)
+{
+    trig_event(event, &arg);
 }

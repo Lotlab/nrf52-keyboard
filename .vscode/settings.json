@@ -67,7 +67,9 @@
         "ble_hid_descriptor.h": "c",
         "report.h": "c",
         "config.h": "c",
-        "action_macro.h": "c"
+        "action_macro.h": "c",
+        "keyboard_evt.h": "c",
+        "nrf_section.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",
@@ -185,7 +187,11 @@
         "SDK/components/libraries/uart",
         "tmk/tmk_core/common",
         "tmk/tmk_core/common/avr",
+        "application/main/src",
+        "application/main/src/ble",
         "application/main/src/config",
+        "application/main/src/driver",
+        "application/main/src/keyboard",
         "keyboard/template"
     ],
     "C_Cpp.default.defines": [

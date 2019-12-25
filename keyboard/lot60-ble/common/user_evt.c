@@ -20,9 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "ble_keyboard.h"
 #include "keyboard_led.h"
-#include "led_rgb.h"
 #include "main.h"
 #include "nrf_delay.h"
+#include "simple_rgb/led_rgb.h"
 
 enum keyboard_status {
     kbd_ble,
