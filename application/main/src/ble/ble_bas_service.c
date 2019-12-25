@@ -112,14 +112,12 @@ static void adc_result_handler(nrf_saadc_value_t value)
     uint32_t vott = value * 1200 * 122 / 1024 / 22;
     uint8_t level;
 
-    if (vott >= 4200)
+    if (vott >= 4100)
         level = 100;
-    else if (vott >= 4000)
-        level = 90 + (vott - 4000) / 20;
-    else if (vott >= 3600)
-        level = 10 + (vott - 3600) / 5;
-    else if (vott >= 3200)
-        level = (vott - 3200) / 40;
+    else if (vott >= 3335)
+        level = 15 + (vott - 3335) / 9;
+    else if (vott >= 2900)
+        level = (vott - 2900) / 29;
     else
         level = 0;
 
