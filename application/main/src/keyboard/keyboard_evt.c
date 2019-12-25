@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "keyboard_evt.h"
 #include "../ble/ble_services.h"
 #include "ble_keyboard.h"
-#include "keyboard_led.h"
+#include "power_save.h"
 #include "sleep_reason.h"
 
 static bool usb_connected = false;
@@ -39,13 +39,13 @@ __attribute__((weak)) void user_event_handler(enum user_ble_event arg)
         break;
     case USER_USB_CHARGE:
         // 接入USB后，切换至非省电模式防止自动休眠
-        keyboard_led_powersave(false);
+        power_save_set_mode(false);
         ble_keyboard_powersave(false);
         usb_connected = true;
         break;
     case USER_USB_DISCONNECT:
         // 断开USB后，切换至省电模式节省电量
-        keyboard_led_powersave(true);
+        power_save_set_mode(true);
         ble_keyboard_powersave(true);
         usb_connected = false;
         break;

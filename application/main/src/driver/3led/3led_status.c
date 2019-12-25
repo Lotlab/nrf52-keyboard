@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "config.h"
 
 #include "../keyboard/keyboard_led.h"
+#include "../keyboard/power_save.h"
 #include "nrf.h"
 #include "nrf_gpio.h"
 
@@ -85,7 +86,7 @@ void status_led_on()
 static void set_led_on()
 {
     status_led_on();
-    off_timer_start();
+    power_save_reset();
 }
 
 /** 

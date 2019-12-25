@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "../main.h"
 
+#include <stdlib.h>
 #include "nrf_section.h"
 
 typedef void (*UserEventHandler)(uint8_t, void*);

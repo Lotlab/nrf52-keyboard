@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "led_rgb.h"
-#include "keyboard_led.h"
+#include "power_save.h"
 #include "low_power_pwm.h"
 #include "nrf.h"
 #include "nrf_gpio.h"
@@ -83,7 +83,7 @@ void keyboard_led_rgb_set(uint32_t color)
 {
     saved_color = color;
     keyboard_led_rgb_set_internal(color);
-    off_timer_start();
+    power_save_reset();
 }
 
 /**

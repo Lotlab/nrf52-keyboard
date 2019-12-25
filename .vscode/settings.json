@@ -69,7 +69,8 @@
         "config.h": "c",
         "action_macro.h": "c",
         "keyboard_evt.h": "c",
-        "nrf_section.h": "c"
+        "nrf_section.h": "c",
+        "power_save.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",

@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_timer.h"
 #include "config.h"
 #include "keyboard_led.h"
+#include "power_save.h"
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include <stdint.h>
@@ -124,7 +125,7 @@ void status_led_set_val(enum led_bit_usage bit, bool state)
 void status_led_set()
 {
     status_led_set_internal(saved_status_led_val);
-    off_timer_start();
+    power_save_reset();
 }
 
 #if LED_AUTOOFF_TIME > 0
@@ -140,7 +141,7 @@ static void status_led_blink_timer_handler(void* context)
 {
     status_led_off();
     status_led_set_internal(saved_status_led_val);
-    off_timer_start();
+    power_save_reset();
 }
 
 /**
