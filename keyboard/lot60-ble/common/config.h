@@ -151,3 +151,5 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 2
 #endif
 
 #define LED_POSITIVE // LED上拉驱动
+
+#define FDS_VIRTUAL_PAGES 2 // 缩减FDS的页面数，防止出现问题
