@@ -17,10 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "keyboard_led.h"
 
-#include "nrf_gpio.h"
 #include "../main.h"
-#include "power_save.h"
 #include "keyboard_evt.h"
+#include "nrf_gpio.h"
+#include "power_save.h"
 
 /**
  * @brief 设置LED灯的值
@@ -98,12 +98,11 @@ void keyboard_led_init()
 #endif
 }
 
-static void led_event_handler(enum user_event event, void* arg) {
-    switch (event)
-    {
+static void led_event_handler(enum user_event event, void* arg)
+{
+    switch (event) {
     case USER_EVT_POWERSAVE:
-        switch (*(uint8_t*)arg)
-        {
+        switch ((uint32_t)arg) {
         case PWR_SAVE_ENTER:
             led_off();
             break;

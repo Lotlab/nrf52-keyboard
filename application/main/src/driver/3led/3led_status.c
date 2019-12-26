@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "3led_status.h"
 #include "config.h"
 
+#include "../keyboard/keyboard_evt.h"
 #include "../keyboard/keyboard_led.h"
 #include "../keyboard/power_save.h"
 #include "nrf.h"
@@ -128,48 +129,45 @@ void status_led_usb(bool state)
     set_led_on();
 }
 
-/** 
- * 默认的基于事件的状态路由
- **/
-void status_led_evt_handler(enum user_ble_event arg)
+static void status_led_evt_handler(enum user_event event, void* arg)
 {
-    switch (arg) {
-    case USER_EVT_POST_INIT:
-        status_led_init();
+    uint8_t arg2 = (uint32_t)arg;
+    switch (event) {
+    case USER_EVT_STAGE:
+        switch (arg2) {
+        case KBD_STATE_POST_INIT: // 初始化LED
+            status_led_init();
+            break;
+        case KBD_STATE_SLEEP: // 准备休眠
+            status_led_off();
+            break;
+        default:
+            break;
+        }
         break;
-    case USER_LED_ON:
-        status_led_on();
+    case USER_EVT_POWERSAVE:
+        switch (arg2) {
+        case PWR_SAVE_ENTER: // 进入省电模式
+            status_led_off(); 
+            break;
+        case PWR_SAVE_EXIT: // 退出省电模式
+            status_led_on();
+            break;
+        default:
+            break;
+        }
+    case USER_EVT_CHARGE: // 充电事件
+        status_led_charging(arg2 == BATT_CHARGING);
         break;
-    case USER_LED_OFF:
-    case USER_LED_DEINIT:
-        status_led_off();
+    case USER_EVT_USB: // USB事件
+        status_led_usb(arg2 == USB_WORKING);
         break;
-    default:
-        break;
-    }
-
-    switch (arg) {
-    case USER_USB_DISCONNECT:
-        status_led_charging(false);
-    case USER_USB_CHARGE:
-        status_led_usb(false);
-        break;
-    case USER_USB_CONNECTED:
-        status_led_usb(true);
-        break;
-    case USER_BAT_CHARGING:
-        status_led_charging(true);
-        break;
-    case USER_BAT_FULL:
-        status_led_charging(false);
-        break;
-    case USER_BLE_DISCONNECT:
-        status_led_ble(false);
-        break;
-    case USER_BLE_CONNECTED:
-        status_led_ble(true);
+    case USER_EVT_BLE_STATE_CHANGE: // 蓝牙事件
+        status_led_ble(arg2 == BLE_STATE_CONNECTED);
         break;
     default:
         break;
     }
 }
+
+EVENT_HANDLER(status_led_evt_handler);

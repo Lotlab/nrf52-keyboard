@@ -142,27 +142,21 @@ static void uart_ack(enum uart_ack_state state)
  * 
  * @param 事件类型
  */
-static void send_event(enum user_ble_event arg)
+static void send_event(enum user_event event, uint8_t arg)
 {
 #ifdef NKRO_ENABLE
-    switch (arg) {
-    case USER_USB_DISCONNECT:
-    case USER_USB_CHARGE:
-        // 设置为Boot protocol，防止键盘发送nkro包
-        keyboard_protocol = 0;
-        break;
-    case USER_USB_CONNECTED:
-    case USER_USB_PROTOCOL_BOOT:
-    case USER_USB_PROTOCOL_REPORT:
-        // 设置为实际的protocol
-        if (usb_working())
-            keyboard_protocol = usb_protocol;
-        break;
+    switch (event) {
+    case USER_EVT_USB:
+        if (arg != USB_WORKING) {
+            trig_event_param(USER_EVT_PROTOCOL, HID_BOOT_PROTOCOL);
+        } else
+            trig_event_param(USER_EVT_PROTOCOL, usb_protocol);
+        return;
     default:
         break;
     }
 #endif
-    ble_user_event(arg);
+    trig_event_param(event, arg);
 }
 
 /**
@@ -173,19 +167,19 @@ static void send_event(enum user_ble_event arg)
  * @param protocol USB 当前协议类型
  * @param force 强制更新状态
  */
-static void set_state(bool host, bool charge_full, bool protocol, bool force)
+static void set_state(bool host, bool charge_full, bool protocol)
 {
-    if (host != has_host || force) {
+    if (host != has_host) {
         has_host = host;
-        send_event(host ? USER_USB_CONNECTED : USER_USB_CHARGE);
+        send_event(USER_EVT_USB, host ? (is_disable ? USB_NOT_WORKING : USB_WORKING) : USB_NO_HOST);
     }
-    if (charge_full != is_full || force) {
+    if (charge_full != is_full) {
         is_full = charge_full;
-        send_event(is_full ? USER_BAT_FULL : USER_BAT_CHARGING);
+        send_event(USER_EVT_CHARGE, is_full ? BATT_CHARGED : BATT_CHARGING);
     }
-    if (usb_protocol != protocol || force) {
+    if (usb_protocol != protocol) {
         usb_protocol = protocol;
-        send_event(protocol ? USER_USB_PROTOCOL_REPORT : USER_USB_PROTOCOL_BOOT);
+        send_event(USER_EVT_PROTOCOL, protocol && usb_working() ? HID_REPORT_PROTOCOL : HID_BOOT_PROTOCOL);
     }
 }
 
@@ -225,7 +219,7 @@ static void uart_on_recv()
                 bool protocol = buff & 0x08;
 
                 // 设置当前状态
-                set_state(usb_status, charging_status, protocol, false);
+                set_state(usb_status, charging_status, protocol);
 
                 // 成功接收，出队。
                 if (success) {
@@ -275,7 +269,9 @@ static void uart_to_idle()
     nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
 #endif
     is_connected = false;
-    send_event(USER_USB_DISCONNECT);
+    send_event(USER_EVT_USB, USB_NOT_CONNECT);
+    send_event(USER_EVT_CHARGE, BATT_NOT_CHARGING);
+    send_event(USER_EVT_PROTOCOL, HID_BOOT_PROTOCOL);
 }
 
 static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
@@ -316,7 +312,8 @@ static void uart_init_hardware()
     APP_ERROR_CHECK(err_code);
 
     is_connected = true;
-    set_state(false, false, false, true); // 重置为默认状态
+    send_event(USER_EVT_USB, USB_NO_HOST);
+    send_event(USER_EVT_CHARGE, BATT_CHARGING);
 }
 
 static void uart_task(void* context)
@@ -436,9 +433,9 @@ void usb_comm_switch()
     if (is_connected && has_host) {
         is_disable = !is_disable;
         if (is_disable) {
-            send_event(USER_USB_CHARGE);
+            send_event(USER_EVT_USB, USB_NOT_WORKING);
         } else {
-            send_event(USER_USB_CONNECTED);
+            send_event(USER_EVT_USB, USB_WORKING);
         }
     }
 }

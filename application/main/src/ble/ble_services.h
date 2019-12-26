@@ -7,12 +7,9 @@
 
 extern uint16_t m_conn_handle;
 
-
-typedef void (*evt_handler) (enum user_ble_event arg);
-
 /**@brief Init basic ble services
  */
-void ble_services_init(evt_handler handler);
+void ble_services_init();
 
 // void auth_key_reply(uint8_t* passkey);
 // bool auth_key_reqired(void);

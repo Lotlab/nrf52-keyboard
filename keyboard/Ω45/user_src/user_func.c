@@ -50,7 +50,7 @@ void matrix_uninit(void)
 void systemoff(void)
 {
     app_timer_stop_all();
-    ble_user_event(USER_EVT_SLEEP_AUTO);
+    notify_sleep(SLEEP_EVT_AUTO);
     keyboard_led_deinit();
 #ifdef HAS_USB
     usb_comm_sleep_prepare();
@@ -68,7 +68,7 @@ void buttons_init(void)
 {
 #ifdef POWER_BUTTON
     nrf_gpio_cfg_sense_input(POWER_BUTTON,
-                             NRF_GPIO_PIN_PULLUP,
-                             NRF_GPIO_PIN_SENSE_LOW);
+        NRF_GPIO_PIN_PULLUP,
+        NRF_GPIO_PIN_SENSE_LOW);
 #endif
 }

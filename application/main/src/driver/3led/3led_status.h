@@ -33,8 +33,3 @@ void status_led_charging(bool state);
  **/
 void status_led_usb(bool state);
 
-/** 
- * 默认的基于事件的状态路由
- * 如果覆盖了custom_event_handler，可以在自定义的事件中调用这个方法，从而避免再次编写对应的处理逻辑
- **/
-void status_led_evt_handler(enum user_ble_event arg);

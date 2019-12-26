@@ -18,9 +18,31 @@ enum SLEEP_REASON {
     // 非开机唤醒后休眠
     SLEEP_NOT_PWRON
 };
-
-void ble_user_event(enum user_ble_event arg);
+/**
+ * 触发一个事件
+ * 
+ * @param event: 事件类型
+ * @param arg: 事件参数
+ */
 void trig_event(enum user_event event, void* arg);
+/**
+ * 触发一个事件
+ * 请勿使用此方法传递内部参数以外的参数
+ * 
+ * @param event: 事件类型
+ * @param arg: 事件参数
+ */
 void trig_event_param(enum user_event event, uint8_t arg);
+/**
+ * 使键盘进入睡眠状态
+ * 
+ * @param reason: 睡眠原因
+ */
 void sleep(enum SLEEP_REASON reason);
+/**
+ * 触发睡眠事件
+ * 
+ * @param mode: 睡眠模式
+ */
+void notify_sleep(enum sleep_evt_type mode);
 extern bool erase_bonds;

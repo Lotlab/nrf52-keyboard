@@ -10,6 +10,10 @@ static bool counting;
 static bool power_save_mode = true;
 APP_TIMER_DEF(led_off_timer);
 
+static void notify_mode(enum power_save_mode mode) {
+    trig_event_param(USER_EVT_POWERSAVE, mode);
+}
+
 /**
  * @brief 设置省电模式状态
  * 
@@ -24,9 +28,9 @@ void power_save_set_mode(bool on)
     if (on)
         power_save_reset();
     else
-        trig_event_param(USER_EVT_POWERSAVE, PWR_SAVE_EXIT);
+        notify_mode(PWR_SAVE_EXIT);
 
-    trig_event_param(USER_EVT_POWERSAVE, on ? PWR_SAVE_ON : PWR_SAVE_OFF);
+    notify_mode(on ? PWR_SAVE_ON : PWR_SAVE_OFF);
 }
 
 /**
@@ -36,7 +40,7 @@ void power_save_set_mode(bool on)
  */
 static void power_save_timer_handler(void* context)
 {
-    trig_event_param(USER_EVT_POWERSAVE, PWR_SAVE_ENTER);
+    notify_mode(PWR_SAVE_ENTER);
     counting = false;
 }
 
@@ -53,7 +57,7 @@ void power_save_reset()
         counting = true;
     }
     // 无论是否进入这个mode都重置
-    trig_event_param(USER_EVT_POWERSAVE, PWR_SAVE_EXIT);
+    notify_mode(PWR_SAVE_EXIT);
 }
 
 /**
@@ -67,7 +71,7 @@ void power_save_timer_init(void)
 
 static void ps_event_handler(enum user_event event, void* arg)
 {
-    if (event == USER_EVT_STAGE && (*(uint8_t*)arg) == KBD_STATE_POST_INIT)
+    if (event == USER_EVT_STAGE && ((uint32_t)arg) == KBD_STATE_POST_INIT)
         power_save_timer_init();
 }
 

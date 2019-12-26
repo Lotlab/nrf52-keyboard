@@ -16,64 +16,51 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "keyboard_evt.h"
+#include "../ble/ble_hid_service.h"
 #include "../ble/ble_services.h"
 #include "ble_keyboard.h"
+#include "host.h"
+#include "passkey.h"
 #include "power_save.h"
 #include "sleep_reason.h"
+#include <stdlib.h>
 
-static bool usb_connected = false;
-
-__attribute__((weak)) void custom_event_handler(enum user_ble_event arg) {}
-
-__attribute__((weak)) void user_event_handler(enum user_ble_event arg)
-{
-    // 处理各项事件，启用对应的处理程序
-    switch (arg) {
-    case USER_EVT_SLEEP_AUTO:
-        // 自动休眠时，设置休眠原因便于下次免按键启动
-        sleep_reason_set(true);
-        break;
-    case USER_EVT_SLEEP_MANUAL:
-        // 手动休眠时，设置下次必须按键启动
-        sleep_reason_set(false);
-        break;
-    case USER_USB_CHARGE:
-        // 接入USB后，切换至非省电模式防止自动休眠
-        power_save_set_mode(false);
-        ble_keyboard_powersave(false);
-        usb_connected = true;
-        break;
-    case USER_USB_DISCONNECT:
-        // 断开USB后，切换至省电模式节省电量
-        power_save_set_mode(true);
-        ble_keyboard_powersave(true);
-        usb_connected = false;
-        break;
-    case USER_BLE_IDLE:
-        // 长时间没有连接，若处于蓝牙模式则睡眠
-        if (!usb_connected) {
-            sleep(SLEEP_NO_CONNECTION);
-        } else {
-            advertising_slow();
-        }
-    default:
-        break;
-    }
-
-    custom_event_handler(arg);
-}
+#include "queue.h"
 
 NRF_SECTION_DEF(modules_init, UserEventHandler);
 
 /**
  * 调用外部模块的事件处理
  */
-static void external_event_handler(enum user_ble_event event, void* arg)
+static void external_event_handler(enum user_event event, void* arg)
 {
     int vars_cnt = NRF_SECTION_ITEM_COUNT(modules_init, UserEventHandler);
     for (int i = 0; i < vars_cnt; i++) {
         UserEventHandler* p_var_name = NRF_SECTION_ITEM_GET(modules_init, UserEventHandler, i);
         (*p_var_name)(event, arg);
+    }
+}
+
+static void internal_event_handler(enum user_event event, void* arg);
+
+#define MAX_KBD_EVT_COUNT 20
+
+struct event_data {
+    enum user_event event;
+    void* arg;
+};
+
+QUEUE(struct event_data, events, MAX_KBD_EVT_COUNT)
+
+/**
+ * 执行事件
+ */
+void execute_event()
+{
+    while (!events_empty()) {
+        struct event_data* pt = events_peek();
+        events_pop();
+        external_event_handler(pt->event, pt->arg);
     }
 }
 
@@ -85,7 +72,18 @@ static void external_event_handler(enum user_ble_event event, void* arg)
  */
 void trig_event(enum user_event event, void* arg)
 {
-    external_event_handler(event, arg);
+    internal_event_handler(event, arg);
+    if (event == USER_EVT_INTERNAL)
+        return;
+    if (event == USER_EVT_STAGE && (uint32_t)arg != KBD_STATE_INITED)
+        external_event_handler(event, arg);
+    else {
+        struct event_data item = {
+            .arg = arg,
+            .event = event,
+        };
+        events_push(item);
+    }
 }
 
 /**
@@ -96,5 +94,47 @@ void trig_event(enum user_event event, void* arg)
  */
 void trig_event_param(enum user_event event, uint8_t arg)
 {
-    trig_event(event, &arg);
+    trig_event(event, (void*)(uint32_t)arg);
+}
+
+bool power_attached;
+
+static void internal_event_handler(enum user_event event, void* arg)
+{
+    uint8_t subEvent = (uint32_t)arg;
+    switch (event) {
+    case USER_EVT_SLEEP:
+        // 休眠时，设置休眠原因便于下次免按键启动
+        sleep_reason_set(subEvent);
+        break;
+    case USER_EVT_CHARGE:
+        // 接入和断开电源后，禁用和启用省电模式
+        power_attached = subEvent > 0;
+        power_save_set_mode(!power_attached);
+        ble_keyboard_powersave(!power_attached);
+        break;
+    case USER_EVT_BLE_STATE_CHANGE:
+        // 长时间没有连接，若没有接通电源则睡眠
+        if (subEvent == BLE_STATE_IDLE) {
+            if (power_attached)
+                advertising_slow();
+            else
+                sleep(SLEEP_NO_CONNECTION);
+        }
+        break;
+    case USER_EVT_BLE_PASSKEY_STATE:
+        // 需要输入Passkey，则输入passkey
+        if (subEvent == PASSKEY_STATE_REQUIRE)
+            passkey_req_handler();
+        break;
+    case USER_EVT_PROTOCOL:
+        // 更改 hid 协议
+        keyboard_protocol = subEvent;
+        break;
+    default:
+        break;
+    }
+
+    // 将事件转向至HID继续处理
+    hid_event_handler(event, arg);
 }

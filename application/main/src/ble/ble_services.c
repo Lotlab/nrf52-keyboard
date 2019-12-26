@@ -39,6 +39,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "ble_config.h"
 
+#include "../main.h"
+
 #define PNP_ID_VENDOR_ID_SOURCE 0x02 /**< Vendor ID Source. */
 
 #define APP_BLE_OBSERVER_PRIO 3 /**< Application's BLE observer priority. You shouldn't need to modify this value. */
@@ -70,8 +72,6 @@ NRF_BLE_QWR_DEF(m_qwr); /**< Context for the Queued Write module.*/
 BLE_ADVERTISING_DEF(m_advertising); /**< Advertising module instance. */
 
 static ble_uuid_t m_adv_uuids[] = { { BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE } };
-
-static evt_handler event_handler;
 
 /**@brief Clear bond information from persistent storage.
  */
@@ -197,11 +197,11 @@ static void pm_evt_handler(pm_evt_t const* p_evt)
     switch (p_evt->evt_id) {
     case PM_EVT_CONN_SEC_SUCCEEDED:
         m_peer_id = p_evt->peer_id;
-        event_handler(USER_BLE_CONNECTED);
+        trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_CONNECTED);
         break;
 
     case PM_EVT_BONDED_PEER_CONNECTED:
-        event_handler(USER_BLE_CONNECTED);
+        trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_CONNECTED);
         break;
 
     case PM_EVT_PEERS_DELETE_SUCCEEDED:
@@ -466,7 +466,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
         break;
 
     case BLE_ADV_EVT_IDLE:
-        event_handler(USER_BLE_IDLE);
+        trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_IDLE);
         break;
 
     case BLE_ADV_EVT_WHITELIST_REQUEST: {
@@ -559,7 +559,7 @@ static void ble_evt_handler(ble_evt_t const* p_ble_evt, void* p_context)
     case BLE_GAP_EVT_DISCONNECTED:
         ble_conn_handle_change(m_conn_handle, BLE_CONN_HANDLE_INVALID);
         m_conn_handle = BLE_CONN_HANDLE_INVALID;
-        event_handler(USER_BLE_DISCONNECT);
+        trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_DISCONNECT);
         break; // BLE_GAP_EVT_DISCONNECTED
 
     case BLE_GAP_EVT_PHY_UPDATE_REQUEST: {
@@ -572,7 +572,7 @@ static void ble_evt_handler(ble_evt_t const* p_ble_evt, void* p_context)
     } break;
 
     case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-        event_handler(USER_BLE_GATTS_TX_COMPLETE);
+        trig_event_param(USER_EVT_INTERNAL, INTERNAL_EVT_GATTS_TX_COMPLETE);
         break;
 
     case BLE_GATTC_EVT_TIMEOUT:
@@ -590,7 +590,7 @@ static void ble_evt_handler(ble_evt_t const* p_ble_evt, void* p_context)
         break;
 
     case BLE_GAP_EVT_AUTH_KEY_REQUEST:
-        event_handler(USER_BLE_PASSKEY_REQUIRE);
+        trig_event_param(USER_EVT_BLE_PASSKEY_STATE, PASSKEY_STATE_REQUIRE);
         break;
 
     case BLE_GAP_EVT_RSSI_CHANGED:
@@ -705,14 +705,11 @@ void ble_passkey_send(uint8_t const* p_key)
         BLE_GAP_AUTH_KEY_TYPE_PASSKEY,
         p_key);
     APP_ERROR_CHECK(err_code);
-
-    event_handler(USER_BLE_PASSKEY_SEND);
+    trig_event_param(USER_EVT_BLE_PASSKEY_STATE, PASSKEY_STATE_SEND);
 }
 
-void ble_services_init(evt_handler handler)
+void ble_services_init()
 {
-    event_handler = handler;
-
     peer_manager_init();
     gap_params_init();
     gatt_init();

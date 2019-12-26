@@ -91,18 +91,23 @@
 #include "keyboard/ble_keyboard.h"
 #include "keyboard/keyboard_bootcheck.h"
 #include "keyboard/keyboard_led.h"
+#include "keyboard/keyboard_evt.h"
 #include "keyboard/keyboard_matrix.h"
-#include "keyboard/passkey.h"
 #include "keyboard/usb_comm.h"
 
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 #define SCHED_MAX_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE /**< Maximum size of scheduler events. */
 #ifdef SVCALL_AS_NORMAL_FUNCTION
-#define SCHED_QUEUE_SIZE 20 /**< Maximum number of events in the scheduler queue. More is needed in case of Serialization. */
+#define SCHED_QUEUE_SIZE 30 /**< Maximum number of events in the scheduler queue. More is needed in case of Serialization. */
 #else
-#define SCHED_QUEUE_SIZE 10 /**< Maximum number of events in the scheduler queue. */
+#define SCHED_QUEUE_SIZE 20 /**< Maximum number of events in the scheduler queue. */
 #endif
+
+static void set_stage(enum keyboard_state stage)
+{
+    trig_event_param(USER_EVT_STAGE, stage);
+}
 
 /**@brief Callback function for asserts in the SoftDevice.
  *
@@ -140,6 +145,7 @@ static void reset_prepare(void)
 {
     // 禁用键盘LED
     keyboard_led_deinit();
+    set_stage(KBD_STATE_SLEEP);
 
     ret_code_t err_code;
     err_code = app_timer_stop_all();
@@ -194,7 +200,7 @@ static void timers_init(void)
  */
 static void services_init(void)
 {
-    ble_services_init(&ble_user_event);
+    ble_services_init();
     battery_service_init();
     hid_service_init(service_error_handler);
 }
@@ -228,29 +234,13 @@ static void sleep_mode_enter(void)
 }
 
 /**
- * @brief 用户定义的事件处理方法
+ * @brief 发送键盘睡眠通知
  * 
+ * @param reason 
  */
-void user_event_handler(enum user_ble_event arg);
-
-/**
- * @brief 用户蓝牙事件处理函数
- * 
- * @param arg 
- */
-void ble_user_event(enum user_ble_event arg)
+void notify_sleep(enum sleep_evt_type mode)
 {
-    switch (arg) {
-    case USER_BLE_PASSKEY_REQUIRE:
-        passkey_req_handler();
-        break;
-    default:
-        break;
-    }
-    // 将事件转向至HID继续处理
-    hid_event_handler(arg);
-    // 以及用户自定义的处理
-    user_event_handler(arg);
+    trig_event_param(USER_EVT_SLEEP, mode);
 }
 
 /**
@@ -264,12 +254,12 @@ void sleep(enum SLEEP_REASON reason)
     case SLEEP_NO_CONNECTION:
     case SLEEP_TIMEOUT:
         app_timer_stop_all();
-        ble_user_event(USER_EVT_SLEEP_AUTO);
+        notify_sleep(SLEEP_EVT_AUTO);
         sleep_mode_enter();
         break;
     case SLEEP_MANUALLY:
         app_timer_stop_all();
-        ble_user_event(USER_EVT_SLEEP_MANUAL);
+        notify_sleep(SLEEP_EVT_MANUAL);
         sleep_mode_enter();
         break;
     case SLEEP_NOT_PWRON:
@@ -305,6 +295,7 @@ static void power_management_init(void)
 static void idle_state_handle(void)
 {
     app_sched_execute();
+    execute_event();
     nrf_pwr_mgmt_run();
 }
 
@@ -318,6 +309,8 @@ int main(void)
     timers_init();
     power_management_init();
 
+    set_stage(KBD_STATE_PRE_INIT);
+
     ble_stack_init();
     scheduler_init();
     services_init();
@@ -329,13 +322,13 @@ int main(void)
 #endif
 
     // call custom init function
-    ble_user_event(USER_EVT_POST_INIT);
+    set_stage(KBD_STATE_POST_INIT);
 
     // Start execution.
     timers_start();
     advertising_start(erase_bonds);
 
-    ble_user_event(USER_EVT_INITED);
+    set_stage(KBD_STATE_INITED);
 
     // Enter main loop.
     for (;;) {
