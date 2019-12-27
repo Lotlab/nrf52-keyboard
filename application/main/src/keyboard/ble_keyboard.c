@@ -25,9 +25,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../main.h"
 #include "custom_hook.h"
 #include "hook.h"
-#include "keymap_storage.h"
-#include "usb_comm.h"
 #include "keyboard_led.h"
+#include "keymap_storage.h"
+#include "macro_player.h"
+#include "usb_comm.h"
 
 #include "nrf_drv_wdt.h"
 
@@ -59,11 +60,14 @@ static void keyboard_switch_scan_mode(bool slow)
 static void keyboard_scan_handler(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
+    // 处理按键扫描
     scan_counter += KEYBOARD_SCAN_INTERVAL;
     if (scan_counter >= scan_reload) {
         scan_counter = 0;
         keyboard_task();
     }
+    // 处理宏播放
+    action_marco_replay();
 }
 
 /**

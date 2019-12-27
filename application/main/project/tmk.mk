@@ -4,7 +4,6 @@ SRC_FILES +=	$(COMMON_DIR)/host.c \
 	$(COMMON_DIR)/matrix.c \
 	$(COMMON_DIR)/action.c \
 	$(COMMON_DIR)/action_tapping.c \
-	$(COMMON_DIR)/action_macro.c \
 	$(COMMON_DIR)/action_layer.c \
 	$(COMMON_DIR)/action_util.c \
 	$(COMMON_DIR)/print.c \

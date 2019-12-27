@@ -49,3 +49,8 @@ void usb_comm_switch(void);
  * @brief 当前USB的键盘状态灯
  */
 extern uint8_t keyboard_led_val_usb;
+
+/**
+ * @brief USB队列是否为空
+ */
+bool usb_queue_empty(void);

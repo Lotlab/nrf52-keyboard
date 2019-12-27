@@ -21,8 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../ble/ble_hid_service.h"
 #include "../config/keyboard_config.h"
 #include "custom_hook.h"
-#include "usb_comm.h"
 #include "report.h"
+#include "usb_comm.h"
 
 // todo: impliment
 uint8_t keyboard_idle = 0;
@@ -97,4 +97,19 @@ void send_system(uint16_t data)
 void send_consumer(uint16_t data)
 {
     send(REPORT_ID_CONSUMER, 2, (uint8_t*)&data);
+}
+
+/**
+ * 待发送按键是否为空
+ */
+bool keys_queue_empty()
+{
+#ifdef HAS_USB
+    if (usb_working()) {
+        return usb_queue_empty();
+    } else
+#endif
+    {
+        return hid_queue_empty();
+    }
 }

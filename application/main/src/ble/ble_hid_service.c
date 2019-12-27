@@ -426,3 +426,11 @@ void hid_event_handler(enum user_ble_event arg)
         break;
     }
 }
+
+/**
+ * 蓝牙hid队列是否为空
+ */
+bool hid_queue_empty()
+{
+    return BUFFER_LIST_EMPTY();
+}

@@ -392,4 +392,12 @@ void usb_comm_switch()
     }
 }
 
+/**
+ * usb待发送数据是否为空
+ */
+bool usb_queue_empty()
+{
+    return queue_empty();
+}
+
 #endif
