@@ -31,12 +31,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_timer.h"
 #include "host.h"
 #include "keymap_storage.h"
-#include "queue.h"
 
 #ifdef HAS_USB
 
-#define MAX_ITEM_SIZE 34 // id + data(32) + checksum
-#define QUEUE_SIZE 10
+#define QUEUE_SIZE 256
 
 uint8_t keyboard_led_val_usb;
 
@@ -47,12 +45,65 @@ static bool has_host;
 static bool is_full, is_connected, is_checked, is_disable;
 static bool usb_protocol;
 
-struct queue_item {
-    uint8_t data[MAX_ITEM_SIZE];
-    uint8_t len;
-};
+/* uart 队列 */
+static uint16_t uart_queue_head, uart_queue_tail;
+static uint8_t uart_queue_data[QUEUE_SIZE];
+const uint16_t uart_queue_size = QUEUE_SIZE;
 
-QUEUE(struct queue_item, queue, QUEUE_SIZE);
+static bool uart_queue_empty()
+{
+    return uart_queue_tail == uart_queue_head;
+}
+
+static void uart_queue_dequeue()
+{
+    if (uart_queue_empty())
+        return;
+    uint8_t len = uart_queue_data[uart_queue_head];
+    uart_queue_head = (uart_queue_head + len + 1) % uart_queue_size;
+}
+
+static uint8_t uart_queue_peek(uint8_t* pointer)
+{
+    uint8_t len = uart_queue_data[uart_queue_head];
+    if (len + uart_queue_head >= uart_queue_size) {
+        uint8_t len1 = uart_queue_size - uart_queue_head - 1;
+        uint8_t len2 = len - len1;
+        if (len1 > 0)
+            memcpy(pointer, &uart_queue_data[uart_queue_head + 1], len1);
+        memcpy(&pointer[len1], uart_queue_data, len2);
+    } else {
+        memcpy(pointer, &uart_queue_data[uart_queue_head + 1], len);
+    }
+    return len;
+}
+
+static void uart_queue_enqueue(uint8_t len, uint8_t* data)
+{
+    uint16_t next_tail = (uart_queue_tail + len + 1);
+    // 队列已满，出队
+    while ((uart_queue_tail < uart_queue_head && next_tail >= uart_queue_head)
+        || (uart_queue_tail > uart_queue_head && next_tail >= uart_queue_size && (next_tail % uart_queue_size) >= uart_queue_head)) {
+        uart_queue_dequeue();
+    }
+    uart_queue_data[uart_queue_tail] = len;
+    if (next_tail > uart_queue_size) {
+        uint8_t len1 = uart_queue_size - uart_queue_tail - 1;
+        uint8_t len2 = len - len1;
+        if (len1 > 0)
+            memcpy(&uart_queue_data[uart_queue_tail + 1], data, len1);
+        memcpy(uart_queue_data, &data[len1], len2);
+    } else {
+        memcpy(&uart_queue_data[uart_queue_tail + 1], data, len);
+    }
+    uart_queue_tail = next_tail % uart_queue_size;
+}
+
+static void uart_queue_clear()
+{
+    uart_queue_tail = 0;
+    uart_queue_head = 0;
+}
 
 /**
  * @brief 计算校验值
@@ -178,12 +229,13 @@ static void uart_on_recv()
 
                 // 成功接收，出队。
                 if (success) {
-                    queue_pop();
+                    uart_queue_dequeue();
                 }
                 // 尝试发送下一个
-                if (!queue_empty()) {
-                    struct queue_item* next = queue_peek();
-                    uart_send(next->data, next->len);
+                if (!uart_queue_empty()) {
+                    uint8_t data[64];
+                    uint8_t len = uart_queue_peek(data);
+                    uart_send(data, len);
                 }
                 is_checked = true;
             }
@@ -217,7 +269,7 @@ static void uart_on_recv()
  */
 static void uart_to_idle()
 {
-    queue_clear();
+    uart_queue_clear();
     app_uart_close();
 #ifndef UART_DET
     nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
@@ -309,19 +361,18 @@ bool usb_working(void)
  */
 void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 {
-    if (len > 32)
+    if (len > 61)
         return;
 
+    uint8_t data[64];
     // 入队
-    struct queue_item item;
-    item.len = len + 3;
-    item.data[0] = 0x40 + len;
-    item.data[1] = index;
+    data[0] = 0x40 + len;
+    data[1] = index;
 
-    memcpy(&item.data[2], pattern, len);
-    item.data[len + 2] = checksum(item.data, len + 2);
+    memcpy(&data[2], pattern, len);
+    data[len + 2] = checksum(data, len + 2);
 
-    queue_push(item);
+    uart_queue_enqueue(len + 3, data);
 }
 
 APP_TIMER_DEF(uart_check_timer);
@@ -397,7 +448,7 @@ void usb_comm_switch()
  */
 bool usb_queue_empty()
 {
-    return queue_empty();
+    return uart_queue_empty();
 }
 
 #endif
