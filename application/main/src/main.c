@@ -37,7 +37,7 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
- /*
+/*
     Copyright (C) 2019 Jim Jiang <jim@lotlab.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -89,6 +89,7 @@
 #include "main.h"
 
 #include "keyboard/ble_keyboard.h"
+#include "keyboard/keyboard_bootcheck.h"
 #include "keyboard/keyboard_led.h"
 #include "keyboard/keyboard_matrix.h"
 #include "keyboard/passkey.h"
@@ -321,6 +322,11 @@ int main(void)
     scheduler_init();
     services_init();
     ble_keyboard_init();
+
+#ifndef BOOTMAGIC_ENABLE
+    // use internal function to check if should boot.
+    boot_check();
+#endif
 
     // call custom init function
     ble_user_event(USER_EVT_POST_INIT);

@@ -16,7 +16,7 @@ SDCC_CFLAGS += -I $(COMMON_ROOT)
 SRC_FILES += $(COMMON_ROOT)/keymap_plain.c
 
 # 配置项：功能选项
-BOOTMAGIC_ENABLE = yes	# 启用Bootmagic
+BOOTMAGIC_ENABLE = no	# 启用Bootmagic
 EXTRAKEY_ENABLE = yes	# 启用媒体键功能
 NKRO_ENABLE = yes	# 启用USB的全键无冲功能
 USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
