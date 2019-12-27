@@ -133,7 +133,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef HARDWARE_REV_C
 #define UART_DET 19
 #endif
-#define UART_BAUDRATE NRF_UART_BAUDRATE_57600
+#define UART_BAUDRATE NRF_UART_BAUDRATE_115200
 
 // 电量检测配置
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0

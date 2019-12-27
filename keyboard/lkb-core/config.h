@@ -96,7 +96,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define UART_RXD 27 // UART_RX口IO
 #define UART_TXD 26 // UART_TX口IO
 // #define UART_DET 19 // UART 检测引脚，若此脚被拉低，则说明USB正在工作。若不配置则使用RX口作为检测引脚
-#define UART_BAUDRATE NRF_UART_BAUDRATE_57600 // 通信波特率，请不要修改
+#define UART_BAUDRATE NRF_UART_BAUDRATE_115200 // 通信波特率，请不要修改
 
 // 电量检测配置
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0 // 电量检测引脚

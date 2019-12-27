@@ -103,7 +103,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define HAS_USB
 #define UART_RXD 6
 #define UART_TXD 7
-#define UART_BAUDRATE NRF_UART_BAUDRATE_57600
+#define UART_BAUDRATE NRF_UART_BAUDRATE_115200
 
 // 电量检测配置 Pin 2
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0

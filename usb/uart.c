@@ -17,12 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "uart.h"
 #include "CH554_SDCC.h"
+#include "config.h"
 #include "endpoints.h"
 #include "system.h"
 #include "usb_comm.h"
 #include <stdbool.h>
 #include <string.h>
-#include "config.h"
 
 #ifdef PIN_STANDBY
 #define IS_CHARGING (PIN_CHARGING && !PIN_STANDBY)
@@ -35,7 +35,8 @@ static uint8_t len, pos;
 static uint8_t __xdata recv_buff[64];
 static uint8_t __xdata keyboard_buffer[8];
 
-static bool uart_check_flag, uart_arrive_flag, last_success;
+static bool uart_arrive_flag, last_success;
+static uint8_t last_pos;
 
 /**
  * @brief 发送数据
@@ -86,7 +87,7 @@ void uart_init()
     U1SM0 = 0; // 8Bit
     U1SMOD = 1; // fast mode
     U1REN = 1; //串口0接收使能
-    SBAUD1 = 256 - (FREQ_SYS / 16 / 57600) & 0xFF;
+    SBAUD1 = 256 - (FREQ_SYS / 16 / 115200) & 0xFF;
     IE_UART1 = 1; //启用串口中断
 }
 
@@ -145,33 +146,32 @@ static uint8_t send_len = 0;
  */
 void uart_check()
 {
-    if (uart_check_flag) {
-        if (uart_rx_state == STATE_DATA) {
-            // UART接收超时强制退出
-            uart_rx_state = STATE_IDLE;
-        } else if ((uart_rx_state == STATE_IDLE) && uart_arrive_flag) {
-            // UART数据接收完毕，准备解析
-            uart_arrive_flag = false;
-            uart_data_parser();
-        }
+    // UART接收超时强制退出
+    if (uart_rx_state == STATE_DATA && last_pos == pos) {
+        uart_rx_state = STATE_IDLE;
+    }
+    // UART数据接收完毕，准备解析
+    if (uart_arrive_flag) {
+        uart_arrive_flag = false;
+        uart_data_parser();
+    }
 
-        // 当前不在接收数据
-        if (uart_rx_state == STATE_IDLE) {
-            if (send_len > 0) {
-                // 有等待发送的数据则发送数据
-                for (uint8_t i = 0; i < send_len; i++) {
-                    uart_tx(send_buff[i]);
-                }
-                send_len = 0;
-            } else if (!usb_busy) { // USB 当前空闲，可以轮询下一个数据包
-                // 没有等待发送的数据，发送定期Query状态包
-                uart_send_status();
-                if (last_success)
-                    last_success = false;
+    // 当前不在接收数据
+    if (uart_rx_state == STATE_IDLE) {
+        if (send_len > 0) {
+            // 有等待发送的数据则发送数据
+            for (uint8_t i = 0; i < send_len; i++) {
+                uart_tx(send_buff[i]);
             }
+            send_len = 0;
+        } else if (!usb_busy) { // USB 当前空闲，可以轮询下一个数据包
+            // 没有等待发送的数据，发送定期Query状态包
+            uart_send_status();
+            // 重置success状态，默认接收失败
+            last_success = false;
         }
     }
-    uart_check_flag = true;
+    last_pos = pos;
 }
 
 /**
@@ -210,7 +210,6 @@ void uart_recv(void)
         }
         break;
     }
-    uart_check_flag = false;
 }
 
 /**

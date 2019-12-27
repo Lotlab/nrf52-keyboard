@@ -201,7 +201,7 @@ void UsbSuspendEvt(bool suspend)
 static void timer_init()
 {
     timer_create(&FeedWatchDog, true, 500);
-    timer_create(&uart_check, true, 2);
+    timer_create(&uart_check, true, 1);
     IE_TKEY = 1;
 }
 

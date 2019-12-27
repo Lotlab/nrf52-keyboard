@@ -130,14 +130,14 @@ uint8_t const ConfigDescriptor []=
     HID0_INEP_ADDR,                     // bEndpointAddress; bit7=1 for IN, bits 3-0=1 for ep1
     0x03,                               // bmAttributes, interrupt transfers
     0x40, 0x00,                         // wMaxPacketSize, 64 bytes
-    5,                                  // bInterval, ms
+    1,                                  // bInterval, ms
 
     0x07,                               // bLength
     0x05,                               // bDescriptorType
     HID0_OUTEP_ADDR,                    // bEndpointAddress; bit7=1 for IN, bits 3-0=1 for ep1
     0x03,                               // bmAttributes, interrupt transfers
     0x40, 0x00,                         // wMaxPacketSize, 64 bytes
-    5,                                  // bInterval, ms
+    1,                                  // bInterval, ms
     /* end of HID[0]*/
 
     //-------- Descriptor for HID class device -------------------------------------
@@ -167,7 +167,7 @@ uint8_t const ConfigDescriptor []=
     HID1_INEP_ADDR,                     // bEndpointAddress; bit7=1 for IN, bits 3-0=1 for ep1
     0x03,                               // bmAttributes, interrupt transfers
     0x40, 0x00,                         // wMaxPacketSize, 64 bytes
-    5,                                  // bInterval, ms
+    1,                                  // bInterval, ms
 
 
     //-------- Descriptor for HID class device -------------------------------------
@@ -197,14 +197,14 @@ uint8_t const ConfigDescriptor []=
     HID2_INEP_ADDR,                     // bEndpointAddress; bit7=1 for IN, bits 3-0=1 for ep1
     0x03,                               // bmAttributes, interrupt transfers
     0x40, 0x00,                         // wMaxPacketSize, 64 bytes
-    5,                                  // bInterval, ms
+    1,                                  // bInterval, ms
 
     0x07,                               // bLength
     0x05,                               // bDescriptorType
     HID2_OUTEP_ADDR,                    // bEndpointAddress; bit7=1 for IN, bits 3-0=1 for ep1
     0x03,                               // bmAttributes, interrupt transfers
     0x40, 0x00,                         // wMaxPacketSize, 64 bytes
-    5,                                  // bInterval, ms
+    1,                                  // bInterval, ms
 
     /******************************************************* end of HID**************************************/
 
