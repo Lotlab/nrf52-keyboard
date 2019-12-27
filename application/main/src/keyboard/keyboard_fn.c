@@ -19,17 +19,55 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../main.h"
 #include "usb_comm.h"
 
+#include "bootmagic.h"
+#include "eeconfig.h"
+#include "host.h"
+
+#ifdef NKRO_ENABLE
+/**
+ * 切换nkro状态
+ */
+static void toggle_nkro()
+{
+    keyboard_nkro = !keyboard_nkro;
+#ifdef BOOTMAGIC_ENABLE
+    // 写入bootmagic配置
+    keymap_config.nkro = keyboard_nkro;
+    eeconfig_write_keymap(keymap_config.raw);
+#endif
+}
+#endif
+
 __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
 {
     if (record->event.pressed) {
         switch (id) {
-        case POWER_SLEEP:
-            sleep(SLEEP_MANUALLY);
-            break;
-        case SWITCH_USB:
-#ifdef HAS_USB
-            usb_comm_switch();
+        case KEYBOARD_CONTROL:
+            switch (opt) {
+            case CONTROL_SLEEP: // 睡眠
+                sleep(SLEEP_MANUALLY);
+                break;
+            case CONTROL_NKRO: // 切换NKRO
+#ifdef NKRO_ENABLE
+                toggle_nkro();
 #endif
+                break;
+            default:
+                break;
+            }
+            break;
+
+        case SWITCH_DEVICE:
+            switch (opt) {
+            case SWITCH_DEVICE_USB: // 切换设备
+#ifdef HAS_USB
+                usb_comm_switch();
+#endif
+                break;
+
+            default:
+                break;
+            }
             break;
         default:
             break;

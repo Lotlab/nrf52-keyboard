@@ -15,14 +15,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "main.h"
 #include "ble_keyboard.h"
 #include "keyboard_led.h"
-#include "nrf_delay.h"
 #include "led_rgb.h"
+#include "main.h"
+#include "nrf_delay.h"
 
 enum keyboard_status {
     kbd_ble,
@@ -38,14 +38,14 @@ static bool ble_connected = false;
  * @brief 按状态更改 LED 样式
  * 
  */
-static void led_status_change() {
-    switch (status)
-    {
+static void led_status_change()
+{
+    switch (status) {
     case kbd_ble:
         keyboard_led_rgb_set(ble_connected ? 0x66ffff : 0xFFFFFF);
         break;
     case kbd_charge:
-        keyboard_led_rgb_set(charging_full ? 0x00FF00: 0xFF8000);
+        keyboard_led_rgb_set(charging_full ? 0x00FF00 : 0xFF8000);
         break;
     case kbd_usb:
         keyboard_led_rgb_set(0x0099ff);
@@ -55,10 +55,10 @@ static void led_status_change() {
 }
 
 // 这里可以放置用户自定义的处理程序，例如设置灯光等。
-void custom_event_handler(enum user_ble_event arg) {
+void custom_event_handler(enum user_ble_event arg)
+{
     // 将事件传递给RGB灯光设置
-    switch (arg)
-    {
+    switch (arg) {
     case USER_EVT_POST_INIT:
         keyboard_led_rgb_init();
         break;

@@ -31,13 +31,14 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         GRV, F1,  F2,  F3,  F4,  F5,  F6,  F7,  F8,  F9,  F10, F11, F12, DEL, \
         FN2,TRNS, UP, TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,CALC,TRNS,HOME,INS, TRNS,  \
         FN1,LEFT,DOWN,RGHT,TRNS,TRNS,PSCR,SLCK,PAUS,TRNS,TRNS,END,      TRNS, \
-        TRNS,DEL, TRNS,WHOM,MUTE,VOLU,VOLD,TRNS,PGUP,PGDN,DEL,           TRNS, \
+        TRNS,DEL, FN3,WHOM,MUTE,VOLU,VOLD,TRNS,PGUP,PGDN,DEL,           TRNS, \
         TRNS,TRNS,TRNS,          TRNS,                     TRNS,TRNS,TRNS,TRNS),
 };
 const action_t fn_actions[] = {
     /* Poker Layout */
     ACTION_LAYER_MOMENTARY(1),  // to Fn overlay
-    ACTION_FUNCTION(POWER_SLEEP), // sleep
-    ACTION_FUNCTION(SWITCH_USB) // switch between usb and ble
+    ACTION_FUNCTION(KEYBOARD_CONTROL), // sleep
+    ACTION_FUNCTION(SWITCH_DEVICE), // switch between usb and ble
+    ACTION_FUNCTION_OPT(KEYBOARD_CONTROL, CONTROL_NKRO)
 };
 
