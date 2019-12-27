@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
-/* USB Device descriptor parameter */
+/* USB和蓝牙的显示参数 */
 #define VENDOR_ID 0x1209 /* USB VID */
 #define PRODUCT_ID 0x0514 /* USB PID */
 #define DEVICE_VER 0x0001 /* 硬件版本 */
@@ -32,24 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KEYBOARD_EPSIZE 8 /* 键盘上传端点大小，请不要修改 */
 #define NKRO_EPSIZE 28 /* 键盘NKRO端点大小，请不要修改 */
 
-/* key matrix size */
-#define MATRIX_ROWS 5 /* 硬件阵列行数 */
-#define MATRIX_COLS 14 /* 硬件阵列列数 */
-
-/* define if matrix has ghost */
-// #define MATRIX_HAS_GHOST /* 按键阵列是否出现Ghost Key，若没有加二极管则需要启用这个项目 */
-
-#define DEBOUNCE 5 /* 硬件消抖次数，设置为0则不消抖 */
-
-/* Mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap */
-#define LOCKING_SUPPORT_ENABLE
-/* Locking resynchronize hack */
-#define LOCKING_RESYNC_ENABLE
-
-/* key combination for command */
-#define IS_COMMAND() ( \
-    keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)))
-
 // 定义Bootmagic按键
 #define BOOTMAGIC_KEY_BOOT KC_U /* 开机 */
 #define BOOTMAGIC_KEY_ERASE_BOND KC_E /* 删除所有绑定 */
@@ -60,30 +42,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KEYBOARD_SCAN_INTERVAL 1 // 键盘最小时间单位TICK (ms)
 #define KEYBOARD_FAST_SCAN_INTERVAL 10 // 通常模式下，多久扫描一次键盘 (ms)
 #define KEYBOARD_SLOW_SCAN_INTERVAL 100 // 慢速模式下，多久扫描一次键盘 (ms)
+#define LED_AUTOOFF_TIME 5000 /* LED自动熄灭时长(ms)，设为0则不自动熄灭 */
 
+// 键盘额外功能
 #define DYNAMIC_TX_POWER /* 启用自动发射功率调整 */
+#define PASSKEY_REQUIRED /* 需要输入配对码 */
+#define ENABLE_WATCHDOG /* 启用看门狗 */
+#define KEYMAP_STORAGE /* 启用keymap存储 */
+// #define MARCO_BLOCKING_MODE /* 在宏播放时禁用其他按键输入 */
 
-// LED自动熄灭时长(ms)，设为0则不自动熄灭
-#define LED_AUTOOFF_TIME 5000
+// #define DEBUG_SKIP_PWRON_CHECK /*  直接开机而跳过开机条件检测，用于调试 */
 
-// 需要输入配对码
-#define PASSKEY_REQUIRED
-
-// 启用看门狗
-#define ENABLE_WATCHDOG
-
-// 启用keymap存储
-#define KEYMAP_STORAGE
-
-// 直接开机而跳过开机条件检测，用于调试
-// #define DEBUG_SKIP_PWRON_CHECK
-
+/* TMK固件内置功能 */
 /* disable action features */
 //#define NO_ACTION_LAYER
 //#define NO_ACTION_TAPPING
 //#define NO_ACTION_ONESHOT
 //#define NO_ACTION_MACRO
 //#define NO_ACTION_FUNCTION
+
+/* Mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap */
+#define LOCKING_SUPPORT_ENABLE
+/* Locking resynchronize hack */
+#define LOCKING_RESYNC_ENABLE
+
+/* key combination for command */
+#define IS_COMMAND() ( \
+    keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)))
 
 // LED 配置
 #define LED_NUM 22
@@ -106,9 +91,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PIN_STANDBY !UCC2 // CH554的充电检测。当UCC2拉低时表示充电完成。若不配置则只使用PIN_CHARGING作为是否充电的检测标志
 
 // 按键阵列配置
+#define MATRIX_ROWS 5 /* 硬件阵列行数 */
+#define MATRIX_COLS 14 /* 硬件阵列列数 */
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 25, 28, 29, 30, 26 };
 static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 27, 3, 4, 5, 6, 7, 8, 9 };
-
 #define ROW_IN // 键盘阵列的二极管方向是从COL->ROW
 
-// #define MARCO_BLOCKING_MODE // 在宏播放时禁用其他按键输入
+/* define if matrix has ghost */
+// #define MATRIX_HAS_GHOST /* 按键阵列是否出现Ghost Key，若没有加二极管则需要启用这个项目 */
+
+#define DEBOUNCE 5 /* 硬件消抖次数，设置为0则不消抖 */
