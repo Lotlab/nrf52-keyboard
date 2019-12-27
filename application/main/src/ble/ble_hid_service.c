@@ -30,6 +30,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define INPUT_REP_KBD_INDEX 0 /**< Index of Input Report. */
 #define INPUT_REP_REF_ID 0x7f /**< Id of reference to Keyboard Input Report. */
 #define OUTPUT_REP_REF_ID 0x7f /**< Id of reference to Keyboard Output Report. */
+#define FEATURE_REP_REF_ID 0 /**< ID of reference to Keyboard Feature Report. */
+#define FEATURE_REPORT_MAX_LEN 2 /**< Maximum length of Feature Report. */
+#define FEATURE_REPORT_INDEX 0 /**< Index of Feature Report. */
 
 #ifdef MOUSEKEY_ENABLE
 #define INPUT_REP_MOUSE_INDEX INPUT_REP_KBD_INDEX + 1
@@ -47,6 +50,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define INPUT_REP_COUNT INPUT_REP_CONSUMER_INDEX + 1 // In 报文数目
 #define OUTPUT_REP_COUNT OUTPUT_REP_KBD_INDEX + 1 // Out 报文数目
+#define FEATURE_REP_COUNT FEATURE_REPORT_INDEX + 1 // Feature 报文数目
 
 #define MAX_BUFFER_ENTRIES 5 /**< Number of elements that can be enqueued */
 
@@ -109,7 +113,8 @@ static buffer_list_t buffer_list; /**< List to enqueue not just data to be sent,
 BLE_HIDS_DEF(m_hids, /**< Structure used to identify the HID service. */
     NRF_SDH_BLE_TOTAL_LINK_COUNT,
     INPUT_REPORT_KEYS_MAX_LEN,
-    OUTPUT_REPORT_MAX_LEN);
+    OUTPUT_REPORT_MAX_LEN,
+    FEATURE_REPORT_MAX_LEN);
 
 uint8_t keyboard_led_val_ble;
 
@@ -124,9 +129,11 @@ static void hids_init(ble_srv_error_handler_t err_handler)
 
     static ble_hids_inp_rep_init_t input_report_array[INPUT_REP_COUNT];
     static ble_hids_outp_rep_init_t output_report_array[OUTPUT_REP_COUNT];
+    static ble_hids_feature_rep_init_t feature_report_array[FEATURE_REP_COUNT];
 
     memset((void*)input_report_array, 0, sizeof(ble_hids_inp_rep_init_t) * INPUT_REP_COUNT);
     memset((void*)output_report_array, 0, sizeof(ble_hids_outp_rep_init_t) * OUTPUT_REP_COUNT);
+    memset((void*)feature_report_array, 0, sizeof(ble_hids_feature_rep_init_t) * FEATURE_REP_COUNT);
 
     // Initialize HID Service
     HID_REP_IN_SETUP(
@@ -150,6 +157,13 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     HID_REP_IN_SETUP(input_report_array[INPUT_REP_CONSUMER_INDEX], 2, REPORT_ID_CONSUMER);
 #endif
 
+    // 请勿删除，否则可能会造成按键指示灯下发不正常
+    // unknown vendor define feature report
+    HID_REP_FEATURE_SETUP(
+        feature_report_array[FEATURE_REPORT_INDEX],
+        FEATURE_REPORT_MAX_LEN,
+        FEATURE_REP_REF_ID);
+
     memset(&hids_init_obj, 0, sizeof(hids_init_obj));
 
     hids_init_obj.evt_handler = on_hids_evt;
@@ -160,6 +174,8 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     hids_init_obj.p_inp_rep_array = input_report_array;
     hids_init_obj.outp_rep_count = OUTPUT_REP_COUNT;
     hids_init_obj.p_outp_rep_array = output_report_array;
+    hids_init_obj.feature_rep_count = FEATURE_REP_COUNT;
+    hids_init_obj.p_feature_rep_array = feature_report_array;
     hids_init_obj.rep_map.data_len = sizeof(hid_descriptor);
     hids_init_obj.rep_map.p_data = hid_descriptor;
     hids_init_obj.hid_information.bcd_hid = BASE_USB_HID_SPEC_VERSION;
