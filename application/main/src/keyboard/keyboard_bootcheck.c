@@ -89,11 +89,7 @@ __attribute__((weak)) void boot_check()
     // debug状态下自动开机
     sleep_flag = false;
 #endif
-#ifdef HAS_USB
-    // 若连接至主机则自动开机
-    if (usb_working())
-        sleep_flag = false;
-#endif
+
     // 自动休眠则不需要需要使用BOOT按键开机
     if (sleep_reason_get())
         sleep_flag = false;
@@ -101,6 +97,11 @@ __attribute__((weak)) void boot_check()
     // 如果以上条件均不满足则尝试检测开机按键
     if (sleep_flag) {
         sleep_flag = !keypress_check();
+#ifdef HAS_USB
+        // 若连接至主机则自动开机
+        if (usb_working())
+            sleep_flag &= false;
+#endif
     }
 
     if (sleep_flag) {
