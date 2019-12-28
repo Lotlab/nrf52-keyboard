@@ -84,13 +84,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // #define PASSKEY_REQUIRED
 
 // 启用看门狗
-// #define ENABLE_WATCHDOG
+#define ENABLE_WATCHDOG
 
 // 启用keymap存储
 #define KEYMAP_STORAGE
 
 // 直接开机而跳过开机条件检测，用于调试
-#define DEBUG_SKIP_PWRON_CHECK
+// #define DEBUG_SKIP_PWRON_CHECK
 
 /* disable action features */
 //#define NO_ACTION_LAYER
