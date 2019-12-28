@@ -66,4 +66,13 @@ const uint32_t keyboard_function_table =
 #ifdef KEYMAP_STORAGE
     1 << 8 + 
 #endif
+#ifdef ACTIONMAP_ENABLE
+    1 << 9 + 
+#endif
+#ifdef MARCO_STORAGE
+    1 << 10 + 
+#endif
+#ifdef CONFIG_STORAGE
+    1 << 11 + 
+#endif
     0;
