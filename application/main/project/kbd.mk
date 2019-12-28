@@ -29,6 +29,7 @@ INC_FOLDERS += $(APP_SRC_DIR)/keyboard
 # Version string
 VERSION := $(shell (git describe --always --dirty || echo 'unknown') 2> /dev/null)
 OPT_DEFS += -DVERSION=$(VERSION)
+OPT_DEFS += -DBUILD_TIME=$(shell date +%s)
 
 # enable GPIO as RESET PIN
 ifeq (yes,$(strip $(CONFIG_GPIO_AS_PINRESET)))

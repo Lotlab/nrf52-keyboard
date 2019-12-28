@@ -372,6 +372,21 @@ void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
     uart_queue_enqueue(len + 3, data);
 }
 
+/**
+ * 通过UART发送配置数据包
+ */
+void uart_send_conf(uint8_t len, uint8_t* data)
+{
+    if (len > 62)
+        return;
+
+    uint8_t data[64];
+    data[0] = 0x80 + len;
+    memcpy(&data[1], data, len);
+    data[len] = checksum(data, len);
+    uart_queue_enqueue(len + 2, data);
+}
+
 APP_TIMER_DEF(uart_check_timer);
 #define UART_CHECK_INTERVAL APP_TIMER_TICKS(500)
 

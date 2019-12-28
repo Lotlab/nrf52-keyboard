@@ -73,7 +73,8 @@
         "power_save.h": "c",
         "ble_services.h": "c",
         "events.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "hid_configuration.h": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",
