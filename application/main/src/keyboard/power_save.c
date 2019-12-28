@@ -53,10 +53,11 @@ void power_save_reset()
     if (power_save_mode) {
         if (counting)
             app_timer_stop(led_off_timer);
+        else
+            notify_mode(PWR_SAVE_EXIT);
+            
         app_timer_start(led_off_timer, APP_TIMER_TICKS(LED_AUTOOFF_TIME), NULL);
         counting = true;
-
-        // notify_mode(PWR_SAVE_EXIT);
     }
 }
 
