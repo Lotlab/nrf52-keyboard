@@ -2,18 +2,62 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief 用户事件类型
+ * 
+ */
 enum user_event {
-    USER_EVT_INTERNAL, // 内部专用事件
-    USER_EVT_BLE_STATE_CHANGE, // 蓝牙状态改变
-    USER_EVT_BLE_PASSKEY_STATE, // 蓝牙Passkey状态改变
-    USER_EVT_SLEEP, // 睡眠
-    USER_EVT_STAGE, // 当前进度
-    USER_EVT_CHARGE, // 充电状态
-    USER_EVT_USB, // USB状态
-    USER_EVT_PROTOCOL, // HID Protocol
-    USER_EVT_POWERSAVE, // 省电状态（特指LED）
+    /**
+     * @brief 内部事件
+     * @ref enum internal_event
+     */
+    USER_EVT_INTERNAL,
+    /**
+     * @brief 蓝牙状态改变
+     * @ref enum ble_state
+     */
+    USER_EVT_BLE_STATE_CHANGE,
+    /**
+     * @brief 蓝牙Passkey状态改变
+     * @ref enum passkey_state
+     */
+    USER_EVT_BLE_PASSKEY_STATE,
+    /**
+     * @brief 睡眠事件
+     * @ref enum sleep_evt_type
+     */
+    USER_EVT_SLEEP,
+    /**
+     * @brief 当前进度改变事件
+     * @ref enum keyboard_state
+     */
+    USER_EVT_STAGE,
+    /**
+     * @brief 充电状态改变事件
+     * @ref enum charging_state
+     */
+    USER_EVT_CHARGE,
+    /**
+     * @brief USB状态改变事件
+     * @ref enum usb_state
+     */
+    USER_EVT_USB,
+    /**
+     * @brief HID Protocol 改变事件
+     * @ref enum hid_protocol_type
+     */
+    USER_EVT_PROTOCOL,
+    /**
+     * @brief 省电模式状态改变事件
+     * @ref enum power_save_mode
+     */
+    USER_EVT_POWERSAVE,
 };
 
+/**
+ * @brief 内部事件类型
+ * 
+ */
 enum internal_event {
     INTERNAL_EVT_GATTS_TX_COMPLETE, // 蓝牙GATTS发送成功（启用加密情况下表示连接成功）
 };

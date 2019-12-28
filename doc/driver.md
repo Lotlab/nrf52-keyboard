@@ -1,3 +1,33 @@
+# 驱动编写说明
+
+现有的驱动系统是基于事件系统搭建而成的，其主要思路是通过注册一个事件处理函数，来处理各个事件。
+
+## 快速入门
+
+假设要编写一个custom_driver.c：
+``` C
+// 引入事件系统头文件
+#include "../keyboard/keyboard_evt.h"
+
+// 编写事件处理函数
+static void custom_driver_event_handler(enum user_event event, void* arg)
+{
+    // code...
+}
+
+// 注册事件
+EVENT_HANDLER(custom_driver_event_handler);
+```
+
+然后在 driver.mk 内添加编译控制命令即可。
+
+## 事件说明
+
+详细见events.h。
+默认的所有事件的arg都**不是**一个指针，而是一个枚举。需要使用的时候请将这个参数强制转换为枚举。
+
+若需要自定义事件，请自行在驱动模块内定义事件的event（ID）和参数类型。
+
 # 自定义驱动
 
 application/main/driver 目录下定义了一些设备的驱动。
@@ -20,19 +50,6 @@ THREE_LED_STATUS = yes
 #define LED_STATUS_BLE 22
 #define LED_STATUS_CHARGING 23
 #define LED_STATUS_USB 24
-```
-
-## 3灯LED状态灯事件响应
-
-此驱动内使用了custom_event_handler事件钩子，实现了三个状态灯根据事件亮起的处理逻辑。
-启用此驱动则会覆盖custom_event_handler，若不想覆盖则不要启用这个驱动
-
-### 源文件
-- 3led_status_evt.c 
-
-### 启用配置
-```
-THREE_LED_STATUS_EVT = yes
 ```
 
 ## 单 RGB LED 灯驱动
