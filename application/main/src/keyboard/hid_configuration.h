@@ -49,3 +49,21 @@ enum hid_response {
     // 内部错误
     HID_RESP_INTERNAL_ERROR,
 };
+
+const uint32_t keyboard_function_table = 
+#ifdef BOOTMAGIC_ENABLE
+    1 << 0 + 
+#endif
+#ifdef MOUSEKEY_ENABLE
+    1 << 1 + 
+#endif
+#ifdef EXTRAKEY_ENABLE
+    1 << 2 + 
+#endif
+#ifdef NKRO_ENABLE
+    1 << 3 + 
+#endif
+#ifdef KEYMAP_STORAGE
+    1 << 8 + 
+#endif
+    0;

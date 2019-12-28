@@ -27,7 +27,7 @@ SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_matrix.c \
 INC_FOLDERS += $(APP_SRC_DIR)/keyboard 
 
 # Version string
-VERSION := $(shell (git describe --always --dirty || echo 'unknown') 2> /dev/null)
+VERSION := $(shell (git describe --always --abbrev=8 || echo '00000000') 2> /dev/null)
 OPT_DEFS += -DVERSION=$(VERSION)
 OPT_DEFS += -DBUILD_TIME=$(shell date +%s)
 

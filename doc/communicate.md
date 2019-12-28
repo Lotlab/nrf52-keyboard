@@ -77,12 +77,24 @@ FIRMWARE_VER[4] 固件版本 (0xcb4cde53)
 BUILD_DATE[4] 构建日期 (20191226)
 FUNCTION_TABLE[4] 支持（启用）的功能
 ```
+
+Function Table:
+```
+0: 是否启用BootMagic
+1: 是否启用MouseKey
+2: 是否启用多媒体和系统键
+3: 是否启用NKRO
+...
+8: 是否启用Keymap存储
+...
+```
+
 #### 0x21 获取单个按键键值
 请求：
 ```
 LAYER[1] 按键所在层
-ROW[1] 按键所在列
-COL[1] 按键所在行
+ROW[1] 按键所在行
+COL[1] 按键所在列
 ```
 响应：
 ```
@@ -100,7 +112,7 @@ KEYCODE[2] 对应按键的键值
 #### 0x23 获取所有键值
 请求:
 ```
-ID[1] 当前请求的ID
+OFFSET[2] 当前请求偏移
 ```
 响应:
 ```
@@ -110,7 +122,7 @@ DATA[]: 键值数据
 #### 0x24 获取所有Fn功能
 请求:
 ```
-ID[1] 当前请求的ID
+OFFSET[1] 当前请求偏移
 ```
 响应:
 ```
@@ -193,12 +205,12 @@ DATA[60] 数据
 #### 0x3E 将数据写入存储
 请求：
 ```
-TYPE[1] 写入类型：1：Keymap，2：Fn，3：Config
+TYPE[1] 写入类型：1：Keymap，2：Fn，3：Config, 4: macro
 ```
 #### 0x3F 重置键盘
 请求：
 ```
-TYPE[1] 重置类型：1：Keymap，2：Fn，3：Config, 0xFF: 所有
+TYPE[1] 重置类型：1：Keymap，2：Fn，3：Config, 4: macro, 0xFF: 所有
 ```
 
 #### 0x80~0xFF 更新内置Keymap（传统）
