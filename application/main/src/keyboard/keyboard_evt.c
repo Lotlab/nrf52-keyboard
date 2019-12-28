@@ -75,7 +75,8 @@ void trig_event(enum user_event event, void* arg)
     internal_event_handler(event, arg);
     if (event == USER_EVT_INTERNAL)
         return;
-    if (event == USER_EVT_STAGE && (uint32_t)arg != KBD_STATE_INITED)
+    if ((event == USER_EVT_STAGE && (uint32_t)arg != KBD_STATE_INITED)
+        || event == USER_EVT_SLEEP)
         external_event_handler(event, arg);
     else {
         struct event_data item = {
