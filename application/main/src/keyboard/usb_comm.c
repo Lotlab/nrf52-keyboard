@@ -147,11 +147,11 @@ static void send_event(enum user_event event, uint8_t arg)
 #ifdef NKRO_ENABLE
     switch (event) {
     case USER_EVT_USB:
-        if (arg != USB_WORKING) {
+        if (arg != USB_WORKING)
             trig_event_param(USER_EVT_PROTOCOL, HID_BOOT_PROTOCOL);
-        } else
+        else
             trig_event_param(USER_EVT_PROTOCOL, usb_protocol);
-        return;
+        break;
     default:
         break;
     }
