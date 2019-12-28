@@ -13,7 +13,7 @@ bool hid_queue_empty(void);
 
 extern uint8_t keyboard_led_val_ble;
 
-/** Quick HID param setup marco
+/** Quick HID param setup macro
  * 
  * @param _name: name to setup
  * @param _len: report max length

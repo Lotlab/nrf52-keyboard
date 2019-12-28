@@ -49,7 +49,7 @@ void action_macro_play(const macro_t* macro_p)
 /**
  * 播放宏
  */
-void action_marco_replay()
+void action_macro_replay()
 {
     // 等待WAIT命令的毫秒数
     if (macro_delay) {

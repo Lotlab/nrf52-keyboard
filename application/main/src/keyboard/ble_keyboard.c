@@ -73,7 +73,7 @@ static void keyboard_scan_handler(void* p_context)
         }
     }
     // 处理宏播放
-    action_marco_replay();
+    action_macro_replay();
 }
 
 /**
