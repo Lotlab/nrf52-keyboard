@@ -21,8 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "ble_keyboard.h"
-#include "keyboard_led.h"
 #include "keyboard_evt.h"
+#include "keyboard_led.h"
 #include "nrf_delay.h"
 #include "simple_rgb/led_rgb.h"
 
@@ -51,12 +51,13 @@ static void led_status_change()
         break;
     case kbd_usb:
         keyboard_led_rgb_set(0x0099ff);
+        break;
     default:
         break;
     }
 }
 
-static void rgb_led_event_handler(enum user_event event, void* arg)
+void rgb_led_event_handler(enum user_event event, void* arg)
 {
     uint8_t arg2 = (uint32_t)arg;
     switch (event) {
@@ -101,6 +102,7 @@ static void rgb_led_event_handler(enum user_event event, void* arg)
             break;
         case USB_NOT_CONNECT:
             status = kbd_ble;
+            break;
         default:
             break;
         }

@@ -55,9 +55,9 @@ void power_save_reset()
             app_timer_stop(led_off_timer);
         app_timer_start(led_off_timer, APP_TIMER_TICKS(LED_AUTOOFF_TIME), NULL);
         counting = true;
+
+        // notify_mode(PWR_SAVE_EXIT);
     }
-    // 无论是否进入这个mode都重置
-    notify_mode(PWR_SAVE_EXIT);
 }
 
 /**
