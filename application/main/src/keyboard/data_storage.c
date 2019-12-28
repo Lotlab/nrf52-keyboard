@@ -198,16 +198,24 @@ static void storage_update_inner(fds_record_t const* record, fds_record_desc_t* 
 void storage_read(uint8_t type)
 {
     if (type & 0x01) {
+#ifdef KEYMAP_STORAGE
         storage_read_inner(&keymap_record, &keymap_record_desc);
+#endif
     }
     if (type & 0x02) {
+#if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
         storage_read_inner(&fn_record, &fn_record_desc);
+#endif
     }
     if (type & 0x04) {
+#ifdef MARCO_STORAGE
         storage_read_inner(&macro_record, &macro_record_desc);
+#endif
     }
     if (type & 0x08) {
+#ifdef MARCO_STORAGE
         storage_read_inner(&config_record, &config_record_desc);
+#endif
     }
 }
 
@@ -231,16 +239,67 @@ bool storage_write(uint8_t type)
 {
     bool success = true;
 
-    if (type & 0x01)
+    if (type & 0x01) {
+#ifdef KEYMAP_STORAGE
         storage_update_inner(&keymap_record, &keymap_record_desc);
-    if (type & 0x02)
+#endif
+    }
+    if (type & 0x02) {
+#if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
         storage_update_inner(&fn_record, &fn_record_desc);
-    if (type & 0x04)
+#endif
+    }
+    if (type & 0x04) {
+#ifdef MARCO_STORAGE
         storage_update_inner(&macro_record, &macro_record_desc);
-    if (type & 0x08)
+#endif
+    }
+    if (type & 0x08) {
+#ifdef MARCO_STORAGE
         storage_update_inner(&config_record, &config_record_desc);
+#endif
+    }
 
     return success;
+}
+
+/**
+ * @brief 获取指定类型的内存区域的指针和大小
+ * 
+ * @param type 
+ * @param pointer 
+ * @return uint16_t 
+ */
+static uint16_t storage_get_data_pointer(uint8_t type, uint8_t** pointer)
+{
+    switch (type) {
+#ifdef KEYMAP_STORAGE
+    case 0:
+        pointer = keymap_block;
+        return KEYMAP_SIZE_WORD * 4;
+        break;
+#endif
+#if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
+    case 1:
+        pointer = fn_block;
+        return FN_BLOCK_SIZE_WORD * 4;
+        break;
+#endif
+#ifdef MARCO_STORAGE
+    case 2:
+        pointer = macro_block;
+        return MACRO_BLOCK_SIZE_WORD * 4;
+        break;
+#endif
+#ifdef MARCO_STORAGE
+    case 3:
+        pointer = config_block;
+        return CONFIG_BLOCK_SIZE_WORD * 4;
+        break;
+#endif
+    default:
+        return 0;
+    }
 }
 
 /**
@@ -255,28 +314,7 @@ bool storage_write(uint8_t type)
 uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data)
 {
     uint8_t* pointer;
-    uint16_t size;
-
-    switch (type) {
-    case 0:
-        pointer = keymap_block;
-        size = KEYMAP_SIZE_WORD * 4;
-        break;
-    case 1:
-        pointer = fn_block;
-        size = FN_BLOCK_SIZE_WORD * 4;
-        break;
-    case 2:
-        pointer = macro_block;
-        size = MACRO_BLOCK_SIZE_WORD * 4;
-        break;
-    case 3:
-        pointer = config_block;
-        size = CONFIG_BLOCK_SIZE_WORD * 4;
-        break;
-    default:
-        return 0;
-    }
+    uint16_t size = storage_get_data_pointer(type, &pointer);
 
     if (size < len + offset)
         len = size - offset;
@@ -297,28 +335,7 @@ uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t*
 uint16_t storage_write_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data)
 {
     uint8_t* pointer;
-    uint16_t size;
-
-    switch (type) {
-    case 0:
-        pointer = keymap_block;
-        size = KEYMAP_SIZE_WORD * 4;
-        break;
-    case 1:
-        pointer = fn_block;
-        size = FN_BLOCK_SIZE_WORD * 4;
-        break;
-    case 2:
-        pointer = macro_block;
-        size = MACRO_BLOCK_SIZE_WORD * 4;
-        break;
-    case 3:
-        pointer = config_block;
-        size = CONFIG_BLOCK_SIZE_WORD * 4;
-        break;
-    default:
-        return 0;
-    }
+    uint16_t size = storage_get_data_pointer(type, &pointer);
 
     if (size < len + offset)
         len = size - offset;
