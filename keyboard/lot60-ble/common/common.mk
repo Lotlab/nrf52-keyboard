@@ -22,7 +22,7 @@ NKRO_ENABLE = yes	# 启用USB的全键无冲功能
 USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
 
 # 如果不启用3灯LED状态，则启用内置的 RGB LED 指示
-ifneq (yes,$(strip $(THREE_LED_STATUS_EVT)))
+ifneq (yes,$(strip $(THREE_LED_STATUS)))
 	SRC_FILES += $(COMMON_ROOT)/user_evt.c
 	ONE_RGB_LED = yes
 endif
