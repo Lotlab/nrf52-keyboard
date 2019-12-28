@@ -87,6 +87,7 @@ void rgb_led_event_handler(enum user_event event, void* arg)
         default:
             break;
         }
+        break;
     case USER_EVT_CHARGE: // 充电事件
         charging_full = (arg2 != BATT_CHARGING);
         led_status_change();
