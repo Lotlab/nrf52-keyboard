@@ -50,7 +50,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #ifdef KEYMAP_STORAGE
 #define KEYMAP_SIZE_WORD GET_WORD(KEYMAP_LAYER_SIZE* MAX_LAYER)
-#define KEYMAP_RECORD_KEY 0x1905
+#define KEYMAP_RECORD_KEY 0x0514
 
 // todo: 增加keymap是否可用的判定
 #define USE_KEYMAP true
@@ -88,7 +88,7 @@ action_t action_for_key(uint8_t layer, keypos_t key)
 
 #ifndef ACTIONMAP_ENABLE
 #define FN_BLOCK_SIZE_WORD GET_WORD(MAX_FN_KEYS * 2)
-#define FN_RECORD_KEY 0x1906
+#define FN_RECORD_KEY 0x0495
 
 REGISTER_FDS_BLOCK(fn, FN_BLOCK_SIZE_WORD, FN_RECORD_KEY)
 
@@ -106,7 +106,7 @@ action_t keymap_fn_to_action(uint8_t keycode)
 
 #ifdef MACRO_STORAGE
 #define MACRO_BLOCK_SIZE_WORD GET_WORD(MAX_MACRO_SIZE)
-#define MACRO_RECORD_KEY 0x1907
+#define MACRO_RECORD_KEY 0x0496
 
 REGISTER_FDS_BLOCK(macro, MACRO_BLOCK_SIZE_WORD, MACRO_RECORD_KEY)
 
@@ -134,7 +134,7 @@ const macro_t* action_get_macro(keyrecord_t* record, uint8_t id, uint8_t opt)
 
 #ifdef CONFIG_STORAGE
 #define CONFIG_BLOCK_SIZE_WORD 4
-#define CONFIG_RECORD_KEY 0x1908
+#define CONFIG_RECORD_KEY 0x0497
 
 REGISTER_FDS_BLOCK(config, CONFIG_BLOCK_SIZE_WORD, CONFIG_RECORD_KEY)
 #endif
