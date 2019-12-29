@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_scheduler.h"
 #include "fds.h"
 #include "nrf.h"
+#include "queue.h"
 #include "util.h"
 
 // keymap
@@ -52,10 +53,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define KEYMAP_SIZE_WORD GET_WORD(KEYMAP_LAYER_SIZE* MAX_LAYER)
 #define KEYMAP_RECORD_KEY 0x0514
 
-// todo: 增加keymap是否可用的判定
-#define USE_KEYMAP true
-
 REGISTER_FDS_BLOCK(keymap, KEYMAP_SIZE_WORD, KEYMAP_RECORD_KEY)
+
+static bool keymap_valid = true;
+static void check_keymap()
+{
+    bool flag = false;
+    for (uint16_t i = 0; i < KEYMAP_LAYER_SIZE * MAX_LAYER; i++) {
+        flag |= (keymap_block[i] != 0);
+        if (flag)
+            break;
+    }
+    keymap_valid = flag;
+}
+#define USE_KEYMAP keymap_valid
 #ifndef ACTIONMAP_ENABLE
 uint8_t keymap_key_to_keycode(uint8_t layer, keypos_t key)
 {
@@ -139,6 +150,74 @@ const macro_t* action_get_macro(keyrecord_t* record, uint8_t id, uint8_t opt)
 REGISTER_FDS_BLOCK(config, CONFIG_BLOCK_SIZE_WORD, CONFIG_RECORD_KEY)
 #endif
 
+struct fds_update_op {
+    fds_record_t const* record;
+    fds_record_desc_t* record_desc;
+};
+
+QUEUE(struct fds_update_op, gc_queue, 5);
+
+/**
+ * @brief FDS操作回调
+ * 
+ * @param p_evt 
+ */
+static void storage_callback(fds_evt_t const* p_evt)
+{
+    // GC完毕事件
+    if (p_evt->id == FDS_EVT_GC && p_evt->result == FDS_SUCCESS) {
+        while (!gc_queue_empty()) {
+            struct fds_update_op* item = gc_queue_peek();
+            ret_code_t err_code = fds_record_update(item->record_desc, item->record);
+            if (err_code == FDS_SUCCESS) {
+                gc_queue_pop();
+            } else {
+                // 没有空间了，尝试GC
+                if (err_code == FDS_ERR_NO_SPACE_IN_FLASH) {
+                    fds_gc();
+                    break;
+                }
+                // 操作队列没有空间了，等会再说
+                if (err_code == FDS_ERR_NO_SPACE_IN_QUEUES) {
+                    break;
+                    // todo: 等有空间再重新调用？
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief 初始化FDS回调
+ * 
+ */
+static void storage_callback_init()
+{
+    ret_code_t code = fds_register(&storage_callback);
+    APP_ERROR_CHECK(code);
+}
+
+/**
+ * @brief 内部更新FDS的数据
+ * 
+ * @param record FDS 记录
+ * @param record_desc FDS 记录描述。必须先调用 storage_read_inner 或其他函数生成此描述后才能调用此函数。
+ */
+static void storage_update_inner(fds_record_t const* record, fds_record_desc_t* record_desc)
+{
+    ret_code_t err_code = fds_record_update(record_desc, record);
+    if (err_code == FDS_ERR_NO_SPACE_IN_FLASH) {
+        // 没有空间则GC
+        err_code = fds_gc();
+        struct fds_update_op item = {
+            .record = record,
+            .record_desc = record_desc,
+        };
+        // 将操作入队列，等待下一次执行
+        gc_queue_push(item);
+    }
+}
+
 /**
  * @brief 内部读取FDS的数据，如果数据不存在则尝试新建一个
  * 
@@ -161,8 +240,7 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
         } else {
             // 大小不正常，尝试更新数据
             fds_record_close(record_desc);
-            ret_code_t code = fds_record_update(record_desc, record);
-            APP_ERROR_CHECK(code);
+            storage_update_inner(record, record_desc);
         }
     } else {
         // 记录不存在，尝试新建一个
@@ -171,21 +249,6 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
     }
 }
 
-/**
- * @brief 内部更新FDS的数据
- * 
- * @param record FDS 记录
- * @param record_desc FDS 记录描述。必须先调用 storage_read_inner 或其他函数生成此描述后才能调用此函数。
- */
-static void storage_update_inner(fds_record_t const* record, fds_record_desc_t* record_desc)
-{
-    ret_code_t err_code = fds_record_update(record_desc, record);
-    // 空间写满了，准备GC
-    if (err_code == FDS_ERR_NO_SPACE_IN_FLASH) {
-        err_code = fds_gc();
-        // todo: 将操作入栈，等待gc完毕后重新操作
-    }
-}
 
 /**
  * @brief 读取存储的记录并写到内存（重置内存中的数据）
@@ -197,6 +260,7 @@ void storage_read(uint8_t type)
     if (type & 0x01) {
 #ifdef KEYMAP_STORAGE
         storage_read_inner(&keymap_record, &keymap_record_desc);
+        check_keymap();
 #endif
     }
     if (type & 0x02) {
@@ -217,11 +281,12 @@ void storage_read(uint8_t type)
 }
 
 /**
- * @brief 初始化存储模块（读取记录）
+ * @brief 初始化存储模块并读取记录
  * 
  */
 void storage_init()
 {
+    storage_callback_init();
     storage_read(0xFF);
 }
 
@@ -312,7 +377,7 @@ uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t*
 {
     uint8_t* pointer = 0;
     uint16_t size = storage_get_data_pointer(type, &pointer);
-    
+
     if (pointer == 0)
         return 0;
 
@@ -344,5 +409,9 @@ uint16_t storage_write_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t
         len = size - offset;
 
     memcpy(&pointer[offset], data, len);
+
+    if (type == STORAGE_KEYMAP)
+        check_keymap();
+
     return len;
 }
