@@ -64,7 +64,7 @@ static void keyboard_scan_handler(void* p_context)
     scan_counter += KEYBOARD_SCAN_INTERVAL;
     if (scan_counter >= scan_reload) {
         scan_counter = 0;
-#ifdef MARCO_BLOCKING_MODE
+#ifdef MACRO_BLOCKING_MODE
         // 仅在没有更多宏的情况下继续处理按键
         if (macro_queue_empty())
 #endif
