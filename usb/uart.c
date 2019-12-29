@@ -31,7 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 uart_state uart_rx_state;
-static uint8_t len, pos;
+static uint8_t recv_len, pos;
 static uint8_t __xdata recv_buff[64];
 static uint8_t __xdata keyboard_buffer[8];
 
@@ -65,17 +65,17 @@ static uint8_t uart_rx()
 }
 
 /**
- * @brief 检查接收数据的校验和
+ * @brief 获取数据的校验和
  * 
  * @return uint8_t 
  */
-static uint8_t checksum()
+static uint8_t checksum(uint8_t* data, uint8_t len)
 {
     uint8_t sum = 0x00;
 
-    for (int i = 0; i < len - 1; i++)
-        sum += recv_buff[i];
-    return sum == recv_buff[len - 1];
+    for (int i = 0; i < len; i++)
+        sum += data[i];
+    return sum;
 }
 
 /**
@@ -98,10 +98,17 @@ void uart_init()
 static void uart_data_parser(void)
 {
     uint8_t command = recv_buff[0];
-    if (command & 0x40) {
+    if (command >= 0x80) {
+        if (checksum(recv_buff, recv_len - 1) == recv_buff[recv_len - 1]) {
+            // 通信响应数据包
+            uint8_t datalen = command & 0x7F;
+            ResponseConfigurePacket(&recv_buff[1], datalen);
+            last_success = true;
+        }
+    } else if (command >= 0x40) {
         uint8_t index = recv_buff[1];
         uint8_t kplen = (command & 0x3F);
-        if (checksum()) {
+        if (checksum(recv_buff, recv_len - 1) == recv_buff[recv_len - 1]) {
             if (index == 0) {
                 // 通常键盘数据包
                 memcpy(keyboard_buffer, &recv_buff[2], 8);
@@ -191,20 +198,16 @@ void uart_recv(void)
     switch (uart_rx_state) {
     case STATE_IDLE:
         if (data >= 0x40) {
-            // 数据的最高Bit是1，则为下面上传的键盘数据包
-            len = (data & 0x3F) + 3; // 实际大小加上1byte的头, 1byte的ID和1byte的 Checksum
+            recv_len = (data >= 0x80) ? ((data & 0x7F) + 2) : ((data & 0x3F) + 3);
             pos = 0;
             recv_buff[pos++] = data;
             uart_rx_state = STATE_DATA;
-        } else if (data >= 0x10) {
-            // 状态包
-            ResponseConfigurePacket(&data, 1);
         }
         break;
 
     case STATE_DATA:
         recv_buff[pos++] = data;
-        if (pos >= len) {
+        if (pos >= recv_len) {
             uart_rx_state = STATE_IDLE;
             uart_arrive_flag = true;
         }
@@ -231,10 +234,10 @@ void uart_send_led(uint8_t val)
  */
 void uart_send_keymap(uint8_t* data, uint8_t len)
 {
-    data[0] = (data[0] & 0x7F) + 0x80;
+    send_buff[0] = len + 0x80; // command
     for (uint8_t i = 0; i < len; i++)
-        send_buff[i] = data[i];
+        send_buff[i + 1] = data[i];
 
-    send_buff[len - 1] += 0x80; // fix checksum
-    send_len = len;
+    send_buff[len + 1] = checksum(send_buff, len + 1);
+    send_len = len + 2; // cmd + sum
 }

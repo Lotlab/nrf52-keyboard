@@ -38,7 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 uint8_t keyboard_led_val_usb;
 
-static uint8_t recv_buf[62];
+static uint8_t recv_buf[64];
 static uint8_t recv_index;
 
 static bool has_host;
@@ -126,16 +126,6 @@ enum uart_ack_state {
     UART_SUCCESS,
     UART_END
 };
-
-/**
- * @brief 回复请求
- * 
- * @param success 
- */
-static void uart_ack(enum uart_ack_state state)
-{
-    app_uart_put(0x10 + state);
-}
 
 /**
  * @brief 发送事件
@@ -243,9 +233,10 @@ static void uart_on_recv()
                 recv_index = 0;
                 uint8_t sum = checksum(recv_buf, recv_len - 1);
                 if (sum == recv_buf[recv_len - 1]) {
-                    hid_on_recv(recv_buf[1], recv_len - 3, &recv_buf[2]);
+                    // U_CMD H_CMD H_LEN H_DAT... U_SUM
+                    hid_on_recv(recv_buf[1], recv_len - 4, &recv_buf[3]);
                 } else {
-                    uart_ack(UART_CHECK_FAIL);
+                    hid_response_generic(HID_RESP_UART_CHECKSUM_ERROR);
                 }
             }
         }
@@ -378,7 +369,7 @@ void uart_send_conf(uint8_t len, uint8_t* data)
     uint8_t buff[64];
     buff[0] = 0x80 + len;
     memcpy(&buff[1], data, len);
-    buff[len] = checksum(buff, len + 1);
+    buff[len + 1] = checksum(buff, len + 1);
     uart_queue_enqueue(len + 2, buff);
 }
 

@@ -51,6 +51,10 @@ enum hid_response {
     HID_RESP_INTERNAL_ERROR,
     // 写入数据超出限制
     HID_RESP_WRITE_OVERFLOW,
+    // UART通信校验错误
+    HID_RESP_UART_CHECKSUM_ERROR,
 };
 
 void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data);
+void hid_response_success(uint8_t len, uint8_t* data);
+void hid_response_generic(enum hid_response response);

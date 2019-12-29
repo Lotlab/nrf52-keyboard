@@ -11,7 +11,7 @@
 #include "keymap.h"
 
 #define HID_PROTOCOL 4
-#define MAX_HID_PACKET_SIZE 60
+#define MAX_HID_PACKET_SIZE 56
 
 #ifndef BUILD_TIME
 #define BUILD_TIME 0
@@ -56,7 +56,7 @@ const uint32_t keyboard_function_table =
  * @param len 额外数据长度
  * @param data 额外数据
  */
-static void hid_response_success(uint8_t len, uint8_t* data)
+void hid_response_success(uint8_t len, uint8_t* data)
 {
     uint8_t buff[63];
     buff[0] = 0x00;
@@ -70,7 +70,7 @@ static void hid_response_success(uint8_t len, uint8_t* data)
  * 
  * @param response 响应状态
  */
-static void hid_response_generic(enum hid_response response)
+void hid_response_generic(enum hid_response response)
 {
     uart_send_conf(1, &response);
 }

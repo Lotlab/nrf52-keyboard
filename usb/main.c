@@ -80,7 +80,7 @@ void KeyboardGenericUpload(uint8_t* packet, uint8_t len)
     if (len != 8)
         return;
     UsbOnKeySend();
-    
+
     usb_busy = true;
     memcpy(&Ep1Buffer[64], packet, len);
     UEP1_T_LEN = len;
@@ -113,11 +113,12 @@ void ResponseConfigurePacket(uint8_t* packet, uint8_t len)
 {
     if (len > 64)
         return;
-        
+
     usb_busy = true;
     Ep3Buffer[64] = 0x3f; // packet id
     memcpy(&Ep3Buffer[65], packet, len);
-    UEP3_T_LEN = len + 1;
+    memset(&Ep3Buffer[65 + len], 0, 64 - len - 2);
+    UEP3_T_LEN = 64;
     UEP3_CTRL = UEP3_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
 }
 
@@ -139,12 +140,8 @@ static void UARTInterrupt(void) __interrupt INT_NO_UART1
  */
 void EP3_OUT()
 {
-    uint8_t checksum = 0x00;
-    for (int i = 1; i < 62; i++) {
-        checksum += Ep3Buffer[i];
-    }
-    Ep3Buffer[62] = checksum;
-    uart_send_keymap(&Ep3Buffer[1], 62);
+    uint8_t len = Ep3Buffer[2] + 2;
+    uart_send_keymap(&Ep3Buffer[1], len);
 }
 
 /**
