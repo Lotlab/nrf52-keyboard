@@ -47,7 +47,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define REGISTER_FDS_BLOCK(_name, _size_word, _record_key)  \
     __ALIGN(4)                                              \
-    static uint8_t _name##_block[(_size_word * 4)] = { 0 }; \
+    uint8_t _name##_block[(_size_word * 4)] = { 0 }; \
     static fds_record_desc_t _name##_record_desc = { 0 };   \
     static fds_record_t _name##_record = {                  \
         .file_id = FILE_ID,                                 \
@@ -68,7 +68,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define USE_KEYMAP true
 
 REGISTER_FDS_BLOCK(keymap, KEYMAP_SIZE_WORD, KEYMAP_RECORD_KEY)
-
+#ifndef ACTIONMAP_ENABLE
 uint8_t keymap_key_to_keycode(uint8_t layer, keypos_t key)
 {
     if (layer >= LAYER_SIZE || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS)
@@ -78,6 +78,24 @@ uint8_t keymap_key_to_keycode(uint8_t layer, keypos_t key)
     else
         return keymaps[layer][key.row][key.col];
 }
+#else
+extern const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS];
+
+action_t action_for_key(uint8_t layer, keypos_t key) {
+    if (layer >= LAYER_SIZE || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS) {
+        action_t action = AC_NO;
+        return action;
+    }
+    if (USE_KEYMAP) {
+        action_t action;
+        uint16_t index = (layer * LAYER_SIZE + key.row * MATRIX_COLS + key.col) * 2;
+        action.code = ((uint16_t)keymap_block[index + 1] << 8) + keymap_block[index];
+        return action;
+    } else {
+        return actionmaps[layer][key.row][key.col];
+    }
+}
+#endif
 #pragma endregion
 
 #ifndef ACTIONMAP_ENABLE
@@ -157,7 +175,7 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
 
         if (flash_record.p_header->length_words == record->data.length_words) {
             // 大小正常，读取数据
-            memcpy(keymap_block, flash_record.p_data, KEYMAP_SIZE);
+            memcpy(keymap_block, flash_record.p_data, record->data.length_words * 4);
             fds_record_close(record_desc);
         } else {
             // 大小不正常，尝试更新数据

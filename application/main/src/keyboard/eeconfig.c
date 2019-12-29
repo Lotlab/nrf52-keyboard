@@ -15,19 +15,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "eeconfig.h"
-#include "fds.h"
-#include "nrf.h"
+#include "data_storage.h"
+#include "util.h"
 #include <string.h>
 
-#define FILE_ID 0x0114 /* The ID of the file to write the records into. */
-#define RECORD_KEY 0x0514 /* A key for the first record. */
-
-__ALIGN(4)
-static uint8_t config_buffer[8] __attribute__((aligned(4))) = { EECONFIG_MAGIC_NUMBER >> 8, EECONFIG_MAGIC_NUMBER % 0x100, 0, 0, 0, 0, 0, 0 };
-static bool fds_inited = false;
-
-static fds_record_t record = {0};
-static fds_record_desc_t record_desc = {0};
+static bool eeconfig_inited;
+uint8_t* config_buffer = config_block;
 
 static void eeconfig_set_default()
 {
@@ -43,91 +36,33 @@ static void eeconfig_set_default()
 }
 
 /**
- * @brief 更新内部的配置项目
- * 
- */
-static void config_update()
-{
-    // Set up record.
-    record.file_id = FILE_ID;
-    record.key = RECORD_KEY;
-    record.data.p_data = &config_buffer;
-    record.data.length_words = 2; /* one word is four bytes. */
-
-    // record_desc was create by fds_record_find or fds_record_write
-    ret_code_t rc = fds_record_update(&record_desc, &record);
-    if (rc != FDS_SUCCESS) {
-        /* Handle error. */
-    }
-}
-
-/**
- * @brief 创建配置项目
- * 
- */
-static void config_write()
-{
-    // Set up record.
-    record.file_id = FILE_ID;
-    record.key = RECORD_KEY;
-    record.data.p_data = &config_buffer;
-    record.data.length_words = 2; /* one word is four bytes. */
-
-    ret_code_t rc;
-    rc = fds_record_write(&record_desc, &record);
-    if (rc != FDS_SUCCESS) {
-        /* Handle error. */
-    }
-}
-
-/**
- * @brief 读取或创建一个配置项目
- * 
- */
-static void config_read()
-{
-    fds_find_token_t ftok = {0};
-    fds_flash_record_t flash_record = {0};
-    /* It is required to zero the token before first use. */
-    memset(&ftok, 0x00, sizeof(fds_find_token_t));
-
-    if (fds_record_find(FILE_ID, RECORD_KEY, &record_desc, &ftok) == FDS_SUCCESS) {
-        fds_record_open(&record_desc, &flash_record);
-        memcpy(config_buffer, flash_record.p_data, 8);
-        fds_record_close(&record_desc);
-    } else {
-        config_write();
-    }
-}
-
-/**
  * @brief 初始化，或重置为默认值
  * 
  */
 void eeconfig_init(void)
 {
-    if (!fds_inited) {
-        config_read();
-        fds_inited = true;
+    if (!eeconfig_inited) {
+        // eeconfig 已经在data storage 里面读取了，不需要再次操作
+        eeconfig_inited = true;
     } else {
         eeconfig_set_default();
-        config_update();
+        storage_write(STORAGE_CONFIG);
     }
 }
 
 void eeconfig_enable(void)
 {
-    // todo
+    UINT16_WRITE(config_buffer, 0, EECONFIG_MAGIC_NUMBER);
 }
 
 void eeconfig_disable(void)
 {
-    // todo
+    UINT16_WRITE(config_buffer, 0, 0);
 }
 
 bool eeconfig_is_enabled(void)
 {
-    return fds_inited;
+    return eeconfig_inited && UINT16_READ(config_buffer, 0) == EECONFIG_MAGIC_NUMBER;
 }
 
 uint8_t eeconfig_read_debug(void)

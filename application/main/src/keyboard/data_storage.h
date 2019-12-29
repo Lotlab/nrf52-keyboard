@@ -1,6 +1,6 @@
 #pragma once
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 enum storage_type {
     STORAGE_KEYMAP,
@@ -14,3 +14,7 @@ void storage_init(void);
 bool storage_write(uint8_t type);
 uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data);
 uint16_t storage_write_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data);
+
+#ifdef CONFIG_STORAGE
+extern uint8_t config_block[];
+#endif

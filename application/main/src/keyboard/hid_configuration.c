@@ -1,6 +1,7 @@
 #include "hid_configuration.h"
 #include "nordic_common.h"
 #include "usb_comm.h"
+#include "util.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -15,7 +16,6 @@
 #endif
 
 #define APP_VERSION CONCAT_2(0x, VERSION)
-#define UINT16(_data, _index) (_data[_index] + (uint16_t)(data[_index + 1] << 8))
 
 /**
  * @brief 发送键盘信息
@@ -263,7 +263,7 @@ void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
             if (len != 2)
                 hid_response_generic(HID_RESP_PARAMETER_ERROR);
             else
-                get_all_keys(UINT16(data, 0));
+                get_all_keys(UINT16_READ(data, 0));
             break;
         case HID_CMD_GET_ALL_FNS:
             if (len != 1)
@@ -287,19 +287,19 @@ void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
             if (len != 2)
                 hid_response_generic(HID_RESP_PARAMETER_ERROR);
             else
-                get_all_macro(UINT16(data, 0));
+                get_all_macro(UINT16_READ(data, 0));
             break;
         case HID_CMD_SET_SINGLE_KEY:
             if (len != 5)
                 hid_response_generic(HID_RESP_PARAMETER_ERROR);
             else
-                set_single_key(data[0], data[1], data[2], UINT16(data, 3));
+                set_single_key(data[0], data[1], data[2], UINT16_READ(data, 3));
             break;
         case HID_CMD_SET_SINGLE_FN:
             if (len != 3)
                 hid_response_generic(HID_RESP_PARAMETER_ERROR);
             else
-                set_single_fn(data[0], UINT16(data, 1));
+                set_single_fn(data[0], UINT16_READ(data, 1));
             break;
         case HID_CMD_SET_ALL_KEYS:
             set_all_keys(data[0], len - 1, &data[1]);

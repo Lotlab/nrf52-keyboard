@@ -26,7 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "custom_hook.h"
 #include "hook.h"
 #include "keyboard_led.h"
-#include "keymap_storage.h"
+#include "data_storage.h"
 #include "macro_player.h"
 #include "usb_comm.h"
 
@@ -204,7 +204,7 @@ void ble_keyboard_init(void)
     keyboard_setup(); // 初始化各按键阵列
     // - martix_setup();
     keyboard_led_init(); // 初始化LED
-    keymap_init(); // 初始化自定义keymap
+    storage_init(); // 初始化自定义keymap
 #ifdef HAS_USB
     usb_comm_init(); // 初始化USB通讯
 #endif
