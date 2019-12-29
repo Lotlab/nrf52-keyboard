@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_scheduler.h"
 #include "fds.h"
 #include "nrf.h"
+#include "util.h"
 
 // keymap
 #include "keymap.h"
@@ -32,36 +33,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // macro
 #include "action_macro.h"
 
-#ifdef ACTIONMAP_ENABLE
-#define SINGLE_KEY_SIZE 2
-#else
-#define SINGLE_KEY_SIZE 1
-#endif
-
-#define MAX_LAYER 8
-#define MAX_FN_KEYS 32
-#define MAX_MACRO_SIZE 256
-#define FILE_ID 0x0514
-
 #define GET_WORD(_i) ((_i - 1) / 4 + 1)
 
-#define REGISTER_FDS_BLOCK(_name, _size_word, _record_key)  \
-    __ALIGN(4)                                              \
-    uint8_t _name##_block[(_size_word * 4)] = { 0 }; \
-    static fds_record_desc_t _name##_record_desc = { 0 };   \
-    static fds_record_t _name##_record = {                  \
-        .file_id = FILE_ID,                                 \
-        .key = _record_key,                                 \
-        .data = {                                           \
-            .p_data = &_name##_block,                       \
-            .length_words = _size_word,                     \
-        }                                                   \
+#define REGISTER_FDS_BLOCK(_name, _size_word, _record_key) \
+    __ALIGN(4)                                             \
+    uint8_t _name##_block[(_size_word * 4)] = { 0 };       \
+    static fds_record_desc_t _name##_record_desc = { 0 };  \
+    static fds_record_t _name##_record = {                 \
+        .file_id = FILE_ID,                                \
+        .key = _record_key,                                \
+        .data = {                                          \
+            .p_data = &_name##_block,                      \
+            .length_words = _size_word,                    \
+        }                                                  \
     };
 
 #ifdef KEYMAP_STORAGE
 #pragma region KEYMAP
-#define LAYER_SIZE (MATRIX_ROWS * MATRIX_COLS * SINGLE_KEY_SIZE)
-#define KEYMAP_SIZE_WORD GET_WORD(LAYER_SIZE* MAX_LAYER)
+#define KEYMAP_SIZE_WORD GET_WORD(KEYMAP_LAYER_SIZE* MAX_LAYER)
 #define KEYMAP_RECORD_KEY 0x1905
 
 // todo: 增加keymap是否可用的判定
@@ -71,25 +60,26 @@ REGISTER_FDS_BLOCK(keymap, KEYMAP_SIZE_WORD, KEYMAP_RECORD_KEY)
 #ifndef ACTIONMAP_ENABLE
 uint8_t keymap_key_to_keycode(uint8_t layer, keypos_t key)
 {
-    if (layer >= LAYER_SIZE || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS)
+    if (layer >= KEYMAP_LAYER_SIZE || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS)
         return KC_NO;
     if (USE_KEYMAP)
-        return keymap_block[layer * LAYER_SIZE + key.row * MATRIX_COLS + key.col];
+        return keymap_block[layer * KEYMAP_LAYER_SIZE + key.row * MATRIX_COLS + key.col];
     else
         return keymaps[layer][key.row][key.col];
 }
 #else
 extern const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS];
 
-action_t action_for_key(uint8_t layer, keypos_t key) {
-    if (layer >= LAYER_SIZE || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS) {
+action_t action_for_key(uint8_t layer, keypos_t key)
+{
+    if (layer >= KEYMAP_LAYER_SIZE || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS) {
         action_t action = AC_NO;
         return action;
     }
     if (USE_KEYMAP) {
         action_t action;
-        uint16_t index = (layer * LAYER_SIZE + key.row * MATRIX_COLS + key.col) * 2;
-        action.code = ((uint16_t)keymap_block[index + 1] << 8) + keymap_block[index];
+        uint16_t index = layer * KEYMAP_LAYER_SIZE + key.row * KEYMAP_ROW_SIZE + key.col * 2;
+        action.code = UINT16_READ(keymap_block, index);
         return action;
     } else {
         return actionmaps[layer][key.row][key.col];
@@ -109,7 +99,7 @@ action_t keymap_fn_to_action(uint8_t keycode)
 {
     if (USE_KEYMAP) {
         uint8_t index = FN_INDEX(keycode) * 2;
-        uint16_t action = ((uint16_t)fn_block[index + 1] << 8) + fn_block[index];
+        uint16_t action = UINT16_READ(fn_block, index);
         return (action_t)action;
     } else
         return fn_actions[FN_INDEX(keycode)];
@@ -118,7 +108,7 @@ action_t keymap_fn_to_action(uint8_t keycode)
 #endif
 #endif
 
-#ifdef MARCO_STORAGE
+#ifdef MACRO_STORAGE
 #pragma region MACRO
 #define MACRO_BLOCK_SIZE_WORD GET_WORD(MAX_MACRO_SIZE)
 #define MACRO_RECORD_KEY 0x1907
@@ -226,12 +216,12 @@ void storage_read(uint8_t type)
 #endif
     }
     if (type & 0x04) {
-#ifdef MARCO_STORAGE
+#ifdef MACRO_STORAGE
         storage_read_inner(&macro_record, &macro_record_desc);
 #endif
     }
     if (type & 0x08) {
-#ifdef MARCO_STORAGE
+#ifdef MACRO_STORAGE
         storage_read_inner(&config_record, &config_record_desc);
 #endif
     }
@@ -268,12 +258,12 @@ bool storage_write(uint8_t type)
 #endif
     }
     if (type & 0x04) {
-#ifdef MARCO_STORAGE
+#ifdef MACRO_STORAGE
         storage_update_inner(&macro_record, &macro_record_desc);
 #endif
     }
     if (type & 0x08) {
-#ifdef MARCO_STORAGE
+#ifdef MACRO_STORAGE
         storage_update_inner(&config_record, &config_record_desc);
 #endif
     }
@@ -303,13 +293,13 @@ static uint16_t storage_get_data_pointer(uint8_t type, uint8_t** pointer)
         return FN_BLOCK_SIZE_WORD * 4;
         break;
 #endif
-#ifdef MARCO_STORAGE
+#ifdef MACRO_STORAGE
     case 2:
         pointer = macro_block;
         return MACRO_BLOCK_SIZE_WORD * 4;
         break;
 #endif
-#ifdef MARCO_STORAGE
+#ifdef MACRO_STORAGE
     case 3:
         pointer = config_block;
         return CONFIG_BLOCK_SIZE_WORD * 4;

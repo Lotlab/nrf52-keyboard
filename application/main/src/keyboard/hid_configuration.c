@@ -1,11 +1,17 @@
+#include <stdint.h>
+#include <string.h>
+
 #include "hid_configuration.h"
 #include "nordic_common.h"
 #include "usb_comm.h"
 #include "util.h"
-#include <stdint.h>
-#include <string.h>
+
+#include "action.h"
+#include "data_storage.h"
+#include "keymap.h"
 
 #define HID_PROTOCOL 4
+#define MAX_HID_PACKET_SIZE 60
 
 #ifndef BUILD_TIME
 #define BUILD_TIME 0
@@ -18,37 +24,44 @@
 #define APP_VERSION CONCAT_2(0x, VERSION)
 
 /**
+ * @brief 响应HID成功命令
+ * 
+ * @param len 额外数据长度
+ * @param data 额外数据
+ */
+static void hid_response_success(uint8_t len, uint8_t* data)
+{
+    uint8_t buff[63];
+    buff[0] = 0x00;
+    buff[1] = len;
+    memcpy(&buff[2], data, len);
+    uart_send_raw(len + 2, buff);
+}
+
+/**
+ * @brief 响应HID命令
+ * 
+ * @param response 响应状态
+ */
+static void hid_response_generic(enum hid_response response)
+{
+    uart_send_raw(1, &response);
+}
+
+/**
  * @brief 发送键盘信息
  * 
  */
 static void send_information()
 {
     const uint8_t info[] = {
-        // VENDOR
-        CONF_VENDOR_ID >> 8,
-        CONF_VENDOR_ID & 0xFF,
-        // PRODUCT
-        CONF_PRODUCT_ID >> 8,
-        CONF_PRODUCT_ID & 0xFF,
-        // HWVER
-        DEVICE_VER & 0xFF,
-        // PROTOCOL_VER
-        HID_PROTOCOL,
-        // FIRMWARE_VER
-        (APP_VERSION >> 24) & 0xFF,
-        (APP_VERSION >> 16) & 0xFF,
-        (APP_VERSION >> 8) & 0xFF,
-        (APP_VERSION >> 0) & 0xFF,
-        // BUILD_DATE
-        (BUILD_TIME >> 24) & 0xFF,
-        (BUILD_TIME >> 16) & 0xFF,
-        (BUILD_TIME >> 8) & 0xFF,
-        (BUILD_TIME >> 0) & 0xFF,
-        // FUNCTION_TABLE
-        (keyboard_function_table >> 24) & 0xFF,
-        (keyboard_function_table >> 16) & 0xFF,
-        (keyboard_function_table >> 8) & 0xFF,
-        (keyboard_function_table >> 0) & 0xFF,
+        UINT16_SEQ(CONF_VENDOR_ID), // VENDOR
+        UINT16_SEQ(CONF_PRODUCT_ID), // PRODUCT
+        DEVICE_VER & 0xFF, // HWVER
+        HID_PROTOCOL, // PROTOCOL_VER
+        INT32_SEQ(APP_VERSION), // FIRMWARE_VER
+        UINT32_SEQ(BUILD_TIME), // BUILD_DATE
+        UINT32_SEQ(keyboard_function_table), // FUNCTION_TABLE
     };
     hid_response_success(sizeof(info), info);
 }
@@ -62,7 +75,18 @@ static void send_information()
  */
 static void get_single_key(uint8_t layer, uint8_t row, uint8_t col)
 {
-    // todo
+    keypos_t pos = {
+        .col = col,
+        .row = row
+    };
+#ifndef ACTIONMAP_ENABLE
+    uint8_t code[] = { keymap_key_to_keycode(layer, pos), 0 };
+    hid_response_success(2, code);
+#else
+    action_t action = action_for_key(layer, pos);
+    uint8_t code[] = { UINT16_SEQ(action.code) };
+    hid_response_success(2, code);
+#endif
 }
 /**
  * @brief 获取单个FN键值
@@ -71,7 +95,26 @@ static void get_single_key(uint8_t layer, uint8_t row, uint8_t col)
  */
 static void get_single_fn(uint8_t id)
 {
-    // todo
+#if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
+    uint8_t data[2];
+    uint8_t len = storage_read_data(STORAGE_FN, id * 2, 2, &data);
+    if (len != 2)
+        return hid_response_generic(HID_RESP_PARAMETER_ERROR);
+    hid_response_success(2, data);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
+}
+
+static void response_storage(enum storage_type type, uint16_t offset, uint16_t len)
+{
+    if (len > MAX_HID_PACKET_SIZE)
+        return hid_response_generic(HID_RESP_PARAMETER_ERROR);
+
+    uint8_t data[MAX_HID_PACKET_SIZE];
+
+    len = storage_read_data(type, offset, len, data);
+    hid_response_success(len, data);
 }
 
 /**
@@ -81,7 +124,7 @@ static void get_single_fn(uint8_t id)
  */
 static void get_all_keys(uint16_t offset)
 {
-    // todo
+    response_storage(STORAGE_KEYMAP, offset, MAX_HID_PACKET_SIZE);
 }
 
 /**
@@ -91,7 +134,11 @@ static void get_all_keys(uint16_t offset)
  */
 static void get_all_fns(uint8_t offset)
 {
-    // todo
+#if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
+    response_storage(STORAGE_FN, offset, MAX_HID_PACKET_SIZE);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -102,7 +149,13 @@ static void get_all_fns(uint8_t offset)
  */
 static void get_single_config(uint8_t offset, uint8_t len)
 {
-    // todo
+#ifdef CONFIG_STORAGE
+    if (len > 4)
+        return hid_response_generic(HID_RESP_PARAMETER_ERROR);
+    response_storage(STORAGE_CONFIG, offset, len);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -111,7 +164,11 @@ static void get_single_config(uint8_t offset, uint8_t len)
  */
 static void get_all_config()
 {
-    // todo
+#ifdef CONFIG_STORAGE
+    response_storage(STORAGE_CONFIG, 0, MAX_HID_PACKET_SIZE);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -121,7 +178,29 @@ static void get_all_config()
  */
 static void get_all_macro(uint16_t offset)
 {
-    // todo
+#ifdef MACRO_STORAGE
+    response_storage(STORAGE_MACRO, offset, MAX_HID_PACKET_SIZE);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
+}
+
+/**
+ * @brief 将数据写入存储并返回hid应答。
+ * 
+ * 若数据写入大小小于要写入的大小，则返回HID_RESP_WRITE_OVERFLOW
+ * 
+ * @param type 写入类型
+ * @param offset 写入偏移
+ * @param data 数据指针
+ * @param len 数据长度
+ */
+static void set_storage(enum storage_type type, uint16_t offset, uint8_t* data, uint16_t len)
+{
+    if (storage_write_data(type, offset, len, data) < len)
+        hid_response_generic(HID_RESP_WRITE_OVERFLOW);
+    else
+        hid_response_generic(HID_RESP_SUCCESS);
 }
 
 /**
@@ -134,7 +213,13 @@ static void get_all_macro(uint16_t offset)
  */
 static void set_single_key(uint8_t layer, uint8_t row, uint8_t col, uint16_t keycode)
 {
-    // todo
+#ifdef KEYMAP_STORAGE
+    uint16_t index = layer * KEYMAP_LAYER_SIZE + row * KEYMAP_ROW_SIZE + col * SINGLE_KEY_SIZE;
+    uint8_t data[2] = { UINT16_SEQ(keycode) };
+    set_storage(STORAGE_KEYMAP, index, &data, SINGLE_KEY_SIZE);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -145,7 +230,12 @@ static void set_single_key(uint8_t layer, uint8_t row, uint8_t col, uint16_t key
  */
 static void set_single_fn(uint8_t id, uint16_t keycode)
 {
-    // todo
+#if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
+    uint8_t data[2] = { UINT16_SEQ(keycode) };
+    set_storage(STORAGE_FN, id * 2, data, 2);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -157,7 +247,11 @@ static void set_single_fn(uint8_t id, uint16_t keycode)
  */
 static void set_all_keys(uint8_t id, uint8_t len, uint8_t* data)
 {
-    // todo
+#ifdef KEYMAP_STORAGE
+    set_storage(STORAGE_KEYMAP, id * MAX_HID_PACKET_SIZE, data, len);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -169,7 +263,11 @@ static void set_all_keys(uint8_t id, uint8_t len, uint8_t* data)
  */
 static void set_all_fns(uint8_t id, uint8_t len, uint8_t* data)
 {
-    // todo
+#if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
+    set_storage(STORAGE_FN, id * MAX_HID_PACKET_SIZE, data, len);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -181,7 +279,11 @@ static void set_all_fns(uint8_t id, uint8_t len, uint8_t* data)
  */
 static void set_single_config(uint8_t offset, uint8_t len, uint8_t* data)
 {
-    // todo
+#ifdef CONFIG_STORAGE
+    set_storage(STORAGE_CONFIG, offset, data, len);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -192,7 +294,11 @@ static void set_single_config(uint8_t offset, uint8_t len, uint8_t* data)
  */
 static void set_all_config(uint8_t len, uint8_t* data)
 {
-    // todo
+#ifdef CONFIG_STORAGE
+    set_storage(STORAGE_CONFIG, 0, data, len);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -204,7 +310,11 @@ static void set_all_config(uint8_t len, uint8_t* data)
  */
 static void set_all_macro(uint8_t id, uint8_t len, uint8_t* data)
 {
-    // todo
+#ifdef MACRO_STORAGE
+    set_storage(STORAGE_MACRO, id * MAX_HID_PACKET_SIZE, data, len);
+#else
+    hid_response_generic(HID_RESP_UNDEFINED);
+#endif
 }
 
 /**
@@ -214,7 +324,8 @@ static void set_all_macro(uint8_t id, uint8_t len, uint8_t* data)
  */
 static void write_data(uint8_t type)
 {
-    // todo
+    storage_write(type);
+    hid_response_generic(HID_RESP_SUCCESS);
 }
 
 /**
@@ -224,7 +335,8 @@ static void write_data(uint8_t type)
  */
 static void reset_keyboard(uint8_t type)
 {
-    // todo
+    storage_read(type);
+    hid_response_generic(HID_RESP_SUCCESS);
 }
 
 /**
@@ -333,29 +445,4 @@ void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
             break;
         }
     }
-}
-
-/**
- * @brief 响应HID成功命令
- * 
- * @param len 额外数据长度
- * @param data 额外数据
- */
-static void hid_response_success(uint8_t len, uint8_t* data)
-{
-    uint8_t buff[63];
-    buff[0] = 0x00;
-    buff[1] = len;
-    memcpy(&buff[2], data, len);
-    uart_send_raw(len + 2, buff);
-}
-
-/**
- * @brief 响应HID命令
- * 
- * @param response 响应状态
- */
-static void hid_response_generic(enum hid_response response)
-{
-    uart_send_raw(1, &response);
 }

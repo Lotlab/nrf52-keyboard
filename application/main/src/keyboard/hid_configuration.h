@@ -48,6 +48,8 @@ enum hid_response {
     HID_RESP_PARAMETER_ERROR,
     // 内部错误
     HID_RESP_INTERNAL_ERROR,
+    // 写入数据超出限制
+    HID_RESP_WRITE_OVERFLOW,
 };
 
 const uint32_t keyboard_function_table = 
@@ -69,7 +71,7 @@ const uint32_t keyboard_function_table =
 #ifdef ACTIONMAP_ENABLE
     1 << 9 + 
 #endif
-#ifdef MARCO_STORAGE
+#ifdef MACRO_STORAGE
     1 << 10 + 
 #endif
 #ifdef CONFIG_STORAGE

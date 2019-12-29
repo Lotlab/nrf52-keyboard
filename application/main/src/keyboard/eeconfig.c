@@ -24,8 +24,7 @@ uint8_t* config_buffer = config_block;
 
 static void eeconfig_set_default()
 {
-    config_buffer[0] = EECONFIG_MAGIC_NUMBER >> 8;
-    config_buffer[1] = EECONFIG_MAGIC_NUMBER % 0x100;
+    UINT16_WRITE(config_buffer, 0, EECONFIG_MAGIC_NUMBER);
     config_buffer[2] = 0;
     config_buffer[3] = 0;
     config_buffer[4] = 0;

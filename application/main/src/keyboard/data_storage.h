@@ -1,6 +1,21 @@
 #pragma once
 #include <stdbool.h>
 #include <stdint.h>
+#include "config.h"
+
+#ifdef ACTIONMAP_ENABLE
+#define SINGLE_KEY_SIZE 2
+#else
+#define SINGLE_KEY_SIZE 1
+#endif
+
+#define MAX_LAYER 8
+#define MAX_FN_KEYS 32
+#define MAX_MACRO_SIZE 256
+#define FILE_ID 0x0514
+
+#define KEYMAP_ROW_SIZE (MATRIX_COLS * SINGLE_KEY_SIZE)
+#define KEYMAP_LAYER_SIZE (MATRIX_ROWS * KEYMAP_ROW_SIZE)
 
 enum storage_type {
     STORAGE_KEYMAP,

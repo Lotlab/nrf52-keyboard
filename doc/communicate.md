@@ -133,7 +133,7 @@ DATA[]: 键值数据
 请求:
 ```
 OFFSET[1] 配置项目的偏移量
-LEN[1] 配置项目的数据长度
+LEN[1] 配置项目的数据长度（最大为4）
 ```
 响应:
 ```
@@ -205,12 +205,12 @@ DATA[60] 数据
 #### 0x3E 将数据写入存储
 请求：
 ```
-TYPE[1] 写入类型：1：Keymap，2：Fn，3：Config, 4: macro
+TYPE[1] 写入类型：1：Keymap，2：Fn，4：Config, 8: macro, 0xFF: 所有
 ```
 #### 0x3F 重置键盘
 请求：
 ```
-TYPE[1] 重置类型：1：Keymap，2：Fn，3：Config, 4: macro, 0xFF: 所有
+TYPE[1] 重置类型：1：Keymap，2：Fn，4：Config, 8: macro, 0xFF: 所有
 ```
 
 #### 0x80~0xFF 更新内置Keymap（传统）
