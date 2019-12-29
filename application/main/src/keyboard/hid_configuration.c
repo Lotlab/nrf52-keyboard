@@ -23,30 +23,30 @@
 
 #define APP_VERSION CONCAT_2(0x, VERSION)
 
-const uint32_t keyboard_function_table = 
+const uint32_t keyboard_function_table =
 #ifdef BOOTMAGIC_ENABLE
-    (1 << 0) + 
+    (1 << 0) +
 #endif
 #ifdef MOUSEKEY_ENABLE
-    (1 << 1) + 
+    (1 << 1) +
 #endif
 #ifdef EXTRAKEY_ENABLE
-    (1 << 2) + 
+    (1 << 2) +
 #endif
 #ifdef NKRO_ENABLE
-    (1 << 3) + 
+    (1 << 3) +
 #endif
 #ifdef KEYMAP_STORAGE
-    (1 << 8) + 
+    (1 << 8) +
 #endif
 #ifdef ACTIONMAP_ENABLE
-    (1 << 9) + 
+    (1 << 9) +
 #endif
 #ifdef MACRO_STORAGE
-    (1 << 10) + 
+    (1 << 10) +
 #endif
 #ifdef CONFIG_STORAGE
-    (1 << 11) + 
+    (1 << 11) +
 #endif
     0;
 
@@ -375,101 +375,96 @@ static void reset_keyboard(uint8_t type)
  */
 void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
 {
-    if (command >= 0x80) {
-        // todo: 旧版协议的支持
+    switch (command) {
+    case HID_CMD_GET_INFORMATION:
+        if (len != 0)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            send_information();
+        break;
+    case HID_CMD_GET_SINGLE_KEY:
+        if (len != 3)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            get_single_key(data[0], data[1], data[2]);
+        break;
+    case HID_CMD_GET_SINGLE_FN:
+        if (len != 1)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            get_single_fn(data[0]);
+        break;
+    case HID_CMD_GET_ALL_KEYS:
+        if (len != 2)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            get_all_keys(UINT16_READ(data, 0));
+        break;
+    case HID_CMD_GET_ALL_FNS:
+        if (len != 1)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            get_all_fns(data[0]);
+        break;
+    case HID_CMD_GET_SINGLE_CONFIG:
+        if (len != 2)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            get_single_config(data[0], data[1]);
+        break;
+    case HID_CMD_GET_ALL_CONFIG:
+        if (len != 0)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            get_all_config();
+        break;
+    case HID_CMD_GET_ALL_MACRO:
+        if (len != 2)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            get_all_macro(UINT16_READ(data, 0));
+        break;
+    case HID_CMD_SET_SINGLE_KEY:
+        if (len != 5)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            set_single_key(data[0], data[1], data[2], UINT16_READ(data, 3));
+        break;
+    case HID_CMD_SET_SINGLE_FN:
+        if (len != 3)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            set_single_fn(data[0], UINT16_READ(data, 1));
+        break;
+    case HID_CMD_SET_ALL_KEYS:
+        set_all_keys(data[0], len - 1, &data[1]);
+        break;
+    case HID_CMD_SET_ALL_FNS:
+        set_all_fns(data[0], len - 1, &data[1]);
+        break;
+    case HID_CMD_SET_SINGLE_CONFIG:
+        set_single_config(data[0], len - 1, &data[1]);
+        break;
+    case HID_CMD_SET_ALL_CONFIG:
+        set_all_config(len, data);
+        break;
+    case HID_CMD_SET_ALL_MACRO:
+        set_all_macro(data[0], len - 1, &data[1]);
+        break;
+    case HID_CMD_WRITE_CONFIG:
+        if (len != 1)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            write_data(data[0]);
+        break;
+    case HID_CMD_RESET_CONFIG:
+        if (len != 1)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            reset_keyboard(data[0]);
+        break;
+    default:
         hid_response_generic(HID_RESP_UNDEFINED);
-    } else {
-        switch (command) {
-        case HID_CMD_GET_INFORMATION:
-            if (len != 0)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                send_information();
-            break;
-        case HID_CMD_GET_SINGLE_KEY:
-            if (len != 3)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                get_single_key(data[0], data[1], data[2]);
-            break;
-        case HID_CMD_GET_SINGLE_FN:
-            if (len != 1)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                get_single_fn(data[0]);
-            break;
-        case HID_CMD_GET_ALL_KEYS:
-            if (len != 2)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                get_all_keys(UINT16_READ(data, 0));
-            break;
-        case HID_CMD_GET_ALL_FNS:
-            if (len != 1)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                get_all_fns(data[0]);
-            break;
-        case HID_CMD_GET_SINGLE_CONFIG:
-            if (len != 2)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                get_single_config(data[0], data[1]);
-            break;
-        case HID_CMD_GET_ALL_CONFIG:
-            if (len != 0)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                get_all_config();
-            break;
-        case HID_CMD_GET_ALL_MACRO:
-            if (len != 2)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                get_all_macro(UINT16_READ(data, 0));
-            break;
-        case HID_CMD_SET_SINGLE_KEY:
-            if (len != 5)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                set_single_key(data[0], data[1], data[2], UINT16_READ(data, 3));
-            break;
-        case HID_CMD_SET_SINGLE_FN:
-            if (len != 3)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                set_single_fn(data[0], UINT16_READ(data, 1));
-            break;
-        case HID_CMD_SET_ALL_KEYS:
-            set_all_keys(data[0], len - 1, &data[1]);
-            break;
-        case HID_CMD_SET_ALL_FNS:
-            set_all_fns(data[0], len - 1, &data[1]);
-            break;
-        case HID_CMD_SET_SINGLE_CONFIG:
-            set_single_config(data[0], len - 1, &data[1]);
-            break;
-        case HID_CMD_SET_ALL_CONFIG:
-            set_all_config(len, data);
-            break;
-        case HID_CMD_SET_ALL_MACRO:
-            set_all_macro(data[0], len - 1, &data[1]);
-            break;
-        case HID_CMD_WRITE_CONFIG:
-            if (len != 1)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                write_data(data[0]);
-            break;
-        case HID_CMD_RESET_CONFIG:
-            if (len != 1)
-                hid_response_generic(HID_RESP_PARAMETER_ERROR);
-            else
-                reset_keyboard(data[0]);
-            break;
-        default:
-            hid_response_generic(HID_RESP_UNDEFINED);
-            break;
-        }
+        break;
     }
 }

@@ -213,11 +213,6 @@ TYPE[1] 写入类型：1：Keymap，2：Fn，4：Config, 8: macro, 0xFF: 所有
 TYPE[1] 重置类型：1：Keymap，2：Fn，4：Config, 8: macro, 0xFF: 所有
 ```
 
-#### 0x80~0xFF 更新内置Keymap（传统）
-
-PACKET_ID = CMD & 0x7F;
-DATA[0] ... DATA[59]
-
 #### 通用响应值
 
 CMD LEN DAT[0] ... DAT[60]
