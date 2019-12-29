@@ -23,6 +23,33 @@
 
 #define APP_VERSION CONCAT_2(0x, VERSION)
 
+const uint32_t keyboard_function_table = 
+#ifdef BOOTMAGIC_ENABLE
+    (1 << 0) + 
+#endif
+#ifdef MOUSEKEY_ENABLE
+    (1 << 1) + 
+#endif
+#ifdef EXTRAKEY_ENABLE
+    (1 << 2) + 
+#endif
+#ifdef NKRO_ENABLE
+    (1 << 3) + 
+#endif
+#ifdef KEYMAP_STORAGE
+    (1 << 8) + 
+#endif
+#ifdef ACTIONMAP_ENABLE
+    (1 << 9) + 
+#endif
+#ifdef MACRO_STORAGE
+    (1 << 10) + 
+#endif
+#ifdef CONFIG_STORAGE
+    (1 << 11) + 
+#endif
+    0;
+
 /**
  * @brief 响应HID成功命令
  * 
@@ -35,7 +62,7 @@ static void hid_response_success(uint8_t len, uint8_t* data)
     buff[0] = 0x00;
     buff[1] = len;
     memcpy(&buff[2], data, len);
-    uart_send_raw(len + 2, buff);
+    uart_send_conf(len + 2, buff);
 }
 
 /**
@@ -45,7 +72,7 @@ static void hid_response_success(uint8_t len, uint8_t* data)
  */
 static void hid_response_generic(enum hid_response response)
 {
-    uart_send_raw(1, &response);
+    uart_send_conf(1, &response);
 }
 
 /**
@@ -59,11 +86,11 @@ static void send_information()
         UINT16_SEQ(CONF_PRODUCT_ID), // PRODUCT
         DEVICE_VER & 0xFF, // HWVER
         HID_PROTOCOL, // PROTOCOL_VER
-        INT32_SEQ(APP_VERSION), // FIRMWARE_VER
+        UINT32_SEQ(APP_VERSION), // FIRMWARE_VER
         UINT32_SEQ(BUILD_TIME), // BUILD_DATE
         UINT32_SEQ(keyboard_function_table), // FUNCTION_TABLE
     };
-    hid_response_success(sizeof(info), info);
+    hid_response_success(sizeof(info), (uint8_t*)info);
 }
 
 /**
@@ -97,7 +124,7 @@ static void get_single_fn(uint8_t id)
 {
 #if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
     uint8_t data[2];
-    uint8_t len = storage_read_data(STORAGE_FN, id * 2, 2, &data);
+    uint8_t len = storage_read_data(STORAGE_FN, id * 2, 2, data);
     if (len != 2)
         return hid_response_generic(HID_RESP_PARAMETER_ERROR);
     hid_response_success(2, data);
@@ -216,7 +243,7 @@ static void set_single_key(uint8_t layer, uint8_t row, uint8_t col, uint16_t key
 #ifdef KEYMAP_STORAGE
     uint16_t index = layer * KEYMAP_LAYER_SIZE + row * KEYMAP_ROW_SIZE + col * SINGLE_KEY_SIZE;
     uint8_t data[2] = { UINT16_SEQ(keycode) };
-    set_storage(STORAGE_KEYMAP, index, &data, SINGLE_KEY_SIZE);
+    set_storage(STORAGE_KEYMAP, index, data, SINGLE_KEY_SIZE);
 #else
     hid_response_generic(HID_RESP_UNDEFINED);
 #endif

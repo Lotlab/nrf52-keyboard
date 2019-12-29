@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 enum hid_command {
     // 获取键盘信息
@@ -52,29 +53,4 @@ enum hid_response {
     HID_RESP_WRITE_OVERFLOW,
 };
 
-const uint32_t keyboard_function_table = 
-#ifdef BOOTMAGIC_ENABLE
-    1 << 0 + 
-#endif
-#ifdef MOUSEKEY_ENABLE
-    1 << 1 + 
-#endif
-#ifdef EXTRAKEY_ENABLE
-    1 << 2 + 
-#endif
-#ifdef NKRO_ENABLE
-    1 << 3 + 
-#endif
-#ifdef KEYMAP_STORAGE
-    1 << 8 + 
-#endif
-#ifdef ACTIONMAP_ENABLE
-    1 << 9 + 
-#endif
-#ifdef MACRO_STORAGE
-    1 << 10 + 
-#endif
-#ifdef CONFIG_STORAGE
-    1 << 11 + 
-#endif
-    0;
+void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data);

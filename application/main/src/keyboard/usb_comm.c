@@ -29,8 +29,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../ble/ble_hid_service.h"
 #include "../main.h"
 #include "app_timer.h"
+#include "hid_configuration.h"
 #include "host.h"
-#include "keymap_storage.h"
 
 #ifdef HAS_USB
 
@@ -196,6 +196,8 @@ static void uart_send(uint8_t* data, uint8_t len)
     }
 }
 
+uint8_t recv_len;
+
 /**
  * @brief 接收消息
  * 
@@ -208,8 +210,10 @@ static void uart_on_recv()
     while (app_uart_get(&buff) == NRF_SUCCESS) {
         recv_buf[recv_index] = buff;
         if (!recv_index) {
-            if (buff >= 0x80) { // keymap sending
-                recv_index++;
+            if (buff >= 0x80) { // 配置下发
+                recv_len = buff - 0x80 + 2; // CMD 和 SUM 各占 1 byte
+                if (recv_len > 2) // 如果是只有命令的包，则忽略
+                    recv_index++;
             } else if (buff >= 0x20) { // led
                 keyboard_led_val_usb = buff & 0x1F; // 5bit
             } else if (buff >= 0x10) { // status
@@ -235,23 +239,14 @@ static void uart_on_recv()
             }
         } else {
             recv_index++;
-            if (recv_index >= 62) {
+            if (recv_index >= recv_len) {
                 recv_index = 0;
-#ifdef KEYMAP_STORAGE
-                uint8_t sum = checksum(recv_buf, 61);
-                if (sum == recv_buf[61]) {
-                    uint8_t id = recv_buf[0] & 0x7F;
-                    if (keymap_set(id, 60, &recv_buf[1])) {
-                        uart_ack(UART_END);
-                    } else {
-                        uart_ack(UART_SUCCESS);
-                    }
+                uint8_t sum = checksum(recv_buf, recv_len - 1);
+                if (sum == recv_buf[recv_len - 1]) {
+                    hid_on_recv(recv_buf[1], recv_len - 3, &recv_buf[2]);
                 } else {
-#endif
                     uart_ack(UART_CHECK_FAIL);
-#ifdef KEYMAP_STORAGE
                 }
-#endif
             }
         }
     }
@@ -380,11 +375,11 @@ void uart_send_conf(uint8_t len, uint8_t* data)
     if (len > 62)
         return;
 
-    uint8_t data[64];
-    data[0] = 0x80 + len;
-    memcpy(&data[1], data, len);
-    data[len] = checksum(data, len);
-    uart_queue_enqueue(len + 2, data);
+    uint8_t buff[64];
+    buff[0] = 0x80 + len;
+    memcpy(&buff[1], data, len);
+    buff[len] = checksum(buff, len + 1);
+    uart_queue_enqueue(len + 2, buff);
 }
 
 APP_TIMER_DEF(uart_check_timer);

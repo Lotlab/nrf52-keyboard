@@ -49,7 +49,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     };
 
 #ifdef KEYMAP_STORAGE
-#pragma region KEYMAP
 #define KEYMAP_SIZE_WORD GET_WORD(KEYMAP_LAYER_SIZE* MAX_LAYER)
 #define KEYMAP_RECORD_KEY 0x1905
 
@@ -86,10 +85,8 @@ action_t action_for_key(uint8_t layer, keypos_t key)
     }
 }
 #endif
-#pragma endregion
 
 #ifndef ACTIONMAP_ENABLE
-#pragma region FN_MAP
 #define FN_BLOCK_SIZE_WORD GET_WORD(MAX_FN_KEYS * 2)
 #define FN_RECORD_KEY 0x1906
 
@@ -104,12 +101,10 @@ action_t keymap_fn_to_action(uint8_t keycode)
     } else
         return fn_actions[FN_INDEX(keycode)];
 }
-#pragma endregion
 #endif
 #endif
 
 #ifdef MACRO_STORAGE
-#pragma region MACRO
 #define MACRO_BLOCK_SIZE_WORD GET_WORD(MAX_MACRO_SIZE)
 #define MACRO_RECORD_KEY 0x1907
 
@@ -136,18 +131,14 @@ const macro_t* action_get_macro(keyrecord_t* record, uint8_t id, uint8_t opt)
     return MACRO_NONE;
 }
 #endif
-#pragma endregion
 
 #ifdef CONFIG_STORAGE
-#pragma region CONFIG
 #define CONFIG_BLOCK_SIZE_WORD 4
 #define CONFIG_RECORD_KEY 0x1908
 
 REGISTER_FDS_BLOCK(config, CONFIG_BLOCK_SIZE_WORD, CONFIG_RECORD_KEY)
-#pragma endregion
 #endif
 
-#pragma region FDS_INNER
 /**
  * @brief 内部读取FDS的数据，如果数据不存在则尝试新建一个
  * 
@@ -195,8 +186,6 @@ static void storage_update_inner(fds_record_t const* record, fds_record_desc_t* 
         // todo: 将操作入栈，等待gc完毕后重新操作
     }
 }
-
-#pragma endregion
 
 /**
  * @brief 读取存储的记录并写到内存（重置内存中的数据）
@@ -283,25 +272,25 @@ static uint16_t storage_get_data_pointer(uint8_t type, uint8_t** pointer)
     switch (type) {
 #ifdef KEYMAP_STORAGE
     case 0:
-        pointer = keymap_block;
+        *pointer = keymap_block;
         return KEYMAP_SIZE_WORD * 4;
         break;
 #endif
 #if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
     case 1:
-        pointer = fn_block;
+        *pointer = fn_block;
         return FN_BLOCK_SIZE_WORD * 4;
         break;
 #endif
 #ifdef MACRO_STORAGE
     case 2:
-        pointer = macro_block;
+        *pointer = macro_block;
         return MACRO_BLOCK_SIZE_WORD * 4;
         break;
 #endif
 #ifdef MACRO_STORAGE
     case 3:
-        pointer = config_block;
+        *pointer = config_block;
         return CONFIG_BLOCK_SIZE_WORD * 4;
         break;
 #endif
@@ -321,8 +310,11 @@ static uint16_t storage_get_data_pointer(uint8_t type, uint8_t** pointer)
  */
 uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data)
 {
-    uint8_t* pointer;
+    uint8_t* pointer = 0;
     uint16_t size = storage_get_data_pointer(type, &pointer);
+    
+    if (pointer == 0)
+        return 0;
 
     if (size < len + offset)
         len = size - offset;
@@ -342,8 +334,11 @@ uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t*
  */
 uint16_t storage_write_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data)
 {
-    uint8_t* pointer;
+    uint8_t* pointer = 0;
     uint16_t size = storage_get_data_pointer(type, &pointer);
+
+    if (pointer == 0)
+        return 0;
 
     if (size < len + offset)
         len = size - offset;

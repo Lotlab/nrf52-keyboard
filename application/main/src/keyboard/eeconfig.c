@@ -72,7 +72,7 @@ void eeconfig_write_debug(uint8_t val)
 {
     if (config_buffer[2] != val) {
         config_buffer[2] = val;
-        config_update();
+        storage_write(STORAGE_CONFIG);
     }
 }
 
@@ -84,7 +84,7 @@ void eeconfig_write_default_layer(uint8_t val)
 {
     if (config_buffer[3] != val) {
         config_buffer[3] = val;
-        config_update();
+        storage_write(STORAGE_CONFIG);
     }
 }
 
@@ -96,7 +96,7 @@ void eeconfig_write_keymap(uint8_t val)
 {
     if (config_buffer[4] != val) {
         config_buffer[4] = val;
-        config_update();
+        storage_write(STORAGE_CONFIG);
     }
 }
 
@@ -109,7 +109,7 @@ void eeconfig_write_backlight(uint8_t val)
 {
     if (config_buffer[6] != val) {
         config_buffer[6] = val;
-        config_update();
+        storage_write(STORAGE_CONFIG);
     }
 }
 #endif
