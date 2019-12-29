@@ -22,8 +22,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "bootmagic.h"
 #include "eeconfig.h"
 #include "host.h"
+#include "keymap.h"
 
 #ifdef NKRO_ENABLE
+
+#ifdef BOOTMAGIC_ENABLE
+extern keymap_config_t keymap_config;
+#endif
 /**
  * 切换nkro状态
  */
