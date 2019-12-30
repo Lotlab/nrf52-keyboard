@@ -1,0 +1,23 @@
+OUTPUT_DIR = _build
+SUBDIRS=$(filter-out $(OUTPUT_DIR),$(shell ls -l | grep ^d | awk '{print $$9}'))
+export VERSION=$(shell git describe --always --dirty || echo 'unknown')
+export BUILDTIME=$(shell date +"%Y_%m_%d")
+export FILE_VERSION = $(BUILDTIME)-$(VERSION)
+export RELEASE_DIR = ../$(OUTPUT_DIR)
+
+.PHONY: clean all dist_clean
+all: $(SUBDIRS)
+
+$(SUBDIRS): $(OUTPUT_DIR)
+	@-mkdir $(OUTPUT_DIR)/$@
+	@make -C $@ package OUTPUT_DIRECTORY=$(RELEASE_DIR)/$@ NRF_PACKAGE_NAME=$(RELEASE_DIR)/$@-nrf52-$(FILE_VERSION).zip BUILD_PREFIX=$@
+	@make -C $@ usb OUTPUT_DIRECTORY=$(RELEASE_DIR)/$@ OUTPUT_HEX=$(RELEASE_DIR)/$@-ch554-$(FILE_VERSION).hex BUILD_PREFIX=$@
+
+$(OUTPUT_DIR):
+	@-mkdir -p $(OUTPUT_DIR)
+
+dist_clean: 
+	-rm -r $(OUTPUT_DIR)/*/
+
+clean:
+	-rm -rf $(OUTPUT_DIR)

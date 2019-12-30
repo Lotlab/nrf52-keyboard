@@ -20,8 +20,12 @@ SDCC_LDFLAGS := --xram-size 1024 --iram-size 256 --code-size 16384 --out-fmt-ihx
 LIBS := $(patsubst $(USB_SOURCE_DIR)/%.c,$(OBJ_DIR)/%.rel,$(wildcard $(USB_SOURCE_DIR)/*.c))
 
 OUTPUT_IHX := $(OBJ_DIR)/$(PROJ_NAME).ihx
+ifndef OUTPUT_HEX
 OUTPUT_HEX := $(OUTPUT_DIR)/$(PROJ_NAME).hex
+endif
+ifndef OUTPUT_BIN
 OUTPUT_BIN := $(OUTPUT_DIR)/$(PROJ_NAME).bin
+endif
 
 .PHONY:ch554, usb
 
