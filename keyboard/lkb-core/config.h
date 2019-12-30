@@ -63,8 +63,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define DYNAMIC_TX_POWER /* 启用自动发射功率调整 */
 
-// LED自动熄灭时长(ms)，设为0则不自动熄灭
-#define LED_AUTOOFF_TIME 60000
+// LED自动熄灭时长(s)，设为0则不自动熄灭
+#define LED_AUTOOFF_TIME 60
 
 // 需要输入配对码
 #define PASSKEY_REQUIRED

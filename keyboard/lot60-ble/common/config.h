@@ -79,8 +79,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 自动发射功率调整
 // #define DYNAMIC_TX_POWER
 
-// LED自动熄灭时长(ms)，设为0则不自动熄灭
-#define LED_AUTOOFF_TIME 5000
+// LED自动熄灭时长(s)，设为0则不自动熄灭
+#define LED_AUTOOFF_TIME 5
 
 // 需要输入配对码
 // #define PASSKEY_REQUIRED
@@ -90,6 +90,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // 启用keymap存储
 #define KEYMAP_STORAGE
+#define MACRO_STORAGE /* 启用宏存储功能 */
+#define CONFIG_STORAGE /* 启用配置存储功能 */
 
 // 直接开机而跳过开机条件检测，用于调试
 // #define DEBUG_SKIP_PWRON_CHECK

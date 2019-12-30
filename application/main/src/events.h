@@ -52,6 +52,11 @@ enum user_event {
      * @ref enum power_save_mode
      */
     USER_EVT_POWERSAVE,
+    /**
+     * @brief 键盘内置Tick (1s) 触发
+     * 
+     */
+    USER_EVT_TICK,
 };
 
 /**

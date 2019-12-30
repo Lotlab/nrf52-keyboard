@@ -24,10 +24,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../main.h"
 #include "custom_hook.h"
-#include "hook.h"
-#include "keyboard_led.h"
 #include "data_storage.h"
+#include "hook.h"
+#include "keyboard_evt.h"
+#include "keyboard_led.h"
 #include "macro_player.h"
+#include "store_config.h"
 #include "usb_comm.h"
 
 #include "nrf_drv_wdt.h"
@@ -93,11 +95,14 @@ static void keyboard_sleep_handler(void* p_context)
     if (powersave)
         sleep_counter++;
 
-    if (sleep_counter == SLEEP_SLOW_TIMEOUT) {
+    if (sleep_counter == get_slow_scan_timeout()) {
         keyboard_switch_scan_mode(true);
-    } else if (sleep_counter == SLEEP_OFF_TIMEOUT) {
+    } else if (sleep_counter == get_sleep_timeout()) {
         sleep(SLEEP_TIMEOUT);
     }
+
+    // trig TICK
+    trig_event(USER_EVT_TICK, 0);
 }
 
 /**
@@ -106,7 +111,7 @@ static void keyboard_sleep_handler(void* p_context)
  */
 static void keyboard_sleep_counter_reset(void)
 {
-    if (sleep_counter >= SLEEP_SLOW_TIMEOUT) {
+    if (sleep_counter >= get_slow_scan_timeout()) {
         keyboard_switch_scan_mode(false);
     }
     sleep_counter = 0;
