@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "usb_comm.h"
 
 #include "bootmagic.h"
+#include "bootloader.h"
 #include "eeconfig.h"
 #include "host.h"
 #include "keymap.h"
@@ -56,6 +57,9 @@ __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint
 #ifdef NKRO_ENABLE
                 toggle_nkro();
 #endif
+                break;
+            case CONTROL_BOOTLOADER: // 跳转到bootloader
+                bootloader_jump();
                 break;
             default:
                 break;
