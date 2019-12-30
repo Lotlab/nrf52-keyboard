@@ -274,7 +274,7 @@ void storage_read(uint8_t type)
 #endif
     }
     if (type & 0x08) {
-#ifdef MACRO_STORAGE
+#ifdef CONFIG_STORAGE
         storage_read_inner(&config_record, &config_record_desc);
 #endif
     }
@@ -317,7 +317,7 @@ bool storage_write(uint8_t type)
 #endif
     }
     if (type & 0x08) {
-#ifdef MACRO_STORAGE
+#ifdef CONFIG_STORAGE
         storage_update_inner(&config_record, &config_record_desc);
 #endif
     }
@@ -353,7 +353,7 @@ static uint16_t storage_get_data_pointer(uint8_t type, uint8_t** pointer)
         return MACRO_BLOCK_SIZE_WORD * 4;
         break;
 #endif
-#ifdef MACRO_STORAGE
+#ifdef CONFIG_STORAGE
     case 3:
         *pointer = config_block;
         return CONFIG_BLOCK_SIZE_WORD * 4;

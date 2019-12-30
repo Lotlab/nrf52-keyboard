@@ -30,6 +30,11 @@ bool storage_write(uint8_t type);
 uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data);
 uint16_t storage_write_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data);
 
+// 若启用了BOOTMAGIC_ENABLE则自动启用CONFIG_STORAGE
+#ifdef BOOTMAGIC_ENABLE
+#define CONFIG_STORAGE
+#endif
+
 #ifdef CONFIG_STORAGE
 extern uint8_t config_block[];
 #endif

@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "ble_keyboard.h"
 #include "config.h"
+#include "keyboard_evt.h"
 #include "keyboard_led.h"
 #include "main.h"
 #include "nrf_delay.h"
@@ -116,61 +117,64 @@ static void led_status_change()
 }
 
 // 这里可以放置用户自定义的处理程序，例如设置灯光等。
-void custom_event_handler(enum user_ble_event arg)
+static void custom_event_handler(enum user_event event, void* arg)
 {
-    // 将事件传递给RGB灯光设置
-    switch (arg) {
-    case USER_EVT_POST_INIT:
-        status_led_init();
-        buttons_init();
+    uint8_t arg2 = (uint32_t)arg;
+    switch (event) {
+    case USER_EVT_STAGE:
+        switch (arg2) {
+        case KBD_STATE_POST_INIT: // 初始化LED
+            status_led_init();
+            buttons_init();
+            break;
+        case KBD_STATE_INITED: // 初始化完毕
+            led_status_change();
+            break;
+        case KBD_STATE_SLEEP: // 准备休眠
+            status_led_deinit();
+            break;
+        default:
+            break;
+        }
         break;
-    case USER_LED_ON:
-        status_led_on();
+    case USER_EVT_POWERSAVE:
+        switch (arg2) {
+        case PWR_SAVE_ENTER: // 进入省电模式
+            status_led_off();
+            break;
+        case PWR_SAVE_EXIT: // 退出省电模式
+            status_led_on();
+            break;
+        default:
+            break;
+        }
         break;
-    case USER_LED_OFF:
-        status_led_off();
-        break;
-    case USER_LED_DEINIT:
-        status_led_deinit();
-        break;
-    default:
-        break;
-    }
-
-    switch (arg) {
-    case USER_EVT_INITED:
+    case USER_EVT_CHARGE: // 充电事件
+        charging_full = (arg2 != BATT_CHARGING);
         led_status_change();
         break;
-    case USER_USB_DISCONNECT:
-        status = kbd_ble;
+    case USER_EVT_USB: // USB事件
+        switch (arg2) {
+        case USB_WORKING:
+            status = kbd_usb;
+            break;
+        case USB_NOT_WORKING:
+        case USB_NO_HOST: // no_host状态也能说明正在充电
+            status = kbd_charge;
+            break;
+        case USB_NOT_CONNECT:
+            status = kbd_ble;
+            break;
+        default:
+            break;
+        }
         led_status_change();
         break;
-    case USER_USB_CHARGE:
-        status = kbd_charge;
+    case USER_EVT_BLE_STATE_CHANGE: // 蓝牙事件
+        ble_connected = (arg2 == BLE_STATE_CONNECTED);
         led_status_change();
         break;
-    case USER_USB_CONNECTED:
-        status = kbd_usb;
-        led_status_change();
-        break;
-    case USER_BAT_CHARGING:
-        charging_full = false;
-        led_status_change();
-        break;
-    case USER_BAT_FULL:
-        charging_full = true;
-        led_status_change();
-        break;
-    case USER_BLE_DISCONNECT:
-        ble_connected = false;
-        led_status_change();
-        break;
-    case USER_BLE_CONNECTED:
-        ble_connected = true;
-        led_status_change();
-        break;
-    case USER_EVT_SLEEP_AUTO:
-    case USER_EVT_SLEEP_MANUAL:
+    case USER_EVT_SLEEP: // 睡眠指示
         matrix_uninit(); // 释放键盘阵列针脚
         status_led_on();
         nrf_delay_ms(200);
@@ -179,3 +183,5 @@ void custom_event_handler(enum user_ble_event arg)
         break;
     }
 }
+
+EVENT_HANDLER(custom_event_handler);

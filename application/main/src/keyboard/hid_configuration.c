@@ -50,6 +50,14 @@ const uint32_t keyboard_function_table =
 #endif
     0;
 
+#ifndef CONF_VENDOR_ID
+#define CONF_VENDOR_ID VENDOR_ID
+#endif
+
+#ifndef CONF_PRODUCT_ID
+#define CONF_PRODUCT_ID PRODUCT_ID
+#endif
+
 /**
  * @brief 响应HID成功命令
  * 
