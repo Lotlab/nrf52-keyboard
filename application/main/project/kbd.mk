@@ -6,6 +6,14 @@ ifndef APP_SRC_DIR
 APP_SRC_DIR := ../src
 endif
 
+ifndef ROOT_DIR
+	ROOT_DIR := ../../..
+endif
+
+ifndef SDK_ROOT
+	SDK_ROOT := $(ROOT_DIR)/SDK
+endif
+
 # project specific files
 SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_matrix.c \
     $(APP_SRC_DIR)/keyboard/host_driver.c \

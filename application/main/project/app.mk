@@ -5,14 +5,6 @@ ifndef OUTPUT_DIRECTORY
 	OUTPUT_DIRECTORY := _build
 endif
 
-ifndef ROOT_DIR
-	ROOT_DIR := ../../..
-endif
-
-ifndef SDK_ROOT
-	SDK_ROOT := $(ROOT_DIR)/SDK
-endif
-
 ifndef TEMPLATE_PATH
 	TEMPLATE_PATH := $(ROOT_DIR)/template
 endif

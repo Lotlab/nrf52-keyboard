@@ -21,6 +21,8 @@ NKRO_ENABLE = yes	# 启用USB的全键无冲功能
 USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
 NRF52_DISABLE_FPU = yes # 禁用FPU
 
+SSD1306_OLED = yes
+
 ########## STOP HERE ##########
 # 除非你知道下面这些配置项是干什么的，否则不要去动它
 

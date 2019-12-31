@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "../main.h"
+#include "main.h"
 
 #include <stdlib.h>
 #include "nrf_section.h"
