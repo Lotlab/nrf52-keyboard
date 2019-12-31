@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "passkey.h"
-#include "custom_hook.h"
 #include "../ble/ble_services.h"
 
 static uint8_t inputed_len = 0xFF;

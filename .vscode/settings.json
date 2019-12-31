@@ -209,6 +209,8 @@
         "application/main/src/config",
         "application/main/src/driver",
         "application/main/src/keyboard",
+        "application/main/src/protocol",
+        "application/main/src/tmk",
         "keyboard/template"
     ],
     "C_Cpp.default.defines": [

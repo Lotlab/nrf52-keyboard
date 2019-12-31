@@ -30,7 +30,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../config/keyboard_config.h"
 #include "ble_keyboard.h"
-#include "custom_hook.h"
 #include "debug.h"
 #include "keyboard_matrix.h"
 #include "matrix.h"

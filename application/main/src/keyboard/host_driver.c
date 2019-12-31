@@ -20,7 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../ble/ble_hid_service.h"
 #include "../config/keyboard_config.h"
-#include "custom_hook.h"
 #include "passkey.h"
 #include "report.h"
 #include "usb_comm.h"
