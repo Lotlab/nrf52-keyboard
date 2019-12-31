@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 static uint8_t inputed_len = 0xFF;
 static uint8_t passkey[6];
 
-void hook_send_keyboard(report_keyboard_t* report)
+void passkey_input_handler(report_keyboard_t* report)
 {
     // 处理Passkey的输入
     if (inputed_len < 6) {

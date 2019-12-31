@@ -10,8 +10,8 @@ endif
 SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_matrix.c \
     $(APP_SRC_DIR)/keyboard/host_driver.c \
     $(APP_SRC_DIR)/keyboard/ble_keyboard.c \
-    $(APP_SRC_DIR)/keyboard/keyboard_timer.c \
-    $(APP_SRC_DIR)/keyboard/glue_layer.c \
+    $(APP_SRC_DIR)/tmk/keyboard_timer.c \
+    $(APP_SRC_DIR)/tmk/glue_layer.c \
     $(APP_SRC_DIR)/keyboard/keyboard_fn.c \
     $(APP_SRC_DIR)/keyboard/keyboard_led.c \
     $(APP_SRC_DIR)/keyboard/passkey.c \
@@ -25,7 +25,8 @@ SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_matrix.c \
     $(APP_SRC_DIR)/keyboard/macro_player.c \
     $(APP_SRC_DIR)/keyboard/power_save.c \
 
-INC_FOLDERS += $(APP_SRC_DIR)/keyboard 
+INC_FOLDERS += $(APP_SRC_DIR)/keyboard \
+    $(APP_SRC_DIR)/tmk
 
 # Version string
 VERSION := $(shell ((git describe --always --abbrev=8 || echo '00000000') | sed "s/.*-g//g" ) 2> /dev/null)

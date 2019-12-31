@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../ble/ble_hid_service.h"
 #include "../config/keyboard_config.h"
 #include "custom_hook.h"
+#include "passkey.h"
 #include "report.h"
 #include "usb_comm.h"
 
@@ -79,7 +80,8 @@ void send_keyboard(report_keyboard_t* report)
     } else
 #endif
     {
-        hook_send_keyboard(report);
+        // 处理配对码的输入数据
+        passkey_input_handler(report);
         send(0, 8, report->raw);
     }
 }

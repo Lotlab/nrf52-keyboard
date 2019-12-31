@@ -29,7 +29,7 @@ endif
 
 ifeq (yes,$(strip $(BOOTMAGIC_ENABLE)))
     SRC_FILES += $(COMMON_DIR)/bootmagic.c
-    SRC_FILES += $(APP_SRC_DIR)/keyboard/eeconfig.c
+    SRC_FILES += $(APP_SRC_DIR)/tmk/eeconfig.c
     OPT_DEFS += -DBOOTMAGIC_ENABLE
 else
     SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_bootcheck.c

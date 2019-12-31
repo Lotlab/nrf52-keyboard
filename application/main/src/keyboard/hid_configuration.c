@@ -58,6 +58,8 @@ const uint32_t keyboard_function_table =
 #define CONF_PRODUCT_ID PRODUCT_ID
 #endif
 
+#ifdef HAS_USB
+
 /**
  * @brief 响应HID成功命令
  * 
@@ -476,3 +478,5 @@ void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
         break;
     }
 }
+
+#endif
