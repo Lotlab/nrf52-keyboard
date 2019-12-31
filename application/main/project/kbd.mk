@@ -22,6 +22,7 @@ SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_matrix.c \
     $(APP_SRC_DIR)/keyboard/keyboard_evt.c \
     $(APP_SRC_DIR)/keyboard/store_config.c \
     $(APP_SRC_DIR)/protocol/usb_comm.c \
+    $(APP_SRC_DIR)/protocol/ble_comm.c \
     $(APP_SRC_DIR)/keyboard/macro_player.c \
     $(APP_SRC_DIR)/keyboard/power_save.c \
 

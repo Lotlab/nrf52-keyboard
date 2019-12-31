@@ -18,38 +18,40 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "keyboard_host_driver.h"
 #include <stdint.h>
 
-#include "../ble/ble_hid_service.h"
 #include "../config/keyboard_config.h"
-#include "passkey.h"
 #include "report.h"
-#include "usb_comm.h"
+
+NRF_SECTION_SET_DEF(host_driver, struct host_driver*, 3);
+
+/**
+ * @brief 获取当前正在工作的host driver
+ * 
+ * @return struct host_driver* 
+ */
+static struct host_driver* get_working_driver()
+{
+    nrf_section_iter_t iter;
+    for (nrf_section_iter_init(&iter, &host_driver);
+         nrf_section_iter_get(&iter) != NULL;
+         nrf_section_iter_next(&iter)) {
+        struct host_driver* p_item = *(struct host_driver**)nrf_section_iter_get(&iter);
+        if (p_item->driver_working())
+            return p_item;
+    }
+    return 0;
+}
 
 // todo: impliment
 uint8_t keyboard_idle = 0;
 uint8_t keyboard_protocol = 0;
 
-uint8_t keyboard_leds(void);
-void send_keyboard(report_keyboard_t* report);
-void send_mouse(report_mouse_t* report);
-void send_system(uint16_t data);
-void send_consumer(uint16_t data);
-
-host_driver_t driver = {
-    keyboard_leds,
-    send_keyboard,
-    send_mouse,
-    send_system,
-    send_consumer
-};
-
 uint8_t keyboard_leds()
 {
-#ifdef HAS_USB
-    if (usb_working())
-        return keyboard_led_val_usb;
+    struct host_driver* driver = get_working_driver();
+    if (driver != NULL)
+        return driver->keyboard_leds();
     else
-#endif
-        return keyboard_led_val_ble;
+        return 0;
 }
 
 /**
@@ -61,26 +63,19 @@ uint8_t keyboard_leds()
  */
 static void send(uint8_t index, uint8_t len, uint8_t* keys)
 {
-#ifdef HAS_USB
-    if (usb_working()) {
-        usb_send(index, len, keys);
-    } else
-#endif
-    {
-        keys_send(index, len, keys);
-    }
+    struct host_driver* driver = get_working_driver();
+    if (driver != NULL)
+        return driver->send_packet(index, len, keys);
 }
 
 void send_keyboard(report_keyboard_t* report)
 {
-#if defined(NKRO_ENABLE) && defined(HAS_USB)
+#if defined(NKRO_ENABLE)
     if (keyboard_protocol && keyboard_nkro) {
         send(0x80, NKRO_EPSIZE, report->raw);
     } else
 #endif
     {
-        // 处理配对码的输入数据
-        passkey_input_handler(report);
         send(0, 8, report->raw);
     }
 }
@@ -100,17 +95,21 @@ void send_consumer(uint16_t data)
     send(REPORT_ID_CONSUMER, 2, (uint8_t*)&data);
 }
 
+host_driver_t driver = {
+    keyboard_leds,
+    send_keyboard,
+    send_mouse,
+    send_system,
+    send_consumer
+};
+
 /**
  * 待发送按键是否为空
  */
 bool keys_queue_empty()
 {
-#ifdef HAS_USB
-    if (usb_working()) {
-        return usb_queue_empty();
-    } else
-#endif
-    {
-        return hid_queue_empty();
-    }
+    struct host_driver* driver = get_working_driver();
+    if (driver != NULL)
+        return driver->queue_empty();
+    return true;
 }

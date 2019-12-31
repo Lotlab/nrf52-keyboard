@@ -22,6 +22,12 @@ SECTIONS
     KEEP(*(.modules_init))
     PROVIDE(__stop_modules_init = .);
   } > RAM
+  .host_driver :
+  {
+    PROVIDE(__start_host_driver = .);
+    KEEP(*(SORT(.host_driver*)))
+    PROVIDE(__stop_host_driver = .);
+  } > RAM
 } INSERT AFTER .data;
 
 SECTIONS

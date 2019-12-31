@@ -21,12 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 static uint8_t inputed_len = 0xFF;
 static uint8_t passkey[6];
 
-void passkey_input_handler(report_keyboard_t* report)
+void passkey_input_handler(uint8_t len, uint8_t* keys)
 {
     // 处理Passkey的输入
     if (inputed_len < 6) {
-        for (uint8_t i = 0; i < sizeof(report->keys); i++) {
-            uint8_t keycode = report->keys[i];
+        for (uint8_t i = 0; i < len; i++) {
+            uint8_t keycode = keys[i];
             if (keycode >= KC_1 && keycode <= KC_0) {
                 passkey[inputed_len++] = (keycode + 1 - KC_1) % 10 + '0';
                 break;

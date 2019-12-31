@@ -32,6 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hid_configuration.h"
 #include "host.h"
 
+#include "keyboard_host_driver.h"
+
 #ifdef HAS_USB
 
 #define QUEUE_SIZE 256
@@ -448,5 +450,29 @@ bool usb_queue_empty()
 {
     return uart_queue_empty();
 }
+
+/**
+ * @brief 获取USB键盘下当前的LED状态
+ * 
+ * @return uint8_t 
+ */
+static uint8_t usb_get_keyboard_led()
+{
+    return keyboard_led_val_usb;
+}
+
+/**
+ * @brief USB 通信驱动
+ * 
+ */
+static struct host_driver usb_driver = {
+    .keyboard_leds = &usb_get_keyboard_led,
+    .queue_empty = &uart_queue_empty,
+    .send_packet = &usb_send,
+    .driver_working = &usb_working,
+};
+
+// 以一个较高优先级注册USB驱动
+KEYBOARD_HOST_DRIVER(5, usb_driver);
 
 #endif
