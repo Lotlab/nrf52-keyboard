@@ -50,17 +50,20 @@ This is a TMK based keyboard firmware for nRF52 series, now support both nRF5281
 ### Bootloader 的编译
 参见[这篇文章](https://devzone.nordicsemi.com/b/blog/posts/getting-started-with-nordics-secure-dfu-bootloader)，先编译uECC库，然后再编译Bootloader
 
-```
+```bash
 cd application/bootloader/project
 make SOFTDEVICE=S132 NRF_CHIP=nrf52832 NRF52_DISABLE_FPU=yes -j # nrf52832的编译命令
 make SOFTDEVICE=S112 NRF_CHIP=nrf52810 -j # nrf52810的编译命令
 ```
+也可以直接参照下面的编译。
+
 ### 蓝牙程序和USB控制器的编译
 现在蓝牙和USB控制器程序的Makefile都放在一起了。进入对应的硬件目录，直接make即可。
 
-```
+```bash
 cd keyboard/lot60-ble
-make
+make # 编译主程序和USB控制程序
+make bootloader # 编译bootloader
 ```
 
 ### 硬件的烧录

@@ -1,9 +1,17 @@
 PROJECT_NAME     := secure_bootloader_ble_s112_pca10040e
 TARGETS          := nrf52_bootloader
-OUTPUT_DIRECTORY := _build
 
+ifndef OUTPUT_DIRECTORY
+OUTPUT_DIRECTORY := _build
+endif
+
+ifndef PROJ_DIR
 PROJ_DIR := ..
-APP_PROJ_DIR := .
+endif
+
+ifndef APP_PROJ_DIR
+APP_PROJ_DIR := $(PROJ_DIR)/project
+endif
 
 ifndef ROOT_DIR
 	ROOT_DIR := ../../..
