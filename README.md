@@ -1,14 +1,13 @@
 # nrf52-keyboard
+![Build Status](https://api.travis-ci.org/Lotlab/nrf52-keyboard.svg?branch=master)
 
 ## Overview
 
-This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https://github.com/Lotlab/nrf51822-keyboard).
+This is a TMK based keyboard firmware for nRF52 series, now support both nRF52810 and nRF52832. Firmware for nRF51822 see [here](https://github.com/Lotlab/nrf51822-keyboard).
 
 ## 概述
 
 这是一个基于nrf52蓝牙键盘的固件，使用了nRF SDK 15.3作为底层硬件驱动，并使用TMK键盘库作为键盘功能的上部实现。
-
-此固件中的USB部分和KeymapDownloader部分重用了 [nrf51822-keyboard](https://github.com/Lotlab/nrf51822-keyboard) 的代码。
 
 ## 目录结构
 - application/ 固件相关
@@ -32,7 +31,8 @@ This is a TMK keyboard firmware for nRF52810, nRF51822 version see [here](https:
 - USB全键无冲
 - 配列下载更新
 - 电量上传
-- 支持多媒体按键
+- 支持多媒体按键和鼠标键
+- 支持按键宏
 - 耗电量低至400ua（使用lot60-ble硬件在关闭所有灯光条件下测得，不代表所有条件下的状态）
 - 高度自定义的事件系统
 
@@ -71,5 +71,15 @@ make
 
 请使用`make help`查看所有的烧写和打包指令。
 
+### 详细教程
+
+如果对上面的固件编译流程有问题，可参考Lotlab Wiki上的[这篇文章](https://wiki.lotlab.org/page/bluetooth/build-guide/)，或查看`.travis.yml`作为参考。
+
 ## 硬件移植
 请参考Keyboard目录下的template移植模板，并查看doc目录下的对应说明。
+
+## 捐助
+
+如果你觉得这个工程有帮助到你，为何不请我喝一杯奶茶呢？
+
+![支付宝二维码 QRCode](https://raw.githubusercontent.com/Lotlab/mcsgyz/gh-pages/pic/alipay.jpg)
