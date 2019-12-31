@@ -224,5 +224,13 @@
     "C_Cpp.default.forcedInclude": [
         "keyboard/template/config.h"
     ],
-    "C_Cpp.clang_format_style": "webkit"
+    "C_Cpp.clang_format_style": "webkit",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/_build": true,
+    }
 }
