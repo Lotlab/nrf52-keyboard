@@ -24,8 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "action.h"
 #include "action_macro.h"
 #include "action_util.h"
+#include "keyboard_host_driver.h"
 #include "queue.h"
-#include "host_driver.h"
 
 #ifndef NO_ACTION_MACRO
 #define MACRO_READ() (*(current_macro++))
@@ -79,7 +79,8 @@ void action_macro_replay()
     }
 
     // 当前发送队列不为空，等待空
-    if (!keys_queue_empty()) return;
+    if (!keys_queue_empty())
+        return;
 
     // 播放宏
     switch (MACRO_READ()) {
