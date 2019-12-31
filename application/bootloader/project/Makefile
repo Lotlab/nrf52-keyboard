@@ -2,11 +2,11 @@ PROJECT_NAME     := secure_bootloader_ble_s112_pca10040e
 TARGETS          := nrf52_bootloader
 OUTPUT_DIRECTORY := _build
 
-PROJ_DIR := ../..
+PROJ_DIR := ..
 APP_PROJ_DIR := .
 
 ifndef ROOT_DIR
-	ROOT_DIR := ../../../..
+	ROOT_DIR := ../../..
 endif
 
 ifndef SDK_ROOT
@@ -130,7 +130,6 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/crypto/backend/cc310 \
 	$(SDK_ROOT)/components/libraries/bootloader \
 	$(SDK_ROOT)/components/libraries/crypto \
-	../config \
 	$(SDK_ROOT)/components/libraries/crypto/backend/optiga \
 	$(SDK_ROOT)/components/libraries/scheduler \
 	$(SDK_ROOT)/modules/nrfx/hal \
@@ -299,7 +298,7 @@ erase:
 pyocd_erase:
 	pyocd erase -t nrf52 -c
 
-SDK_CONFIG_FILE := ../config/sdk_config.h
+SDK_CONFIG_FILE := ../sdk_config.h
 CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar
 sdk_config:
 	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)

@@ -51,7 +51,7 @@ This is a TMK based keyboard firmware for nRF52 series, now support both nRF5281
 参见[这篇文章](https://devzone.nordicsemi.com/b/blog/posts/getting-started-with-nordics-secure-dfu-bootloader)，先编译uECC库，然后再编译Bootloader
 
 ```
-cd application/bootloader/project/armgcc
+cd application/bootloader/project
 make SOFTDEVICE=S132 NRF_CHIP=nrf52832 NRF52_DISABLE_FPU=yes -j # nrf52832的编译命令
 make SOFTDEVICE=S112 NRF_CHIP=nrf52810 -j # nrf52810的编译命令
 ```
