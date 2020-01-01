@@ -214,8 +214,9 @@ void ssd1306_handler(nrf_drv_twi_evt_t const* p_event, void* p_context)
                     // 就出队列
                     twi_tx_buff_pop();
                     // 然后尝试发送下一个
-                    if (!twi_tx_buff_empty())
+                    if (!twi_tx_buff_empty()) {
                         ssd1306_tx_item_send(twi_tx_buff_peek());
+                    }
                 } else {
                     // 不然就尝试发送
                     ssd1306_tx_item_send(item);
@@ -281,12 +282,45 @@ void ssd1306_show_buff(uint8_t row, uint8_t col_start, uint8_t len)
     ssd1306_write(false, len, &ssd1306_display_buffer[row * 128 + col_start]);
 }
 
-static void ssd1306_test()
+/**
+ * @brief 显示Buff里面的所有内容
+ * 
+ */
+static void ssd1306_show_all()
 {
-    ssd1306_show_buff(0, 0, 128);
-    ssd1306_show_buff(1, 0, 128);
-    ssd1306_show_buff(2, 0, 128);
-    ssd1306_show_buff(3, 0, 128);
+    for (uint8_t i = 0; i < 4; i++) {
+        ssd1306_show_buff(i, 0, 128);
+    }
+}
+
+/**
+ * @brief 清空Buff并显示
+ * 
+ */
+void ssd1306_clr()
+{
+    memset(ssd1306_display_buffer, 0, sizeof(ssd1306_display_buffer));
+    ssd1306_show_all();
+}
+
+/**
+ * @brief 进入睡眠状态
+ * 
+ */
+static void ssd1306_sleep()
+{
+    uint8_t cmd = SSD1306_DISPLAYOFF;
+    ssd1306_write(true, 1, &cmd);
+}
+
+/**
+ * @brief 退出睡眠状态 
+ * 
+ */
+static void ssd1306_wake()
+{
+    uint8_t cmd = SSD1306_DISPLAYON;
+    ssd1306_write(true, 1, &cmd);
 }
 
 static void ssd1306_event_handler(enum user_event event, void* arg)
@@ -300,13 +334,28 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
             ssd1306_oled_init();
             break;
         case KBD_STATE_INITED:
-            ssd1306_test();
+            ssd1306_show_all();
             break;
         default:
             break;
         }
         break;
-
+    case USER_EVT_POWERSAVE:
+        switch (param) {
+        case PWR_SAVE_ENTER:
+            ssd1306_sleep();
+            break;
+        case PWR_SAVE_EXIT:
+            ssd1306_wake();
+            break;
+        default:
+            break;
+        }
+        break;
+    case USER_EVT_SLEEP:
+        // ssd1306_clr();
+        // ssd1306_sleep();
+        break;
     default:
         break;
     }
