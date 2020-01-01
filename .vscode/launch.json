@@ -17,6 +17,17 @@
             "boardId": ""
         },
         {
+            "cwd": "${workspaceRoot}/keyboard/ergoconn/_build/",
+            "executable": "nrf52_kbd.out",
+            "name": "ErgoConn",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "pyocd",
+            "armToolchainPath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin",
+            "device": "nrf52_kbd",
+            "targetId": "nrf52",
+        },
+        {
             "name": "Debug Application",
             "type": "gdb",
             "request": "attach",
@@ -30,6 +41,20 @@
                 "mon reset"
             ],
             "gdbpath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-gdb",
-        }
+        },
+        {
+            "type": "gdb",
+            "request": "attach",
+            "target": "127.0.0.1:3333",
+            "remote": true,
+            "name": "ErgoConn (EXT)",
+            "cwd": "${workspaceRoot}/keyboard/ergoconn/_build",
+            "executable": "nrf52_kbd.out",
+            "autorun": [
+                "file nrf52_kbd.out",
+                "mon reset"
+            ],
+            "gdbpath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-gdb",
+        },
     ]
 }

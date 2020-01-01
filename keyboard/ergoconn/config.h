@@ -48,14 +48,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // 键盘额外功能
 #define DYNAMIC_TX_POWER /* 启用自动发射功率调整 */
-#define PASSKEY_REQUIRED /* 需要输入配对码 */
+// #define PASSKEY_REQUIRED /* 需要输入配对码 */
 #define ENABLE_WATCHDOG /* 启用看门狗 */
 #define KEYMAP_STORAGE /* 启用keymap存储 */
 // #define MACRO_BLOCKING_MODE /* 在宏播放时禁用其他按键输入 */
 #define MACRO_STORAGE /* 启用宏存储功能 */
 #define CONFIG_STORAGE /* 启用配置存储功能 */
 
-// #define DEBUG_SKIP_PWRON_CHECK /*  直接开机而跳过开机条件检测，用于调试 */
+#define DEBUG_SKIP_PWRON_CHECK /*  直接开机而跳过开机条件检测，用于调试 */
 
 /* TMK固件内置功能 */
 /* disable action features */
