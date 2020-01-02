@@ -30,10 +30,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "oled_graph.h"
 
-#define SSD1306_SDA 9
-#define SSD1306_SCL 10
 #define SSD1306_ADDR 0x3C
 
+/**
+ * @brief SSD1306的显示屏初始化命令
+ * 
+ */
 const uint8_t ssd1306_init_commands[] = {
     SSD1306_DISPLAYOFF, /* display off */
     SSD1306_SETLOWCOLUMN, /* set lower column address */
@@ -72,11 +74,13 @@ uint8_t ssd1306_display_buffer[128 * 4] = SSD1306_INIT_BUFF;
 
 // #define BLOCKING_MODE
 #ifndef BLOCKING_MODE
+
 struct tx_item_flag {
     bool is_pointer : 1;
     bool is_command : 1;
     bool data_send : 1;
 };
+
 struct tx_item {
     uint16_t len;
     uint16_t index;
@@ -164,6 +168,12 @@ static void ssd1306_write(bool is_cmd, uint8_t len, const uint8_t* data)
 }
 
 #ifndef BLOCKING_MODE
+/**
+ * @brief TWI事件处理器
+ * 
+ * @param p_event 
+ * @param p_context 
+ */
 void ssd1306_handler(nrf_drv_twi_evt_t const* p_event, void* p_context)
 {
     switch (p_event->type) {
@@ -328,11 +338,11 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
     switch (event) {
     case USER_EVT_STAGE:
         switch (param) {
-        case KBD_STATE_POST_INIT:
+        case KBD_STATE_POST_INIT: // 初始化
             ssd1306_twi_init();
             ssd1306_oled_init();
             break;
-        case KBD_STATE_INITED:
+        case KBD_STATE_INITED: // 显示Buff
             ssd1306_show_all();
             ssd1306_clr();
             break;
@@ -340,7 +350,7 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
             break;
         }
         break;
-    case USER_EVT_POWERSAVE:
+    case USER_EVT_POWERSAVE: // 处理省电模式
         switch (param) {
         case PWR_SAVE_ENTER:
             ssd1306_sleep();
@@ -352,19 +362,19 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
             break;
         }
         break;
-    case USER_EVT_SLEEP:
+    case USER_EVT_SLEEP: // 处理睡眠事件
         // ssd1306_clr();
         ssd1306_sleep();
         break;
-    case USER_EVT_CHARGE:
+    case USER_EVT_CHARGE: // 充电状态
         pwr_attach = (param != BATT_NOT_CHARGING);
         update_status_bar();
         break;
-    case USER_EVT_USB:
+    case USER_EVT_USB: // USB状态
         usb_conn = (param == USB_WORKING);
         update_status_bar();
         break;
-    case USER_EVT_BLE_PASSKEY_STATE:
+    case USER_EVT_BLE_PASSKEY_STATE: // 配对码状态
         passkey_req = (param != PASSKEY_STATE_SEND);
         if (param == PASSKEY_STATE_INPUT) {
             // 显示输入的配对码
@@ -376,11 +386,11 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
         }
         update_status_bar();
         break;
-    case USER_EVT_BLE_STATE_CHANGE:
+    case USER_EVT_BLE_STATE_CHANGE: // 蓝牙状态
         ble_conn = (param == BLE_STATE_CONNECTED);
         update_status_bar();
         break;
-    case USER_EVT_LED:
+    case USER_EVT_LED: // 键盘灯状态
         keyboard_led = param;
         update_status_bar();
         break;

@@ -98,3 +98,7 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 2
 // #define MATRIX_HAS_GHOST /* 按键阵列是否出现Ghost Key，若没有加二极管则需要启用这个项目 */
 
 #define DEBOUNCE 5 /* 硬件消抖次数，设置为0则不消抖 */
+
+// OLED 屏幕配置
+#define SSD1306_SDA 9
+#define SSD1306_SCL 10
