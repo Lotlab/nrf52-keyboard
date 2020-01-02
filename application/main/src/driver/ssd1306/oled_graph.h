@@ -4,7 +4,7 @@
 
 #include "image_header.h"
 
-#define ICON_SPACING 2
+#define ICON_SPACING 4
 
 enum text_align {
     TEXT_ALIGN_LEFT,

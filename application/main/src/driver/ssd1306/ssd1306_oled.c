@@ -357,7 +357,7 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
         ssd1306_sleep();
         break;
     case USER_EVT_CHARGE:
-        pwr_attach = (param != BATT_CHARGING);
+        pwr_attach = (param != BATT_NOT_CHARGING);
         update_status_bar();
         break;
     case USER_EVT_USB:
@@ -368,7 +368,7 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
         passkey_req = (param != PASSKEY_STATE_SEND);
         if (param == PASSKEY_STATE_INPUT) {
             // 显示输入的配对码
-            oled_draw_text_16(2, TEXT_ALIGN_CENTER, 0, passkey);
+            oled_draw_text_16(2, TEXT_ALIGN_CENTER, 0, (const char*)passkey);
         } else if (param == PASSKEY_STATE_SEND) {
             // 清空配对码的显示
             oled_clear_row(2);
