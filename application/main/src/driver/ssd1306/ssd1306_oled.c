@@ -258,13 +258,12 @@ static void ssd1306_show_all()
 }
 
 /**
- * @brief 清空Buff并显示
+ * @brief 清空Buff
  * 
  */
 void ssd1306_clr()
 {
     memset(ssd1306_display_buffer, 0, sizeof(ssd1306_display_buffer));
-    ssd1306_show_all();
 }
 
 /**
@@ -293,29 +292,6 @@ static void ssd1306_wake()
  */
 bool ssd1306_buff_dirty[SSD1306_ROWS];
 
-static bool logo_shown = true;
-
-/**
- * @brief 更新屏幕
- * 
- */
-static void graph_tick()
-{
-    if (logo_shown) {
-        // 清除显示的logo
-        logo_shown = false;
-        ssd1306_clr();
-    } else {
-        // 更新标记为脏的Block
-        for (uint8_t i = 0; i < SSD1306_ROWS; i++) {
-            if (ssd1306_buff_dirty[i]) {
-                ssd1306_show_buff(i, 0, SSD1306_COLS);
-                ssd1306_buff_dirty[i] = false;
-            }
-        }
-    }
-}
-
 static enum connection_type conn_type = 0;
 static bool pwr_attach = false, usb_conn = false, ble_conn = false;
 static bool passkey_req = false;
@@ -335,6 +311,14 @@ static void update_status_bar()
         conn_type = CONN_TYPE_NONE;
 
     oled_draw_icons(0, battery_info.percentage, pwr_attach, conn_type, passkey_req, keyboard_led);
+
+    // 更新标记为脏的Block
+    for (uint8_t i = 0; i < SSD1306_ROWS; i++) {
+        if (ssd1306_buff_dirty[i]) {
+            ssd1306_show_buff(i, 0, SSD1306_COLS);
+            ssd1306_buff_dirty[i] = false;
+        }
+    }
 }
 
 static void ssd1306_event_handler(enum user_event event, void* arg)
@@ -349,6 +333,7 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
             break;
         case KBD_STATE_INITED:
             ssd1306_show_all();
+            ssd1306_clr();
             break;
         default:
             break;
@@ -370,9 +355,6 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
         // ssd1306_clr();
         ssd1306_sleep();
         break;
-    case USER_EVT_TICK:
-        graph_tick();
-        break;
     case USER_EVT_CHARGE:
         pwr_attach = (param != BATT_CHARGING);
         update_status_bar();
@@ -387,6 +369,10 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
         break;
     case USER_EVT_BLE_STATE_CHANGE:
         ble_conn = (param == BLE_STATE_CONNECTED);
+        update_status_bar();
+        break;
+    case USER_EVT_LED:
+        keyboard_led = param;
         update_status_bar();
         break;
     default:
