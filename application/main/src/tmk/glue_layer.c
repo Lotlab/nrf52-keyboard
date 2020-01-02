@@ -33,7 +33,9 @@ void bootloader_jump(void)
 
 #include "keyboard_led.h"
 #include "led.h"
+#include "keyboard_evt.h"
 void led_set(uint8_t usb_led)
 {
     keyboard_led_set(usb_led);
+    trig_event_param(USER_EVT_LED, usb_led);
 }

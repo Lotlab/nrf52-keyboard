@@ -57,6 +57,11 @@ enum user_event {
      * 
      */
     USER_EVT_TICK,
+    /**
+     * @brief 键盘灯光改变事件
+     * 参数值是灯光值本身
+     */
+    USER_EVT_LED
 };
 
 /**
