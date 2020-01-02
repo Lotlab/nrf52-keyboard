@@ -105,7 +105,10 @@
         "typeinfo": "c",
         "nrf_twim.h": "c",
         "ssd1306_oled.h": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "image_header.h": "c",
+        "chrono": "c",
+        "algorithm": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",
