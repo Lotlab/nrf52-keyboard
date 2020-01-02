@@ -86,6 +86,7 @@ enum ble_state {
  */
 enum passkey_state {
     PASSKEY_STATE_REQUIRE, // 请求配对码
+    PASSKEY_STATE_INPUT, // 配对码输入
     PASSKEY_STATE_SEND, // 配对码已发送
 };
 

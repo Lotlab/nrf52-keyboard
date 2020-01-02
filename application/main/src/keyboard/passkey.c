@@ -17,9 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "passkey.h"
 #include "../ble/ble_services.h"
+#include "keyboard_evt.h"
 
 static uint8_t inputed_len = 0xFF;
-static uint8_t passkey[6];
+uint8_t passkey[7];
 
 void passkey_input_handler(uint8_t len, uint8_t* keys)
 {
@@ -29,15 +30,19 @@ void passkey_input_handler(uint8_t len, uint8_t* keys)
             uint8_t keycode = keys[i];
             if (keycode >= KC_1 && keycode <= KC_0) {
                 passkey[inputed_len++] = (keycode + 1 - KC_1) % 10 + '0';
+                passkey[inputed_len] = 0;
                 break;
             } else if (keycode >= KC_KP_1 && keycode <= KC_KP_0) {
                 passkey[inputed_len++] = (keycode + 1 - KC_KP_1) % 10 + '0';
+                passkey[inputed_len] = 0;
                 break;
             } else if (keycode == KC_BSPACE && inputed_len > 0) {
                 inputed_len--;
+                passkey[inputed_len] = 0;
                 break;
             }
         }
+        trig_event_param(USER_EVT_BLE_PASSKEY_STATE, PASSKEY_STATE_INPUT);
         if (inputed_len == 6) {
             ble_passkey_send(passkey);
             inputed_len = 0xFF;
@@ -49,6 +54,7 @@ void passkey_input_handler(uint8_t len, uint8_t* keys)
  * @brief 设置需要输入Passkey
  * 
  */
-void passkey_req_handler() {
+void passkey_req_handler()
+{
     inputed_len = 0;
 }
