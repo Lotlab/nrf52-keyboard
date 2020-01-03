@@ -22,6 +22,12 @@ SECTIONS
     KEEP(*(.modules_init))
     PROVIDE(__stop_modules_init = .);
   } > RAM
+  .adc_channel :
+  {
+    PROVIDE(__start_adc_channel = .);
+    KEEP(*(.adc_channel))
+    PROVIDE(__stop_adc_channel = .);
+  } > RAM
   .host_driver :
   {
     PROVIDE(__start_host_driver = .);

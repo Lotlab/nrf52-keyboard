@@ -33,6 +33,7 @@ SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_matrix.c \
     $(APP_SRC_DIR)/protocol/ble_comm.c \
     $(APP_SRC_DIR)/keyboard/macro_player.c \
     $(APP_SRC_DIR)/keyboard/power_save.c \
+    $(APP_SRC_DIR)/keyboard/adc_convert.c \
 
 INC_FOLDERS += $(APP_SRC_DIR)/keyboard \
     $(APP_SRC_DIR)/tmk \

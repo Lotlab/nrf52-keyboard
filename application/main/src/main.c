@@ -88,10 +88,11 @@
 
 #include "main.h"
 
+#include "keyboard/adc_convert.h"
 #include "keyboard/ble_keyboard.h"
 #include "keyboard/keyboard_bootcheck.h"
-#include "keyboard/keyboard_led.h"
 #include "keyboard/keyboard_evt.h"
+#include "keyboard/keyboard_led.h"
 #include "keyboard/keyboard_matrix.h"
 #include "protocol/usb_comm.h"
 
@@ -203,17 +204,18 @@ static void services_init(void)
     ble_services_init();
     battery_service_init();
     hid_service_init(service_error_handler);
+    adc_init();
 }
 
 /**@brief Function for starting timers.
  */
 static void timers_start(void)
 {
-    battery_timer_start();
     ble_keyboard_timer_start();
 #ifdef HAS_USB
     usb_comm_timer_start();
 #endif
+    adc_timer_start();
 }
 
 /**@brief Function for putting the chip into sleep mode.
