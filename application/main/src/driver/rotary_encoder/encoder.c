@@ -39,17 +39,19 @@ const nrfx_qdec_config_t qdec_config = {
 };
 
 static int8_t count;
+static int8_t last_count;
 static void decoder_event_handler(nrfx_qdec_event_t event)
 {
     // todo: 功耗优化
     if (event.type == NRF_QDEC_EVENT_REPORTRDY) {
         count += event.data.report.acc;
         if (event.data.report.acc != 0 && count % 4 == 0) {
-            if (event.data.report.acc > 0) {
+            if (count > last_count) {
                 matrix_forign_add_oneshot(ROTARY_ENCODER_POS_ROW, ROTARY_ENCODER_POS_COL);
-            } else if (event.data.report.acc < 0) {
+            } else {
                 matrix_forign_add_oneshot(ROTARY_ENCODER_NEG_ROW, ROTARY_ENCODER_NEG_COL);
             }
+            last_count = count;
         }
     }
 }
