@@ -20,23 +20,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* 0: qwerty */
-    KEYMAP_RIGHT_ENC(
-        KC_EQL, KC_6,   KC_7,   KC_8,   KC_9,   KC_0,  KC_BSPC, \
-        KC_QUOT,KC_Y,   KC_U,   KC_I,   KC_O,   KC_P,  KC_BSLS, \
-                KC_H,   KC_J,   KC_K,   KC_L,  KC_SCLN, KC_ENT, \
-        KC_NO , KC_N,   KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT, \
-                       KC_FN0,KC_RALT, KC_RGUI, KC_APP, KC_RCTL, \
-        KC_MUTE,  KC_VOLD, KC_VOLU, \
-        KC_FN0, KC_SPACE),
+    KEYMAP_LEFT_ENC(
+        KC_ESC, KC_1,   KC_2,   KC_3,   KC_4,   KC_5,  KC_MINS, \
+        KC_TAB, KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,  KC_NO  , \
+        KC_CAPS,KC_A,   KC_S,   KC_D,   KC_F,   KC_G,           \
+        KC_LSHIFT,KC_Z, KC_X,   KC_C,   KC_V,   KC_B,  KC_LBRC, \
+        KC_LCTL,KC_LGUI,KC_LALT,KC_SPACE,KC_FN0,                \
+                                       KC_VOLD,KC_VOLU,KC_MUTE, \
+                                              KC_FN0, KC_SPACE),
     /* 1: fn */
-    KEYMAP_RIGHT(
+    KEYMAP_LEFT(
         KC_TRNS, KC_FN1,  KC_FN2,  KC_FN3,  KC_FN4, KC_TRNS, KC_TRNS, \
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, \
-                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, \
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,          \
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, \
-                          KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, \
-        KC_TRNS, \
-        KC_TRNS, KC_TRNS),
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,                   \
+                                                              KC_TRNS, \
+                                                     KC_TRNS, KC_TRNS),
 };
 const action_t fn_actions[] = {
     /* Poker Layout */

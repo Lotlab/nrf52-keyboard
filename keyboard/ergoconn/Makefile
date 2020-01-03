@@ -1,42 +1,34 @@
-# 此工程的根目录
-ROOT_DIR := ../..
+OUTPUT_DIR = _build
+SUBDIRS=$(filter-out _build common,$(shell ls -l | grep ^d | awk '{print $$9}'))
+export VERSION=$(shell git describe --always --dirty || echo 'unknown')
+export BUILDTIME=$(shell date +"%Y_%m_%d")
+export FILE_VERSION = $(BUILDTIME)-$(VERSION)
 
-# 特殊目录控制
-# SDK_ROOT := /var/nrf52/nRF52_SDK
-# TEMPLATE_PATH := /var/nrf52/template
+ifdef OUTPUT_DIRECTORY
+OUTPUT_DIR = $(OUTPUT_DIRECTORY)
+endif
+ifndef RELEASE_DIR
+RELEASE_DIR = $(OUTPUT_DIR)
+endif
 
-# 配置项：主控芯片类型
-# 可选：nrf52810 或 nrf52832
-NRF_CHIP := nrf52832
+.PHONY: clean all package usb dist_clean
 
-# 配置文件文件名
-CONFIG_H = config.h
-SRC_FILES += keymap_plain.c
+package: all
+usb: 
+	@echo use make all to build your release firmware.
 
-# 配置项：功能选项
-# 关于更多的可配置项目，请参考doc目录下的相应文档
-BOOTMAGIC_ENABLE = no	# 启用Bootmagic
-EXTRAKEY_ENABLE = yes	# 启用媒体键功能
-NKRO_ENABLE = yes	# 启用USB的全键无冲功能
-USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
-NRF52_DISABLE_FPU = yes # 禁用FPU
+all: $(SUBDIRS)
 
-SSD1306_OLED = yes # 启用OLED
-ROTARY_ENCODER = yes # 启用编码器
+$(SUBDIRS): $(OUTPUT_DIR)
+	@-mkdir -p $(OUTPUT_DIR)/$@
+	@make -C $@ package OUTPUT_DIRECTORY=../$(OUTPUT_DIR)/$@ NRF_PACKAGE_NAME=../$(RELEASE_DIR)/$(BUILD_PREFIX)-$@-nrf52-$(FILE_VERSION).zip BUILD_PREFIX=$(BUILD_PREFIX)-$@
+	@make -C $@ usb OUTPUT_DIRECTORY=../$(OUTPUT_DIR)/$@ OUTPUT_HEX=../$(RELEASE_DIR)/$(BUILD_PREFIX)-$@-ch554-$(FILE_VERSION).hex BUILD_PREFIX=$(BUILD_PREFIX)-$@
 
-########## STOP HERE ##########
-# 除非你知道下面这些配置项是干什么的，否则不要去动它
+$(OUTPUT_DIR):
+	@-mkdir -p $(OUTPUT_DIR)
 
-INC_FOLDERS += .
+dist_clean: 
+	-rm -r $(OUTPUT_DIR)/*/
 
-APP_MAIN_DIR := $(ROOT_DIR)/application/main
-TMK_CORE_DIR := $(ROOT_DIR)/tmk/tmk_core
-USB_SOURCE_DIR := $(ROOT_DIR)/usb
-
-APP_PROJ_DIR := $(APP_MAIN_DIR)/project
-APP_SRC_DIR := $(APP_MAIN_DIR)/src
-
-all: default ch554
-
-include $(APP_PROJ_DIR)/kbd.mk
-include $(USB_SOURCE_DIR)/usb.mk
+clean:
+	-rm -r $(OUTPUT_DIR)
