@@ -44,11 +44,19 @@ const uint8_t ssd1306_init_commands[] = {
     SSD1306_PAGESTARTADDR, /* set page address */
     SSD1306_SETCONTRAST, /* contract control */
     0xff, /* 128 */
+#ifdef SSD1306_ROTATE_180
+    SSD1306_SEGREMAP_RESET, /* set segment remap */
+#else
     SSD1306_SEGREMAP_INVERSE, /* set segment remap */
+#endif
     SSD1306_NORMALDISPLAY, /* normal / reverse */
     SSD1306_SETMULTIPLEX, /* multiplex ratio */
     0x1F, /* duty = 1/32 */
-    SSD1306_COMSCANDEC, /* Com scan direction */
+#ifdef SSD1306_ROTATE_180
+    SSD1306_COMSCANINC, /* Com scan direction */
+#else
+    SSD1306_COMSCANDEC,
+#endif
     SSD1306_SETDISPLAYOFFSET, /* set display offset */
     0x00,
     SSD1306_SETDISPLAYCLOCKDIV, /* set osc division */
