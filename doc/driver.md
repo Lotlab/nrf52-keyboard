@@ -90,3 +90,22 @@ SSD1306_OLED = yes
 #define SSD1306_SCL 10 // OLED屏幕的I2C SCL引脚编号
 ```
 
+## 旋转编码器驱动
+
+### 启用配置
+```
+ROTARY_ENCODER = yes
+```
+
+### Config 配置项目
+```
+// 旋钮配置
+#define ROTARY_ENCODER_A 19 // 编码器A脚IO
+#define ROTARY_ENCODER_B 20 // 编码器B脚IO
+// 旋钮正向按钮映射
+#define ROTARY_ENCODER_POS_ROW 5 // 正向旋转映射到键盘的按键行
+#define ROTARY_ENCODER_POS_COL 5 // 正向旋转映射到键盘的按键列
+// 旋钮负向按钮映射
+#define ROTARY_ENCODER_NEG_ROW 5 // 负向旋转映射到键盘的按键行
+#define ROTARY_ENCODER_NEG_COL 6 // 负向旋转映射到键盘的按键列
+```

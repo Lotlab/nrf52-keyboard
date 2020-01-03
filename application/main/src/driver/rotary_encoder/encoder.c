@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "keyboard_evt.h"
 #include "nrfx_qdec.h"
@@ -23,10 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ssd1306/oled_graph.h"
 #include "ssd1306/ssd1306_oled.h"
 
+#include "keyboard_matrix.h"
 #include "nrf_gpio.h"
-
-#define ROTARY_ENCODER_A 19
-#define ROTARY_ENCODER_B 20
 
 const nrfx_qdec_config_t qdec_config = {
     .reportper = NRF_QDEC_REPORTPER_10,
@@ -39,15 +38,20 @@ const nrfx_qdec_config_t qdec_config = {
     .interrupt_priority = APP_IRQ_PRIORITY_MID,
 };
 
+static int8_t count;
 static void decoder_event_handler(nrfx_qdec_event_t event)
 {
+    // todo: 功耗优化
     if (event.type == NRF_QDEC_EVENT_REPORTRDY) {
-        if (event.data.report.acc > 0)
-            oled_draw_text_5x8(3, TEXT_ALIGN_CENTER, 0, "POS");
-        else if (event.data.report.acc < 0)
-            oled_draw_text_5x8(3, TEXT_ALIGN_CENTER, 0, "NEG");
-        ssd1306_show_dirty_block();
-    } 
+        count += event.data.report.acc;
+        if (event.data.report.acc != 0 && count % 4 == 0) {
+            if (event.data.report.acc > 0) {
+                matrix_forign_add_oneshot(ROTARY_ENCODER_POS_ROW, ROTARY_ENCODER_POS_COL);
+            } else if (event.data.report.acc < 0) {
+                matrix_forign_add_oneshot(ROTARY_ENCODER_NEG_ROW, ROTARY_ENCODER_NEG_COL);
+            }
+        }
+    }
 }
 
 /**

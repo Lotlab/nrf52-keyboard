@@ -178,10 +178,65 @@ bool matrix_is_modified(void)
     return true;
 }
 
+// 外部按键
+#ifdef MATRIX_FORIGN_KEY
+static bool matrix_oneshot_send[MATRIX_ROWS];
+static matrix_row_t matrix_forign_oneshot[MATRIX_ROWS];
+static matrix_row_t matrix_forign[MATRIX_ROWS];
+
+/**
+ * @brief 为matrix添加一个按键按下事件（会自动清空）
+ * 
+ * @param row 行号
+ * @param col 列号
+ */
+void matrix_forign_add_oneshot(uint8_t row, uint8_t col)
+{
+    if (row >= MATRIX_ROWS)
+        return;
+    if (col >= sizeof(matrix_row_t) * 8)
+        return;
+
+    matrix_forign_oneshot[row] |= (1 << col);
+}
+
+/**
+ * @brief 为matrix添加一个按键事件
+ * 
+ * @param row 行号
+ * @param col 列号
+ * @param press 按下
+ */
+void matrix_forign_set(uint8_t row, uint8_t col, bool press)
+{
+    if (row >= MATRIX_ROWS)
+        return;
+    if (col >= sizeof(matrix_row_t) * 8)
+        return;
+    if (press)
+        matrix_forign[row] |= (1 << col);
+    else
+        matrix_forign[row] &= ~(1 << col);
+}
+
+inline matrix_row_t matrix_get_row(uint8_t row)
+{
+    matrix_row_t val = matrix[row] | matrix_forign[row];
+
+    // 发送一次后在下次发送空包，防止多次连击
+    if (matrix_oneshot_send[row]) {
+        val |= matrix_forign_oneshot[row];
+        matrix_forign_oneshot[row] = 0; // 清空单个按键
+    } 
+    matrix_oneshot_send[row] = !matrix_oneshot_send[row];
+    return val;
+}
+#else
 inline matrix_row_t matrix_get_row(uint8_t row)
 {
     return matrix[row];
 }
+#endif
 
 uint8_t matrix_key_count(void)
 {

@@ -20,5 +20,6 @@ endif
 ifeq (yes,$(strip $(ROTARY_ENCODER)))
     SRC_FILES += $(DRIVER_DIR)/rotary_encoder/encoder.c \
                  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_qdec.c
-    OPT_DEFS += -DNRFX_QDEC_ENABLED=1 -DQDEC_ENABLED=1
+    OPT_DEFS += -DNRFX_QDEC_ENABLED=1 -DQDEC_ENABLED=1 \
+                -DMATRIX_FORIGN_KEY
 endif
