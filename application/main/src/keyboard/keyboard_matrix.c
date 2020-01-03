@@ -127,8 +127,12 @@ static inline void delay_us(void)
 #ifdef __GNUC__
 #define __nop() __asm("NOP")
 #endif
-    for (int i = 0; i < 36; i++) {
-        __nop(); //64mhz, 64cycle = 1us, delay 0.56us
+
+#ifndef MATRIX_SCAN_DELAY_CYCLE
+#define MATRIX_SCAN_DELAY_CYCLE 36
+#endif
+    for (int i = 0; i < MATRIX_SCAN_DELAY_CYCLE; i++) {
+        __nop(); //64mhz, 64cycle = 1us
     }
 }
 
