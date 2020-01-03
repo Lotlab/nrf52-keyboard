@@ -308,6 +308,20 @@ static bool passkey_req = false;
 static uint8_t keyboard_led = 0;
 
 /**
+ * @brief 更新标记为脏的Block
+ * 
+ */
+void ssd1306_show_dirty_block()
+{
+    for (uint8_t i = 0; i < SSD1306_ROWS; i++) {
+        if (ssd1306_buff_dirty[i]) {
+            ssd1306_show_buff(i, 0, SSD1306_COLS);
+            ssd1306_buff_dirty[i] = false;
+        }
+    }
+}
+
+/**
  * @brief 更新状态栏
  * 
  */
@@ -321,14 +335,7 @@ static void update_status_bar()
         conn_type = CONN_TYPE_NONE;
 
     oled_draw_icons(0, battery_info.percentage, pwr_attach, conn_type, passkey_req, keyboard_led);
-
-    // 更新标记为脏的Block
-    for (uint8_t i = 0; i < SSD1306_ROWS; i++) {
-        if (ssd1306_buff_dirty[i]) {
-            ssd1306_show_buff(i, 0, SSD1306_COLS);
-            ssd1306_buff_dirty[i] = false;
-        }
-    }
+    ssd1306_show_dirty_block();
 }
 
 static void ssd1306_event_handler(enum user_event event, void* arg)
