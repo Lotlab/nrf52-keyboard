@@ -102,3 +102,13 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 2
 // OLED 屏幕配置
 #define SSD1306_SDA 9
 #define SSD1306_SCL 10
+
+// 旋钮配置
+#define ROTARY_ENCODER_A 19
+#define ROTARY_ENCODER_B 20
+// 旋钮正向按钮映射
+#define ROTARY_ENCODER_POS_ROW 5
+#define ROTARY_ENCODER_POS_COL 5
+// 旋钮负向按钮映射
+#define ROTARY_ENCODER_NEG_ROW 5
+#define ROTARY_ENCODER_NEG_COL 6
