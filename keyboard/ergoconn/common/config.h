@@ -106,15 +106,14 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 2
 #define ROTARY_ENCODER_A 19
 #define ROTARY_ENCODER_B 20
 
-#if ERGOCONN_HAND == right
+#if defined(ERGOCONN_HAND_RIGHT)
 // 旋钮正向按钮映射
 #define ROTARY_ENCODER_POS_ROW 5
 #define ROTARY_ENCODER_POS_COL 5
 // 旋钮负向按钮映射
 #define ROTARY_ENCODER_NEG_ROW 5
 #define ROTARY_ENCODER_NEG_COL 6
-#else 
-#if ERGOCONN_HAND == left
+#elif defined(ERGOCONN_HAND_LEFT)
 #define SSD1306_ROTATE_180 // 旋转屏幕
 // 旋钮正向按钮映射
 #define ROTARY_ENCODER_POS_ROW 5
@@ -124,5 +123,4 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 2
 #define ROTARY_ENCODER_NEG_COL 5
 #else
 #error "请指定左手还是右手"
-#endif
 #endif
