@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "app_error.h"
-#include "nrf_drv_twi.h"
+#include "nrfx_twi.h"
 
 #include "../../ble/ble_bas_service.h"
 #include "events.h"
@@ -94,7 +94,7 @@ struct tx_item {
 QUEUE(struct tx_item, twi_tx_buff, 20);
 #endif
 
-static const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(0);
+static const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(0);
 
 #ifndef BLOCKING_MODE
 /**
@@ -117,7 +117,7 @@ static void ssd1306_tx_item_send(struct tx_item* item)
         twi_common_buff[1] = item->data.data[item->index];
     }
 
-    nrf_drv_twi_tx(&m_twi, SSD1306_ADDR, twi_common_buff, 2, false);
+    nrfx_twi_tx(&m_twi, SSD1306_ADDR, twi_common_buff, 2, false);
     item->index++;
 
     // 数据长度一致，标志为已发送
@@ -154,7 +154,7 @@ static void ssd1306_write(bool is_cmd, uint8_t len, const uint8_t* data)
 
     twi_tx_buff_push(item);
 
-    if (!nrf_drv_twi_is_busy(&m_twi)) {
+    if (!nrfx_twi_is_busy(&m_twi)) {
         // 如果当前等待队列为空，则尝试发送
         ssd1306_tx_item_send(twi_tx_buff_peek());
     }
@@ -174,13 +174,13 @@ static void ssd1306_write(bool is_cmd, uint8_t len, const uint8_t* data)
  * @param p_event 
  * @param p_context 
  */
-void ssd1306_handler(nrf_drv_twi_evt_t const* p_event, void* p_context)
+void ssd1306_handler(nrfx_twi_evt_t const* p_event, void* p_context)
 {
     switch (p_event->type) {
-    case NRF_DRV_TWI_EVT_ADDRESS_NACK:
-    case NRF_DRV_TWI_EVT_DATA_NACK:
-    case NRF_DRV_TWI_EVT_DONE:
-        if (p_event->xfer_desc.type == NRF_DRV_TWI_XFER_TX) {
+    case NRFX_TWI_EVT_ADDRESS_NACK:
+    case NRFX_TWI_EVT_DATA_NACK:
+    case NRFX_TWI_EVT_DONE:
+        if (p_event->xfer_desc.type == NRFX_TWI_XFER_TX) {
             // 当前队列不空
             if (!twi_tx_buff_empty()) {
                 struct tx_item* item = twi_tx_buff_peek();
@@ -220,22 +220,21 @@ static void ssd1306_oled_init()
  */
 static void ssd1306_twi_init()
 {
-    const nrf_drv_twi_config_t ssd1306_config = {
+    const nrfx_twi_config_t ssd1306_config = {
         .scl = SSD1306_SCL,
         .sda = SSD1306_SDA,
-        .frequency = NRF_DRV_TWI_FREQ_400K,
-        .interrupt_priority = APP_IRQ_PRIORITY_HIGH,
-        .clear_bus_init = false
+        .frequency = NRF_TWI_FREQ_400K,
+        .interrupt_priority = APP_IRQ_PRIORITY_HIGH
     };
 
 #ifndef BLOCKING_MODE
-    uint32_t err_code = nrf_drv_twi_init(&m_twi, &ssd1306_config, ssd1306_handler, NULL);
+    uint32_t err_code = nrfx_twi_init(&m_twi, &ssd1306_config, ssd1306_handler, NULL);
 #else
-    uint32_t err_code = nrf_drv_twi_init(&m_twi, &ssd1306_config, NULL, NULL);
+    uint32_t err_code = nrfx_twi_init(&m_twi, &ssd1306_config, NULL, NULL);
 #endif
     APP_ERROR_CHECK(err_code);
 
-    nrf_drv_twi_enable(&m_twi);
+    nrfx_twi_enable(&m_twi);
 }
 
 /**
