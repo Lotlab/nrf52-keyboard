@@ -61,7 +61,7 @@ uint8_t keyboard_leds()
  * @param len 长度
  * @param keys 按键
  */
-static void send(uint8_t index, uint8_t len, uint8_t* keys)
+void send_packet(uint8_t index, uint8_t len, uint8_t* keys)
 {
     struct host_driver* driver = get_working_driver();
     if (driver != NULL)
@@ -72,27 +72,27 @@ void send_keyboard(report_keyboard_t* report)
 {
 #if defined(NKRO_ENABLE)
     if (keyboard_protocol && keyboard_nkro) {
-        send(0x80, NKRO_EPSIZE, report->raw);
+        send_packet(0x80, NKRO_EPSIZE, report->raw);
     } else
 #endif
     {
-        send(0, 8, report->raw);
+        send_packet(0, 8, report->raw);
     }
 }
 
 void send_mouse(report_mouse_t* report)
 {
-    send(REPORT_ID_MOUSE, sizeof(report_mouse_t), (uint8_t*)report);
+    send_packet(REPORT_ID_MOUSE, sizeof(report_mouse_t), (uint8_t*)report);
 }
 
 void send_system(uint16_t data)
 {
-    send(REPORT_ID_SYSTEM, 2, (uint8_t*)&data);
+    send_packet(REPORT_ID_SYSTEM, 2, (uint8_t*)&data);
 }
 
 void send_consumer(uint16_t data)
 {
-    send(REPORT_ID_CONSUMER, 2, (uint8_t*)&data);
+    send_packet(REPORT_ID_CONSUMER, 2, (uint8_t*)&data);
 }
 
 host_driver_t driver = {

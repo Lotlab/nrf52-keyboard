@@ -15,6 +15,15 @@ extern host_driver_t driver;
 bool keys_queue_empty(void);
 
 /**
+ * @brief 发送数据包
+ * 
+ * @param index 数据包类型
+ * @param len 长度
+ * @param keys 按键
+ */
+void send_packet(uint8_t index, uint8_t len, uint8_t* keys);
+
+/**
  * @brief 发送数据的类型
  * 
  */
@@ -61,4 +70,4 @@ struct host_driver {
  * priority是优先级，越大越靠后
  * 
  */
-#define KEYBOARD_HOST_DRIVER(_priority, _pt) NRF_SECTION_SET_ITEM_REGISTER(host_driver, _priority, struct host_driver* _##_pt)=&_pt
+#define KEYBOARD_HOST_DRIVER(_priority, _pt) NRF_SECTION_SET_ITEM_REGISTER(host_driver, _priority, struct host_driver* _##_pt) = &_pt
