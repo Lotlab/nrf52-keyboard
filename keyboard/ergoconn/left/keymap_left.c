@@ -27,7 +27,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LSHIFT,KC_Z, KC_X,   KC_C,   KC_V,   KC_B,  KC_LBRC, \
         KC_LCTL,KC_LGUI,KC_LALT,KC_SPACE,KC_FN0,                \
                                        KC_VOLD,KC_VOLU,KC_MUTE, \
-                                              KC_FN0, KC_SPACE),
+                                              KC_NO, KC_SPACE),
     /* 1: fn */
     KEYMAP_LEFT(
         KC_TRNS, KC_FN1,  KC_FN2,  KC_FN3,  KC_FN4, KC_TRNS, KC_TRNS, \
