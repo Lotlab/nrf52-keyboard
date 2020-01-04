@@ -104,9 +104,7 @@ ROTARY_ENCODER = yes
 #define ROTARY_ENCODER_A 19 // 编码器A脚IO
 #define ROTARY_ENCODER_B 20 // 编码器B脚IO
 // 旋钮正向按钮映射
-#define ROTARY_ENCODER_POS_ROW 5 // 正向旋转映射到键盘的按键行
-#define ROTARY_ENCODER_POS_COL 5 // 正向旋转映射到键盘的按键列
+#define ROTARY_ENCODER_POS 5,5 // 正向旋转映射到键盘的按键行列
 // 旋钮负向按钮映射
-#define ROTARY_ENCODER_NEG_ROW 5 // 负向旋转映射到键盘的按键行
-#define ROTARY_ENCODER_NEG_COL 6 // 负向旋转映射到键盘的按键列
+#define ROTARY_ENCODER_NEG 5,6 // 负向旋转映射到键盘的按键行列
 ```

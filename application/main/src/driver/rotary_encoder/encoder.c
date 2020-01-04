@@ -47,9 +47,9 @@ static void decoder_event_handler(nrfx_qdec_event_t event)
         count += event.data.report.acc;
         if (event.data.report.acc != 0 && count % 4 == 0) {
             if (count > last_count) {
-                matrix_forign_add_oneshot(ROTARY_ENCODER_POS_ROW, ROTARY_ENCODER_POS_COL);
+                matrix_forign_add_oneshot(ROTARY_ENCODER_POS);
             } else {
-                matrix_forign_add_oneshot(ROTARY_ENCODER_NEG_ROW, ROTARY_ENCODER_NEG_COL);
+                matrix_forign_add_oneshot(ROTARY_ENCODER_NEG);
             }
             last_count = count;
         }
