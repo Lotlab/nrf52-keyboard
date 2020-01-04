@@ -35,7 +35,7 @@ struct adc_channel_config {
 
 #define ADC_CONFIG_COUNT NRF_SECTION_ITEM_COUNT(adc_channel, struct adc_channel_config*)
 #define ADC_CONFIG_GET(i) (*(NRF_SECTION_ITEM_GET(adc_channel, struct adc_channel_config*, i)))
-#define ADC_CONVERT_CHANNEL(conf) NRF_SECTION_ITEM_REGISTER(adc_channel, const struct adc_channel_config* _pt_##_conf) = &conf
+#define ADC_CONVERT_CHANNEL(conf) NRF_SECTION_ITEM_REGISTER(adc_channel, const struct adc_channel_config* _pt_##conf) = &conf
 
 void adc_timer_start(void);
 void adc_init(void);

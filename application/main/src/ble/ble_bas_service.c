@@ -24,8 +24,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../config/keyboard_config.h"
 #include "adc_convert.h"
 
+#define ADC_BUFFER_SIZE 6
 struct BatteryInfo battery_info;
 BLE_BAS_DEF(m_bas); /**< Structure used to identify the battery service. */
+
+uint16_t adc_buffer[ADC_BUFFER_SIZE];
+uint8_t adc_buffer_index;
 
 /**@brief Function for performing a battery measurement, and update the Battery Level characteristic in the Battery Service.
  */
@@ -75,12 +79,22 @@ static void calculate_battery_persentage(struct BatteryInfo* info)
 
 static void adc_result_handler(nrf_saadc_value_t value)
 {
-    // RESULT = [V(P) – V(N) ] * GAIN/REFERENCE * 2 ^ (RESOLUTION - m)
-    // value  = V_in / 1.2 * 1024
-    // V_in   = V_bat * 2.2 / 12.2
-    battery_info.voltage = (uint32_t)value * 1200 * 122 / 1024 / 22;
-    calculate_battery_persentage(&battery_info);
-    battery_level_update(battery_info.percentage);
+    adc_buffer[adc_buffer_index++] = value;
+    if (adc_buffer_index >= ADC_BUFFER_SIZE) {
+        adc_buffer_index = 0;
+
+        uint32_t result = 0;
+        for (uint8_t i = 0; i < ADC_BUFFER_SIZE; i++) {
+            result += adc_buffer[i];
+        }
+        result /= ADC_BUFFER_SIZE;
+        // RESULT = [V(P) – V(N) ] * GAIN/REFERENCE * 2 ^ (RESOLUTION - m)
+        // value  = V_in / 1.2 * 1024
+        // V_in   = V_bat * 2.2 / 12.2
+        battery_info.voltage = result * 1200 * 122 / 1024 / 22;
+        calculate_battery_persentage(&battery_info);
+        battery_level_update(battery_info.percentage);
+    }
 }
 
 static nrf_saadc_channel_config_t channel_config = {
