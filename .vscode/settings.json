@@ -255,5 +255,7 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/_build": true,
+        "tmk/tmk_core/protocol/lufa/LUFA-git": true,
+        "tmk/tmk_core/tool": true,
     }
 }
