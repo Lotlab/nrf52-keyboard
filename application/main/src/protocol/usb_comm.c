@@ -33,6 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "host.h"
 
 #include "keyboard_host_driver.h"
+#include "queue.h"
 
 #ifdef HAS_USB
 
@@ -47,65 +48,7 @@ static bool has_host;
 static bool is_full, is_connected, is_checked, is_disable;
 static bool usb_protocol;
 
-/* uart 队列 */
-static uint16_t uart_queue_head, uart_queue_tail;
-static uint8_t uart_queue_data[QUEUE_SIZE];
-const uint16_t uart_queue_size = QUEUE_SIZE;
-
-static bool uart_queue_empty()
-{
-    return uart_queue_tail == uart_queue_head;
-}
-
-static void uart_queue_dequeue()
-{
-    if (uart_queue_empty())
-        return;
-    uint8_t len = uart_queue_data[uart_queue_head];
-    uart_queue_head = (uart_queue_head + len + 1) % uart_queue_size;
-}
-
-static uint8_t uart_queue_peek(uint8_t* pointer)
-{
-    uint8_t len = uart_queue_data[uart_queue_head];
-    if (len + uart_queue_head >= uart_queue_size) {
-        uint8_t len1 = uart_queue_size - uart_queue_head - 1;
-        uint8_t len2 = len - len1;
-        if (len1 > 0)
-            memcpy(pointer, &uart_queue_data[uart_queue_head + 1], len1);
-        memcpy(&pointer[len1], uart_queue_data, len2);
-    } else {
-        memcpy(pointer, &uart_queue_data[uart_queue_head + 1], len);
-    }
-    return len;
-}
-
-static void uart_queue_enqueue(uint8_t len, uint8_t* data)
-{
-    uint16_t next_tail = (uart_queue_tail + len + 1);
-    // 队列已满，出队
-    while ((uart_queue_tail < uart_queue_head && next_tail >= uart_queue_head)
-        || (uart_queue_tail > uart_queue_head && next_tail >= uart_queue_size && (next_tail % uart_queue_size) >= uart_queue_head)) {
-        uart_queue_dequeue();
-    }
-    uart_queue_data[uart_queue_tail] = len;
-    if (next_tail > uart_queue_size) {
-        uint8_t len1 = uart_queue_size - uart_queue_tail - 1;
-        uint8_t len2 = len - len1;
-        if (len1 > 0)
-            memcpy(&uart_queue_data[uart_queue_tail + 1], data, len1);
-        memcpy(uart_queue_data, &data[len1], len2);
-    } else {
-        memcpy(&uart_queue_data[uart_queue_tail + 1], data, len);
-    }
-    uart_queue_tail = next_tail % uart_queue_size;
-}
-
-static void uart_queue_clear()
-{
-    uart_queue_tail = 0;
-    uart_queue_head = 0;
-}
+MIXED_QUEUE(uint8_t, uart_queue, QUEUE_SIZE);
 
 /**
  * @brief 计算校验值
