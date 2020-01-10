@@ -1,7 +1,8 @@
 #pragma once
+#include "config.h"
+#include "nrf_section.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include "config.h"
 
 #ifdef ACTIONMAP_ENABLE
 #define SINGLE_KEY_SIZE 2
@@ -37,4 +38,35 @@ uint16_t storage_write_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t
 
 #ifdef CONFIG_STORAGE
 extern uint8_t config_block[];
+
+/**
+ * @brief 配置记录区域
+ * 
+ */
+struct config_section {
+    /**
+     * @brief 数据长度
+     * 
+     */
+    uint8_t len;
+    /**
+     * @brief 数据指针
+     * 
+     */
+    uint8_t* data;
+};
+
+/**
+ * @brief 定义一个储存区
+ * 
+ */
+#define CONFIG_SECTION_DEF() NRF_SECTION_DEF(config_def, struct config_section)
+/**
+ * @brief 定义一块数据记录区域
+ * 
+ */
+#define CONFIG_SECTION(name, length) NRF_SECTION_ITEM_REGISTER(config_def, struct config_section) name = { .len = length };
+#define CONFIG_SECTION_COUNT NRF_SECTION_ITEM_COUNT(config_def, struct config_section)
+#define CONFIG_SECTION_GET(i) (NRF_SECTION_ITEM_GET(config_def, struct config_section, i))
+
 #endif

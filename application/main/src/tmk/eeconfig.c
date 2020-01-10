@@ -19,18 +19,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "util.h"
 #include <string.h>
 
+CONFIG_SECTION(eeconfig, 6);
+
 static bool eeconfig_inited;
-uint8_t* config_buffer = config_block;
 
 static void eeconfig_set_default()
 {
-    UINT16_WRITE(config_buffer, 0, EECONFIG_MAGIC_NUMBER);
-    config_buffer[2] = 0;
-    config_buffer[3] = 0;
-    config_buffer[4] = 0;
-    config_buffer[5] = 0;
+    UINT16_WRITE(eeconfig.data, 0, EECONFIG_MAGIC_NUMBER);
+    eeconfig.data[2] = 0;
+    eeconfig.data[3] = 0;
+    eeconfig.data[4] = 0;
+    eeconfig.data[5] = 0;
 #ifdef BACKLIGHT_ENABLE
-    config_buffer[6] = 0;
+    eeconfig.data[6] = 0;
 #endif
 }
 
@@ -51,51 +52,51 @@ void eeconfig_init(void)
 
 void eeconfig_enable(void)
 {
-    UINT16_WRITE(config_buffer, 0, EECONFIG_MAGIC_NUMBER);
+    UINT16_WRITE(eeconfig.data, 0, EECONFIG_MAGIC_NUMBER);
 }
 
 void eeconfig_disable(void)
 {
-    UINT16_WRITE(config_buffer, 0, 0);
+    UINT16_WRITE(eeconfig.data, 0, 0);
 }
 
 bool eeconfig_is_enabled(void)
 {
-    return eeconfig_inited && UINT16_READ(config_buffer, 0) == EECONFIG_MAGIC_NUMBER;
+    return eeconfig_inited && UINT16_READ(eeconfig.data, 0) == EECONFIG_MAGIC_NUMBER;
 }
 
 uint8_t eeconfig_read_debug(void)
 {
-    return config_buffer[2];
+    return eeconfig.data[2];
 }
 void eeconfig_write_debug(uint8_t val)
 {
-    if (config_buffer[2] != val) {
-        config_buffer[2] = val;
+    if (eeconfig.data[2] != val) {
+        eeconfig.data[2] = val;
         storage_write(STORAGE_CONFIG);
     }
 }
 
 uint8_t eeconfig_read_default_layer(void)
 {
-    return config_buffer[3];
+    return eeconfig.data[3];
 }
 void eeconfig_write_default_layer(uint8_t val)
 {
-    if (config_buffer[3] != val) {
-        config_buffer[3] = val;
+    if (eeconfig.data[3] != val) {
+        eeconfig.data[3] = val;
         storage_write(STORAGE_CONFIG);
     }
 }
 
 uint8_t eeconfig_read_keymap(void)
 {
-    return config_buffer[4];
+    return eeconfig.data[4];
 }
 void eeconfig_write_keymap(uint8_t val)
 {
-    if (config_buffer[4] != val) {
-        config_buffer[4] = val;
+    if (eeconfig.data[4] != val) {
+        eeconfig.data[4] = val;
         storage_write(STORAGE_CONFIG);
     }
 }
@@ -103,12 +104,12 @@ void eeconfig_write_keymap(uint8_t val)
 #ifdef BACKLIGHT_ENABLE
 uint8_t eeconfig_read_backlight(void)
 {
-    return config_buffer[6];
+    return eeconfig.data[6];
 }
 void eeconfig_write_backlight(uint8_t val)
 {
-    if (config_buffer[6] != val) {
-        config_buffer[6] = val;
+    if (eeconfig.data[6] != val) {
+        eeconfig.data[6] = val;
         storage_write(STORAGE_CONFIG);
     }
 }

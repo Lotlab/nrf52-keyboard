@@ -28,6 +28,12 @@ SECTIONS
     KEEP(*(.adc_channel))
     PROVIDE(__stop_adc_channel = .);
   } > RAM
+  .config_def :
+  {
+    PROVIDE(__start_config_def = .);
+    KEEP(*(.config_def))
+    PROVIDE(__stop_config_def = .);
+  } > RAM
   .host_driver :
   {
     PROVIDE(__start_host_driver = .);

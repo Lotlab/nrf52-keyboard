@@ -145,9 +145,30 @@ const macro_t* action_get_macro(keyrecord_t* record, uint8_t id, uint8_t opt)
 
 #ifdef CONFIG_STORAGE
 #define CONFIG_BLOCK_SIZE_WORD 4
+#define CONFIG_BLOCK_SIZE_BYTE CONFIG_BLOCK_SIZE_WORD * 4
 #define CONFIG_RECORD_KEY 0x0497
 
 REGISTER_FDS_BLOCK(config, CONFIG_BLOCK_SIZE_WORD, CONFIG_RECORD_KEY)
+CONFIG_SECTION_DEF();
+
+/**
+ * @brief 存储初始化，分配指针
+ * 
+ */
+static void config_storage_init()
+{
+    // 分配指针
+    uint8_t cnt = 0;
+    for (int i = 0; i < CONFIG_SECTION_COUNT; i++) {
+        struct config_section* item = CONFIG_SECTION_GET(i);
+        if (cnt + item->len <= CONFIG_BLOCK_SIZE_BYTE) {
+            item->data = &config_block[cnt];
+            cnt += item->len;
+        } else {
+            item->data = 0;
+        }
+    }
+}
 #endif
 
 struct fds_update_op {
@@ -249,7 +270,6 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
     }
 }
 
-
 /**
  * @brief 读取存储的记录并写到内存（重置内存中的数据）
  * 
@@ -287,6 +307,10 @@ void storage_read(uint8_t type)
 void storage_init()
 {
     storage_callback_init();
+#ifdef CONFIG_STORAGE
+    // 初始化配置分片
+    config_storage_init();
+#endif
     storage_read(0xFF);
 }
 
