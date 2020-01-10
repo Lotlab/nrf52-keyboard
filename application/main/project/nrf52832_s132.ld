@@ -34,6 +34,12 @@ SECTIONS
     KEEP(*(.config_def))
     PROVIDE(__stop_config_def = .);
   } > RAM
+  .hid_config :
+  {
+    PROVIDE(__start_hid_config = .);
+    KEEP(*(.hid_config))
+    PROVIDE(__stop_hid_config = .);
+  } > RAM
   .host_driver :
   {
     PROVIDE(__start_host_driver = .);

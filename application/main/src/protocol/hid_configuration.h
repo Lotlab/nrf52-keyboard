@@ -1,4 +1,6 @@
 #pragma once
+#include "data_storage.h"
+#include "nrf_section.h"
 #include <stdint.h>
 
 enum hid_command {
@@ -58,3 +60,34 @@ enum hid_response {
 void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data);
 void hid_response_success(uint8_t len, uint8_t* data);
 void hid_response_generic(enum hid_response response);
+
+/**
+ * @brief 配置记录区域
+ * 
+ */
+struct hid_config_section {
+    /**
+     * @brief 数据索引
+     * 
+     */
+    uint8_t index;
+    /**
+     * @brief 数据指针
+     * 
+     */
+    struct config_section* section;
+};
+
+/**
+ * @brief 定义HID配置项目区域
+ * 
+ */
+#define HID_CONFIG_DEF() NRF_SECTION_DEF(hid_config, struct config_section)
+/**
+ * @brief 定义一个HID配置项目
+ * 
+ */
+#define HID_CONFIG(code, config_section) NRF_SECTION_ITEM_REGISTER(hid_config, struct hid_config_section) \
+                                 __hid_conf_##code = { .index = code, .section = &config_section };
+#define HID_CONFIG_COUNT NRF_SECTION_ITEM_COUNT(hid_config, struct hid_config_section)
+#define HID_CONFIG_GET(i) (NRF_SECTION_ITEM_GET(hid_config, struct hid_config_section, i))

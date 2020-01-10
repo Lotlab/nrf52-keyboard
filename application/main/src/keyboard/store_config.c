@@ -17,12 +17,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "store_config.h"
 #include "data_storage.h"
+#include "hid_configuration.h"
 #include "keyboard_config.h"
 #include "util.h"
 
 #ifdef CONFIG_STORAGE
 
 CONFIG_SECTION(config_slow_scan, 2);
+HID_CONFIG(0x10, config_slow_scan);
 
 /**
  * @brief 获取慢速扫描进入时间
@@ -36,6 +38,7 @@ uint16_t get_slow_scan_timeout(void)
 }
 
 CONFIG_SECTION(config_sleep_timeout, 2);
+HID_CONFIG(0x11, config_slow_scan);
 
 /**
  * @brief 获取自动关机时间
@@ -49,6 +52,7 @@ uint16_t get_sleep_timeout(void)
 }
 
 CONFIG_SECTION(config_powersave_timeout, 2);
+HID_CONFIG(0x12, config_slow_scan);
 
 /**
  * @brief 获取LED省电模式进入时间

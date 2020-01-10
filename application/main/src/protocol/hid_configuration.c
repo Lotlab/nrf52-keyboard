@@ -60,6 +60,16 @@ const uint32_t keyboard_function_table =
 
 #ifdef HAS_USB
 
+HID_CONFIG_DEF();
+static struct hid_config_section* hid_config_get(uint8_t id)
+{
+    for (uint8_t i = 0; i < HID_CONFIG_COUNT; i++) {
+        if (HID_CONFIG_GET(i)->index == id)
+            return HID_CONFIG_GET(i);
+    }
+    return 0;
+}
+
 /**
  * @brief 响应HID成功命令
  * 
@@ -184,25 +194,15 @@ static void get_all_fns(uint8_t offset)
  * @param offset 
  * @param len 
  */
-static void get_single_config(uint8_t offset, uint8_t len)
+static void get_single_config(uint8_t id)
 {
 #ifdef CONFIG_STORAGE
-    if (len > 4)
-        return hid_response_generic(HID_RESP_PARAMETER_ERROR);
-    response_storage(STORAGE_CONFIG, offset, len);
-#else
-    hid_response_generic(HID_RESP_UNDEFINED);
-#endif
-}
-
-/**
- * @brief 获取所有配置项目的值
- * 
- */
-static void get_all_config()
-{
-#ifdef CONFIG_STORAGE
-    response_storage(STORAGE_CONFIG, 0, MAX_HID_PACKET_SIZE);
+    struct hid_config_section* item = hid_config_get(id);
+    if (item == 0) {
+        hid_response_generic(HID_RESP_PARAMETER_ERROR);
+    } else {
+        hid_response_success(item->section->len, item->section->data);
+    }
 #else
     hid_response_generic(HID_RESP_UNDEFINED);
 #endif
@@ -314,25 +314,19 @@ static void set_all_fns(uint8_t id, uint8_t len, uint8_t* data)
  * @param len 长度
  * @param data 数据
  */
-static void set_single_config(uint8_t offset, uint8_t len, uint8_t* data)
+static void set_single_config(uint8_t id, uint8_t len, uint8_t* data)
 {
 #ifdef CONFIG_STORAGE
-    set_storage(STORAGE_CONFIG, offset, data, len);
-#else
-    hid_response_generic(HID_RESP_UNDEFINED);
-#endif
-}
-
-/**
- * @brief 设置所有配置数据
- * 
- * @param len 长度
- * @param data 数据
- */
-static void set_all_config(uint8_t len, uint8_t* data)
-{
-#ifdef CONFIG_STORAGE
-    set_storage(STORAGE_CONFIG, 0, data, len);
+    struct hid_config_section* item = hid_config_get(id);
+    if (item == 0) {
+        hid_response_generic(HID_RESP_PARAMETER_ERROR);
+    } else {
+        if (item->section->len != len) {
+            hid_response_generic(HID_RESP_WRITE_OVERFLOW);
+        } else {
+            memcpy(item->section->data, data, len);
+        }
+    }
 #else
     hid_response_generic(HID_RESP_UNDEFINED);
 #endif
@@ -417,16 +411,10 @@ void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
             get_all_fns(data[0]);
         break;
     case HID_CMD_GET_SINGLE_CONFIG:
-        if (len != 2)
+        if (len != 1)
             hid_response_generic(HID_RESP_PARAMETER_ERROR);
         else
-            get_single_config(data[0], data[1]);
-        break;
-    case HID_CMD_GET_ALL_CONFIG:
-        if (len != 0)
-            hid_response_generic(HID_RESP_PARAMETER_ERROR);
-        else
-            get_all_config();
+            get_single_config(data[0]);
         break;
     case HID_CMD_GET_ALL_MACRO:
         if (len != 2)
@@ -454,9 +442,6 @@ void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
         break;
     case HID_CMD_SET_SINGLE_CONFIG:
         set_single_config(data[0], len - 1, &data[1]);
-        break;
-    case HID_CMD_SET_ALL_CONFIG:
-        set_all_config(len, data);
         break;
     case HID_CMD_SET_ALL_MACRO:
         set_all_macro(data[0], len - 1, &data[1]);
