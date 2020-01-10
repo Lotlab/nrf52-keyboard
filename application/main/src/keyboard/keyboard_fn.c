@@ -19,8 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../main.h"
 #include "usb_comm.h"
 
-#include "bootmagic.h"
 #include "bootloader.h"
+#include "bootmagic.h"
 #include "eeconfig.h"
 #include "host.h"
 #include "keymap.h"
@@ -43,6 +43,8 @@ static void toggle_nkro()
 #endif
 }
 #endif
+
+FN_HANDLER_DEF();
 
 __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint8_t opt)
 {
@@ -81,5 +83,11 @@ __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint
         default:
             break;
         }
+    }
+
+    // 交给其他Fn处理
+    for (uint8_t i = 0; i < FN_HANDLER_COUNT; i++) {
+        fn_handler* handler = (fn_handler*)FN_HANDLER_GET(i);
+        (*handler)(record, id, opt);
     }
 }

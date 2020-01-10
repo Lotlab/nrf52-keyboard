@@ -40,6 +40,12 @@ SECTIONS
     KEEP(*(.hid_config))
     PROVIDE(__stop_hid_config = .);
   } > RAM
+  .fn_handler :
+  {
+    PROVIDE(__start_fn_handler = .);
+    KEEP(*(.fn_handler))
+    PROVIDE(__stop_fn_handler = .);
+  } > RAM
   .host_driver :
   {
     PROVIDE(__start_host_driver = .);
