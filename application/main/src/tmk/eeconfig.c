@@ -46,7 +46,7 @@ void eeconfig_init(void)
         eeconfig_inited = true;
     } else {
         eeconfig_set_default();
-        storage_write(STORAGE_CONFIG);
+        storage_write((1 << STORAGE_CONFIG));
     }
 }
 
@@ -73,7 +73,7 @@ void eeconfig_write_debug(uint8_t val)
 {
     if (eeconfig.data[2] != val) {
         eeconfig.data[2] = val;
-        storage_write(STORAGE_CONFIG);
+        storage_write((1 << STORAGE_CONFIG));
     }
 }
 
@@ -85,7 +85,7 @@ void eeconfig_write_default_layer(uint8_t val)
 {
     if (eeconfig.data[3] != val) {
         eeconfig.data[3] = val;
-        storage_write(STORAGE_CONFIG);
+        storage_write((1 << STORAGE_CONFIG));
     }
 }
 
@@ -97,7 +97,7 @@ void eeconfig_write_keymap(uint8_t val)
 {
     if (eeconfig.data[4] != val) {
         eeconfig.data[4] = val;
-        storage_write(STORAGE_CONFIG);
+        storage_write((1 << STORAGE_CONFIG));
     }
 }
 
@@ -110,7 +110,7 @@ void eeconfig_write_backlight(uint8_t val)
 {
     if (eeconfig.data[6] != val) {
         eeconfig.data[6] = val;
-        storage_write(STORAGE_CONFIG);
+        storage_write((1 << STORAGE_CONFIG));
     }
 }
 #endif
