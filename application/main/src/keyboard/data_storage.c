@@ -256,7 +256,7 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
 
         if (flash_record.p_header->length_words == record->data.length_words) {
             // 大小正常，读取数据
-            memcpy(keymap_block, flash_record.p_data, record->data.length_words * 4);
+            memcpy((uint8_t*)record->data.p_data, flash_record.p_data, record->data.length_words * 4);
             fds_record_close(record_desc);
         } else {
             // 大小不正常，尝试更新数据
