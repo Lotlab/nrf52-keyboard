@@ -27,6 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "keyboard_evt.h"
 #include "passkey.h"
 #include "queue.h"
+#include "power_save.h"
 
 #include "oled_graph.h"
 
@@ -335,6 +336,8 @@ void ssd1306_show_dirty_block()
  */
 static void update_status_bar()
 {
+    power_save_reset();
+    
     if (usb_conn)
         conn_type = CONN_TYPE_USB;
     else if (ble_conn)
@@ -357,8 +360,8 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
             ssd1306_oled_init();
             break;
         case KBD_STATE_INITED: // 显示Buff
+            update_status_bar();
             ssd1306_show_all();
-            ssd1306_clr();
             break;
         default:
             break;
