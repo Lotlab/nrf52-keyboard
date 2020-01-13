@@ -6601,7 +6601,7 @@
  
 
 #ifndef NRF_SORTLIST_ENABLED
-#define NRF_SORTLIST_ENABLED 0
+#define NRF_SORTLIST_ENABLED 1
 #endif
 
 // <q> NRF_SPI_MNGR_ENABLED  - nrf_spi_mngr - SPI transaction manager
