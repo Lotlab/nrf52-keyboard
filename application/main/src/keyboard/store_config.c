@@ -38,7 +38,7 @@ uint16_t get_slow_scan_timeout(void)
 }
 
 CONFIG_SECTION(config_sleep_timeout, 2);
-HID_CONFIG(0x11, config_slow_scan);
+HID_CONFIG(0x11, config_sleep_timeout);
 
 /**
  * @brief 获取自动关机时间
@@ -52,7 +52,7 @@ uint16_t get_sleep_timeout(void)
 }
 
 CONFIG_SECTION(config_powersave_timeout, 2);
-HID_CONFIG(0x12, config_slow_scan);
+HID_CONFIG(0x12, config_powersave_timeout);
 
 /**
  * @brief 获取LED省电模式进入时间
