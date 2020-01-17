@@ -14,8 +14,10 @@ This is a TMK based keyboard firmware for nRF52 series, now support both nRF5281
   - main/ 主程序
     - src/ 源码
       - ble/ 蓝牙相关代码
-      - tmk/ tmk桥接相关
       - config/ 硬件配置相关
+      - protocol/ 通讯相关
+      - driver/ 外置驱动
+      - tmk/ tmk桥接相关
     - project/ 工程
   - bootloader/ 
     - src/ 源码

@@ -42,7 +42,9 @@ void passkey_input_handler(uint8_t len, uint8_t* keys)
                 break;
             }
         }
+        // 触发Passkey输入事件
         trig_event_param(USER_EVT_BLE_PASSKEY_STATE, PASSKEY_STATE_INPUT);
+        // 发送Passkey
         if (inputed_len == 6) {
             ble_passkey_send(passkey);
             inputed_len = 0xFF;

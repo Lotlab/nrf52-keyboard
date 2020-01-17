@@ -10,26 +10,30 @@
 #define SINGLE_KEY_SIZE 1
 #endif
 
-#define MAX_LAYER 8
-#define MAX_FN_KEYS 32
-#define MAX_MACRO_SIZE 256
+#define MAX_LAYER 8 // 存储区域中最大层数
+#define MAX_FN_KEYS 32 // 存储区域最大Fn数目
+#define MAX_MACRO_SIZE 256 // 宏存储区域最大容量
 #define FILE_ID 0x0514
 
 #define KEYMAP_ROW_SIZE (MATRIX_COLS * SINGLE_KEY_SIZE)
 #define KEYMAP_LAYER_SIZE (MATRIX_ROWS * KEYMAP_ROW_SIZE)
 
+/**
+ * @brief 存储类型
+ * 
+ */
 enum storage_type {
-    STORAGE_KEYMAP,
-    STORAGE_FN,
-    STORAGE_MACRO,
-    STORAGE_CONFIG
+    STORAGE_KEYMAP, // Keymap
+    STORAGE_FN, // Fn 区域
+    STORAGE_MACRO, // 自定义宏
+    STORAGE_CONFIG // 配置区域
 };
 
-void storage_read(uint8_t type);
+void storage_read(uint8_t mask);
 void storage_init(void);
-bool storage_write(uint8_t type);
-uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data);
-uint16_t storage_write_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data);
+bool storage_write(uint8_t mask);
+uint16_t storage_read_data(enum storage_type type, uint16_t offset, uint16_t len, uint8_t* data);
+uint16_t storage_write_data(enum storage_type type, uint16_t offset, uint16_t len, uint8_t* data);
 
 // 若启用了BOOTMAGIC_ENABLE则自动启用CONFIG_STORAGE
 #ifdef BOOTMAGIC_ENABLE

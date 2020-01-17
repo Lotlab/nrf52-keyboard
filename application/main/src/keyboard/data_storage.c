@@ -273,27 +273,27 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
 /**
  * @brief 读取存储的记录并写到内存（重置内存中的数据）
  * 
- * @param type 要读取的记录mask。1: keymap, 2: fn, 4: macro, 8: config
+ * @param mask 要读取的记录mask。1: keymap, 2: fn, 4: macro, 8: config
  */
-void storage_read(uint8_t type)
+void storage_read(uint8_t mask)
 {
-    if (type & 0x01) {
+    if (mask & 0x01) {
 #ifdef KEYMAP_STORAGE
         storage_read_inner(&keymap_record, &keymap_record_desc);
         check_keymap();
 #endif
     }
-    if (type & 0x02) {
+    if (mask & 0x02) {
 #if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
         storage_read_inner(&fn_record, &fn_record_desc);
 #endif
     }
-    if (type & 0x04) {
+    if (mask & 0x04) {
 #ifdef MACRO_STORAGE
         storage_read_inner(&macro_record, &macro_record_desc);
 #endif
     }
-    if (type & 0x08) {
+    if (mask & 0x08) {
 #ifdef CONFIG_STORAGE
         storage_read_inner(&config_record, &config_record_desc);
 #endif
@@ -317,30 +317,30 @@ void storage_init()
 /**
  * @brief 写存储模块记录
  * 
- * @param type 要写出的记录mask。1: keymap, 2: fn, 4: macro, 8: config
+ * @param mask 要写出的记录mask。1: keymap, 2: fn, 4: macro, 8: config
  * @return true 操作成功
  * @return false 含有未定义的操作
  */
-bool storage_write(uint8_t type)
+bool storage_write(uint8_t mask)
 {
     bool success = true;
 
-    if (type & 0x01) {
+    if (mask & 0x01) {
 #ifdef KEYMAP_STORAGE
         storage_update_inner(&keymap_record, &keymap_record_desc);
 #endif
     }
-    if (type & 0x02) {
+    if (mask & 0x02) {
 #if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
         storage_update_inner(&fn_record, &fn_record_desc);
 #endif
     }
-    if (type & 0x04) {
+    if (mask & 0x04) {
 #ifdef MACRO_STORAGE
         storage_update_inner(&macro_record, &macro_record_desc);
 #endif
     }
-    if (type & 0x08) {
+    if (mask & 0x08) {
 #ifdef CONFIG_STORAGE
         storage_update_inner(&config_record, &config_record_desc);
 #endif
@@ -352,33 +352,33 @@ bool storage_write(uint8_t type)
 /**
  * @brief 获取指定类型的内存区域的指针和大小
  * 
- * @param type 
- * @param pointer 
- * @return uint16_t 
+ * @param type 存储类型
+ * @param pointer 目标指针
+ * @return uint16_t 存储空间大小。0则表示不支持。
  */
-static uint16_t storage_get_data_pointer(uint8_t type, uint8_t** pointer)
+static uint16_t storage_get_data_pointer(enum storage_type type, uint8_t** pointer)
 {
     switch (type) {
 #ifdef KEYMAP_STORAGE
-    case 0:
+    case STORAGE_KEYMAP:
         *pointer = keymap_block;
         return KEYMAP_SIZE_WORD * 4;
         break;
 #endif
 #if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
-    case 1:
+    case STORAGE_FN:
         *pointer = fn_block;
         return FN_BLOCK_SIZE_WORD * 4;
         break;
 #endif
 #ifdef MACRO_STORAGE
-    case 2:
+    case STORAGE_MACRO:
         *pointer = macro_block;
         return MACRO_BLOCK_SIZE_WORD * 4;
         break;
 #endif
 #ifdef CONFIG_STORAGE
-    case 3:
+    case STORAGE_CONFIG:
         *pointer = config_block;
         return CONFIG_BLOCK_SIZE_WORD * 4;
         break;
@@ -397,7 +397,7 @@ static uint16_t storage_get_data_pointer(uint8_t type, uint8_t** pointer)
  * @param data 目标指针
  * @return uint16_t 读取实际长度
  */
-uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data)
+uint16_t storage_read_data(enum storage_type type, uint16_t offset, uint16_t len, uint8_t* data)
 {
     uint8_t* pointer = 0;
     uint16_t size = storage_get_data_pointer(type, &pointer);
@@ -421,7 +421,7 @@ uint16_t storage_read_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t*
  * @param data 数据指针
  * @return uint16_t 实际写入长度
  */
-uint16_t storage_write_data(uint8_t type, uint16_t offset, uint16_t len, uint8_t* data)
+uint16_t storage_write_data(enum storage_type type, uint16_t offset, uint16_t len, uint8_t* data)
 {
     uint8_t* pointer = 0;
     uint16_t size = storage_get_data_pointer(type, &pointer);

@@ -41,8 +41,7 @@ static struct host_driver* get_working_driver()
     return 0;
 }
 
-// todo: impliment
-uint8_t keyboard_idle = 0;
+uint8_t keyboard_idle = 0; // 没有用到的变量
 uint8_t keyboard_protocol = 0;
 
 uint8_t keyboard_leds()
