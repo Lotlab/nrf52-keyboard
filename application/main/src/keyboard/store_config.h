@@ -1,5 +1,6 @@
 #pragma once
 #include "config.h"
+#include "data_storage.h"
 #include <stdint.h>
 
 #ifdef CONFIG_STORAGE
