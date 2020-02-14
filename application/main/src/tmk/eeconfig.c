@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "util.h"
 #include <string.h>
 
-CONFIG_SECTION(eeconfig, 6);
+CONFIG_SECTION(eeconfig, 5);
 
 static bool eeconfig_inited;
 
@@ -29,10 +29,6 @@ static void eeconfig_set_default()
     eeconfig.data[2] = 0;
     eeconfig.data[3] = 0;
     eeconfig.data[4] = 0;
-    eeconfig.data[5] = 0;
-#ifdef BACKLIGHT_ENABLE
-    eeconfig.data[6] = 0;
-#endif
 }
 
 /**
@@ -100,17 +96,3 @@ void eeconfig_write_keymap(uint8_t val)
         storage_write((1 << STORAGE_CONFIG));
     }
 }
-
-#ifdef BACKLIGHT_ENABLE
-uint8_t eeconfig_read_backlight(void)
-{
-    return eeconfig.data[6];
-}
-void eeconfig_write_backlight(uint8_t val)
-{
-    if (eeconfig.data[6] != val) {
-        eeconfig.data[6] = val;
-        storage_write((1 << STORAGE_CONFIG));
-    }
-}
-#endif
