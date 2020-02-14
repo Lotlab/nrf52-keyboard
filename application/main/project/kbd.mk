@@ -33,11 +33,12 @@ SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_matrix.c \
     $(APP_SRC_DIR)/protocol/ble_comm.c \
     $(APP_SRC_DIR)/keyboard/macro_player.c \
     $(APP_SRC_DIR)/keyboard/power_save.c \
-    $(APP_SRC_DIR)/keyboard/adc_convert.c \
+    $(APP_SRC_DIR)/keyboard/adc_convert.c
 
 INC_FOLDERS += $(APP_SRC_DIR)/keyboard \
     $(APP_SRC_DIR)/tmk \
-    $(APP_SRC_DIR)/protocol
+    $(APP_SRC_DIR)/protocol \
+    $(APP_SRC_DIR)/ble
 
 # Version string
 VERSION := $(shell ((git describe --always --abbrev=8 || echo '00000000') | sed "s/.*-g//g" ) 2> /dev/null)
