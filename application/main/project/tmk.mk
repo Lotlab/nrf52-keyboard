@@ -53,7 +53,7 @@ else
 endif
 
 ifeq (yes,$(strip $(COMMAND_ENABLE)))
-    SRC_FILES += $(COMMON_DIR)/command.c
+    SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_command.c
     OPT_DEFS += -DCOMMAND_ENABLE
 endif
 
