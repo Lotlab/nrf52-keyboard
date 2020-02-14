@@ -91,6 +91,7 @@
 #include "keyboard/adc_convert.h"
 #include "keyboard/ble_keyboard.h"
 #include "keyboard/keyboard_bootcheck.h"
+#include "keyboard/keyboard_command.h"
 #include "keyboard/keyboard_evt.h"
 #include "keyboard/keyboard_led.h"
 #include "keyboard/keyboard_matrix.h"
@@ -330,6 +331,9 @@ int main(void)
     timers_start();
     advertising_start(erase_bonds);
 
+#ifdef COMMAND_ENABLE
+    command_timer_init();
+#endif
     set_stage(KBD_STATE_INITED);
 
     // Enter main loop.
