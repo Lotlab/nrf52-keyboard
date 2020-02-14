@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_timer.h"
 #include "ble.h"
 #include "ble_advdata.h"
-#include "ble_advertising.h"
 #include "ble_conn_params.h"
 #include "ble_conn_state.h"
 #include "ble_dfu.h"
@@ -38,8 +37,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "peer_manager_handler.h"
 
 #include "ble_config.h"
-
-#include "../main.h"
+#include "data_storage.h"
+#include "util.h"
+#include <string.h>
 
 #define PNP_ID_VENDOR_ID_SOURCE 0x02 /**< Vendor ID Source. */
 
@@ -64,8 +64,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID; /**< Handle of the current connection. */
 static pm_peer_id_t m_peer_id; /**< Device reference handle to the current bonded central. */
-static uint32_t m_whitelist_peer_cnt; /**< Number of peers currently in the whitelist. */
-static pm_peer_id_t m_whitelist_peers[BLE_GAP_WHITELIST_ADDR_MAX_COUNT]; /**< List of peers currently in the whitelist. */
+#ifdef MULTI_DEVICE_SWITCH
+uint8_t switch_id = 0; /** 当前设备ID Device ID of currently in the eeconfig   */
+#endif
 
 NRF_BLE_GATT_DEF(m_gatt); /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr); /**< Context for the Queued Write module.*/
@@ -73,16 +74,52 @@ BLE_ADVERTISING_DEF(m_advertising); /**< Advertising module instance. */
 
 static ble_uuid_t m_adv_uuids[] = { { BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE } };
 
-/**@brief Clear bond information from persistent storage.
- */
-void delete_bonds(void)
-{
-    ret_code_t err_code;
 
-    err_code = pm_peers_delete();
+/**@brief Function for setting filtered whitelist.
+ *
+ * @param[in] skip  Filter passed to @ref pm_peer_id_list.
+ */
+static void whitelist_set(pm_peer_id_list_skip_t skip)
+{
+    pm_peer_id_t peer_ids[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
+    uint32_t peer_id_count = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
+
+    ret_code_t err_code = pm_peer_id_list(peer_ids, &peer_id_count, PM_PEER_ID_INVALID, skip);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = pm_whitelist_set(peer_ids, peer_id_count);
     APP_ERROR_CHECK(err_code);
 }
 
+/**@brief Function for setting filtered device identities.
+ *
+ * @param[in] skip  Filter passed to @ref pm_peer_id_list.
+ */
+static void identities_set(pm_peer_id_list_skip_t skip)
+{
+    pm_peer_id_t peer_ids[BLE_GAP_DEVICE_IDENTITIES_MAX_COUNT];
+    uint32_t peer_id_count = BLE_GAP_DEVICE_IDENTITIES_MAX_COUNT;
+
+    ret_code_t err_code = pm_peer_id_list(peer_ids, &peer_id_count, PM_PEER_ID_INVALID, skip);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = pm_device_identities_list_set(peer_ids, peer_id_count);
+    APP_ERROR_CHECK(err_code);
+}
+
+static void ble_disconnect()
+{
+    sd_ble_gap_adv_stop(m_advertising.adv_handle);
+    if (m_conn_handle != BLE_CONN_HANDLE_INVALID) {
+        ret_code_t err_code = sd_ble_gap_disconnect(m_conn_handle,
+            BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+        if (err_code != NRF_ERROR_INVALID_STATE) {
+            APP_ERROR_CHECK(err_code);
+        }
+    }
+}
+
+#ifndef MULTI_DEVICE_SWITCH
 static void buttonless_dfu_sdh_state_observer(nrf_sdh_state_evt_t state, void* p_context)
 {
     if (state == NRF_SDH_EVT_STATE_DISABLED) {
@@ -98,8 +135,195 @@ static void buttonless_dfu_sdh_state_observer(nrf_sdh_state_evt_t state, void* p
 NRF_SDH_STATE_OBSERVER(m_buttonless_dfu_state_obs, 0) = {
     .handler = buttonless_dfu_sdh_state_observer,
 };
+#endif
 
-/**@brief Function for starting advertising.
+#ifdef MACADDR_SEPRATOR
+/**@brief MAC地址转换为设备名后缀.
+ *
+ * 读取MAC地址，并将其转换后放置到设备名最后
+ */
+static void get_device_name(char* device_name, int offset)
+{
+    const char lookup_table[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+    strcpy(device_name, DEVICE_NAME);
+    device_name[offset++] = MACADDR_SEPRATOR;
+
+    ble_gap_addr_t ble_addr;
+    sd_ble_gap_addr_get(&ble_addr);
+
+    for (uint8_t i = 0; i < 3; i++) {
+        uint8_t addr = ble_addr.addr[3 + i];
+        device_name[offset++] = lookup_table[addr / 16];
+        device_name[offset++] = lookup_table[addr % 16];
+    }
+    device_name[offset] = 0x00;
+}
+#endif
+
+static void set_device_name(void)
+{
+    ret_code_t err_code;
+    ble_gap_conn_sec_mode_t sec_mode;
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
+
+#ifdef MACADDR_SEPRATOR
+    int orig_len = strlen(DEVICE_NAME);
+    int name_len = orig_len + 8;
+    char device_name[name_len];
+    get_device_name(device_name, orig_len);
+
+    err_code = sd_ble_gap_device_name_set(&sec_mode, (const uint8_t*)device_name, strlen(device_name));
+#else
+    err_code = sd_ble_gap_device_name_set(&sec_mode, (const uint8_t*)DEVICE_NAME, strlen(DEVICE_NAME));
+#endif
+    APP_ERROR_CHECK(err_code);
+}
+/**@brief 清空所有绑定数据.
+ */
+void delete_bonds(void)
+{
+    ret_code_t err_code;
+
+    ble_disconnect();
+
+    err_code = pm_peers_delete();
+    APP_ERROR_CHECK(err_code);
+#ifdef MULTI_DEVICE_SWITCH
+    //清空所有绑定后，自动回到首个设备
+    switch_id = 0;
+    switch_device_id_write(switch_id);
+    switch_device_select(switch_id);
+#endif
+}
+
+#ifdef MULTI_DEVICE_SWITCH
+//注册switch需要的存储区
+CONFIG_SECTION(switch_device_id, 1);
+/**@brief 读取switch id.
+ *
+ */
+uint8_t switch_device_id_read(void)
+{
+    return switch_device_id.data[0];
+}
+/**@brief 写入switch id.
+ *
+ */
+void switch_device_id_write(uint8_t val)
+{
+    if (switch_device_id.data[0] != val) {
+        switch_device_id.data[0] = val;
+        storage_write((1 << STORAGE_CONFIG));
+    }
+}
+
+/**@brief 删除当前设备绑定数据.
+ *
+ * 查找并删除与当前gap addr绑定的绑定数据
+ */
+static void peer_list_find_and_delete_bond(void)
+{
+    pm_peer_id_t peer_id;
+
+    peer_id = pm_next_peer_id_get(PM_PEER_ID_INVALID);
+
+    while (peer_id != PM_PEER_ID_INVALID) {
+        uint16_t length = 8;
+        uint8_t addr[8];
+
+        if (pm_peer_data_app_data_load(peer_id, addr, &length) == NRF_SUCCESS) {
+            if (addr[3] == switch_id) {
+                pm_peer_delete(peer_id);
+            }
+        }
+
+        peer_id = pm_next_peer_id_get(peer_id);
+    }
+}
+
+/**@brief 切换连接设备.
+ *
+ * @param[in] id  要切换的设备的ID号
+ */
+void switch_device_select(uint8_t id)
+{
+    ret_code_t ret;
+    ble_gap_addr_t gap_addr;
+    if (id == switch_id) {
+        return; //如果重复切换，则直接退出，不做任何操作
+    } else {
+        ble_disconnect();
+    }
+    switch_id = id;
+
+    switch_device_id_write(id);
+
+    ret = sd_ble_gap_addr_get(&gap_addr);
+    APP_ERROR_CHECK(ret);
+
+    gap_addr.addr[3] = id;
+
+    ret = sd_ble_gap_addr_set(&gap_addr);
+    APP_ERROR_CHECK(ret);
+}
+/**@brief 重新绑定当前设备.
+ *
+ */
+void switch_device_rebond()
+{
+    peer_list_find_and_delete_bond();
+    uint8_t rebond_id = switch_id;
+    switch_id = 10; //将switch_id设置为无效ID
+    switch_device_select(rebond_id);
+}
+/**@brief 切换连接设备初始化.
+ *
+ * 读取存储的当前连接设备ID，并激活为当前连接设备
+ */
+static void switch_device_init()
+{
+
+    ret_code_t ret;
+    ble_gap_addr_t gap_addr;
+    switch_id = switch_device_id_read();
+
+    ret = sd_ble_gap_addr_get(&gap_addr);
+    APP_ERROR_CHECK(ret);
+
+    gap_addr.addr[3] = switch_id;
+
+    ret = sd_ble_gap_addr_set(&gap_addr);
+    APP_ERROR_CHECK(ret);
+}
+/**@brief 更新切换设备数据.
+ *
+ * 获取当前gap addr并更新PM数据
+ */
+static void switch_device_update(pm_peer_id_t peer_id)
+{
+    uint32_t err_code;
+    ble_gap_addr_t gap_addr;
+    uint16_t length = 8;
+    uint8_t addr[8];
+
+    err_code = pm_id_addr_get(&gap_addr);
+    APP_ERROR_CHECK(err_code);
+
+    for (uint8_t i = 0; i < BLE_GAP_ADDR_LEN; i++)
+        addr[i] = gap_addr.addr[i];
+
+    addr[3] = switch_id;
+
+    err_code = pm_peer_data_app_data_store(m_peer_id, addr, length, NULL);
+    APP_ERROR_CHECK(err_code);
+}
+#endif
+
+/**@brief 开启蓝牙广播.
+ * 
+ * @param[in] erase_bonds  是否清空所有绑定数据
  */
 void advertising_start(bool erase_bonds)
 {
@@ -107,8 +331,30 @@ void advertising_start(bool erase_bonds)
         delete_bonds();
         // Advertising is started by PM_EVT_PEERS_DELETE_SUCCEEDED event.
     } else {
+        whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
+#ifdef MULTI_DEVICE_SWITCH
+        switch_device_init();
+#endif
         ret_code_t ret = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
         APP_ERROR_CHECK(ret);
+    }
+}
+/**@brief 重新开启蓝牙广播.
+ * 
+ * @param[in] mode  广播模式
+ * @param[in] reset  是否重新绑定
+ */
+void advertising_restart(ble_adv_mode_t mode, bool reset)
+{
+    if (m_conn_handle == BLE_CONN_HANDLE_INVALID) {
+        sd_ble_gap_adv_stop(m_advertising.adv_handle);
+        ble_advertising_start(&m_advertising, mode);
+    } else {
+        sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+    }
+
+    if (reset) {
+        ble_advertising_restart_without_whitelist(&m_advertising);
     }
 }
 
@@ -118,18 +364,23 @@ void advertising_slow()
     APP_ERROR_CHECK(ret);
 }
 
+#ifndef MULTI_DEVICE_SWITCH
 static void disconnect(uint16_t conn_handle, void* p_context)
 {
     UNUSED_PARAMETER(p_context);
 
     sd_ble_gap_disconnect(conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
 }
+#endif
 
 static void advertising_config_get(ble_adv_modes_config_t* p_config)
 {
     memset(p_config, 0, sizeof(ble_adv_modes_config_t));
-
+#ifdef MULTI_DEVICE_SWITCH
+    p_config->ble_adv_whitelist_enabled = true;
+#else
     p_config->ble_adv_whitelist_enabled = false;
+#endif
     p_config->ble_adv_directed_high_duty_enabled = true;
     p_config->ble_adv_directed_enabled = false;
     p_config->ble_adv_directed_interval = 0;
@@ -140,8 +391,10 @@ static void advertising_config_get(ble_adv_modes_config_t* p_config)
     p_config->ble_adv_slow_enabled = true;
     p_config->ble_adv_slow_interval = APP_ADV_SLOW_INTERVAL;
     p_config->ble_adv_slow_timeout = APP_ADV_SLOW_DURATION;
+    p_config->ble_adv_on_disconnect_disabled = false;
 }
 
+#ifndef MULTI_DEVICE_SWITCH
 /**@brief Function for handling dfu events from the Buttonless Secure DFU service
  *
  * @param[in]   event   Event from the Buttonless Secure DFU service.
@@ -184,6 +437,7 @@ static void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
         break;
     }
 }
+#endif
 
 /**@brief Function for handling Peer Manager events.
  *
@@ -197,6 +451,9 @@ static void pm_evt_handler(pm_evt_t const* p_evt)
     switch (p_evt->evt_id) {
     case PM_EVT_CONN_SEC_SUCCEEDED:
         m_peer_id = p_evt->peer_id;
+#ifdef MULTI_DEVICE_SWITCH        
+        switch_device_update(m_peer_id);
+#endif
         trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_CONNECTED);
         break;
 
@@ -209,92 +466,25 @@ static void pm_evt_handler(pm_evt_t const* p_evt)
         break;
 
     case PM_EVT_PEER_DATA_UPDATE_SUCCEEDED:
-        if (p_evt->params.peer_data_update_succeeded.flash_changed
-            && (p_evt->params.peer_data_update_succeeded.data_id == PM_PEER_DATA_ID_BONDING)) {
+        if (p_evt->params.peer_data_update_succeeded.flash_changed && (p_evt->params.peer_data_update_succeeded.data_id == PM_PEER_DATA_ID_BONDING)) {
             // Note: You should check on what kind of white list policy your application should use.
 
-            if (m_whitelist_peer_cnt < BLE_GAP_WHITELIST_ADDR_MAX_COUNT) {
-                // Bonded to a new peer, add it to the whitelist.
-                m_whitelist_peers[m_whitelist_peer_cnt++] = m_peer_id;
-
-                // The whitelist has been modified, update it in the Peer Manager.
-                ret_code_t err_code = pm_device_identities_list_set(m_whitelist_peers, m_whitelist_peer_cnt);
-                if (err_code != NRF_ERROR_NOT_SUPPORTED) {
-                    APP_ERROR_CHECK(err_code);
-                }
-
-                err_code = pm_whitelist_set(m_whitelist_peers, m_whitelist_peer_cnt);
-                APP_ERROR_CHECK(err_code);
-            }
+            whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
         }
         break;
+
+    case PM_EVT_CONN_SEC_CONFIG_REQ: {
+        // allow pairing request from an already bonded peer.
+        pm_conn_sec_config_t conn_sec_config = { .allow_repairing = true };
+        pm_conn_sec_config_reply(p_evt->conn_handle, &conn_sec_config);
+
+        break;
+    }
 
     default:
         break;
     }
 }
-
-/**@brief Fetch the list of peer manager peer IDs.
- *
- * @param[inout] p_peers   The buffer where to store the list of peer IDs.
- * @param[inout] p_size    In: The size of the @p p_peers buffer.
- *                         Out: The number of peers copied in the buffer.
- */
-static void peer_list_get(pm_peer_id_t* p_peers, uint32_t* p_size)
-{
-    pm_peer_id_t peer_id;
-    uint32_t peers_to_copy;
-
-    peers_to_copy = (*p_size < BLE_GAP_WHITELIST_ADDR_MAX_COUNT) ? *p_size : BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
-
-    peer_id = pm_next_peer_id_get(PM_PEER_ID_INVALID);
-    *p_size = 0;
-
-    while ((peer_id != PM_PEER_ID_INVALID) && (peers_to_copy--)) {
-        p_peers[(*p_size)++] = peer_id;
-        peer_id = pm_next_peer_id_get(peer_id);
-    }
-}
-
-static void whitelist_load(void)
-{
-    ret_code_t ret;
-
-    memset(m_whitelist_peers, PM_PEER_ID_INVALID, sizeof(m_whitelist_peers));
-    m_whitelist_peer_cnt = (sizeof(m_whitelist_peers) / sizeof(pm_peer_id_t));
-
-    peer_list_get(m_whitelist_peers, &m_whitelist_peer_cnt);
-
-    // Setup the device identies list.
-    // Some SoftDevices do not support this feature.
-    ret = pm_device_identities_list_set(m_whitelist_peers, m_whitelist_peer_cnt);
-    if (ret != NRF_ERROR_NOT_SUPPORTED) {
-        APP_ERROR_CHECK(ret);
-    }
-
-    ret = pm_whitelist_set(m_whitelist_peers, m_whitelist_peer_cnt);
-    APP_ERROR_CHECK(ret);
-}
-
-#ifdef MACADDR_SEPRATOR
-static void get_device_name(char* device_name, int offset)
-{
-    const char lookup_table[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-
-    strcpy(device_name, DEVICE_NAME);
-    device_name[offset++] = MACADDR_SEPRATOR;
-
-    ble_gap_addr_t ble_addr;
-    sd_ble_gap_addr_get(&ble_addr);
-
-    for (uint8_t i = 0; i < 3; i++) {
-        uint8_t addr = ble_addr.addr[3 + i];
-        device_name[offset++] = lookup_table[addr / 16];
-        device_name[offset++] = lookup_table[addr % 16];
-    }
-    device_name[offset] = 0x00;
-}
-#endif
 
 /**@brief Function for the GAP initialization.
  *
@@ -305,23 +495,8 @@ static void gap_params_init(void)
 {
     ret_code_t err_code;
     ble_gap_conn_params_t gap_conn_params;
-    ble_gap_conn_sec_mode_t sec_mode;
 
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
-#ifdef MACADDR_SEPRATOR
-    int orig_len = strlen(DEVICE_NAME);
-    int name_len = orig_len + 8;
-    char device_name[name_len];
-    get_device_name(device_name, orig_len);
-
-    err_code = sd_ble_gap_device_name_set(&sec_mode,
-        (const uint8_t*)device_name,
-        strlen(device_name));
-#else
-    err_code = sd_ble_gap_device_name_set(&sec_mode, (const uint8_t*)DEVICE_NAME, strlen(DEVICE_NAME));
-#endif
-
-    APP_ERROR_CHECK(err_code);
+    set_device_name();
 
     err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_HID_KEYBOARD);
     APP_ERROR_CHECK(err_code);
@@ -394,6 +569,7 @@ static void dis_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+#ifndef MULTI_DEVICE_SWITCH
 static void dfu_init(void)
 {
     uint32_t err_code;
@@ -404,6 +580,7 @@ static void dfu_init(void)
     err_code = ble_dfu_buttonless_init(&dfus_init);
     APP_ERROR_CHECK(err_code);
 }
+#endif
 
 /**@brief Function for handling a Connection Parameters error.
  *
@@ -478,6 +655,8 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
         err_code = pm_whitelist_get(whitelist_addrs, &addr_cnt,
             whitelist_irks, &irk_cnt);
         APP_ERROR_CHECK(err_code);
+        // Set the correct identities list (no excluding peers with no Central Address Resolution).
+        identities_set(PM_PEER_ID_LIST_SKIP_NO_IRK);
 
         // Apply the whitelist.
         err_code = ble_advertising_whitelist_reply(&m_advertising,
@@ -497,6 +676,9 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
             if (err_code != NRF_ERROR_NOT_FOUND) {
                 APP_ERROR_CHECK(err_code);
 
+                // Manipulate identities to exclude peers with no Central Address Resolution.
+                identities_set(PM_PEER_ID_LIST_SKIP_ALL);
+
                 ble_gap_addr_t* p_peer_addr = &(peer_bonding_data.peer_ble_id.id_addr_info);
                 err_code = ble_advertising_peer_addr_reply(&m_advertising, p_peer_addr);
                 APP_ERROR_CHECK(err_code);
@@ -510,6 +692,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 }
 
 #ifdef DYNAMIC_TX_POWER
+//动态发射功率
 static void ble_conn_handle_change(uint16_t old, uint16_t new)
 {
     if (old != BLE_CONN_HANDLE_INVALID) {
@@ -550,10 +733,10 @@ static void ble_evt_handler(ble_evt_t const* p_ble_evt, void* p_context)
 
     switch (p_ble_evt->header.evt_id) {
     case BLE_GAP_EVT_CONNECTED:
-        ble_conn_handle_change(m_conn_handle, p_ble_evt->evt.gap_evt.conn_handle);
         m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
         err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
         APP_ERROR_CHECK(err_code);
+        ble_conn_handle_change(m_conn_handle, p_ble_evt->evt.gap_evt.conn_handle);
         break;
 
     case BLE_GAP_EVT_DISCONNECTED:
@@ -677,6 +860,9 @@ static void advertising_init(void)
     uint32_t err_code;
     uint8_t adv_flags;
     ble_advertising_init_t init;
+#ifdef HIGH_TX_POWER
+    int8_t tx_power_level = 4; //更改发射功率到+4dBm
+#endif
 
     memset(&init, 0, sizeof(init));
 
@@ -686,6 +872,9 @@ static void advertising_init(void)
     init.advdata.flags = adv_flags;
     init.advdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
     init.advdata.uuids_complete.p_uuids = m_adv_uuids;
+#ifdef HIGH_TX_POWER
+    init.advdata.p_tx_power_level = &tx_power_level;
+#endif
 
     advertising_config_get(&init.config);
 
@@ -713,11 +902,12 @@ void ble_services_init()
     peer_manager_init();
     gap_params_init();
     gatt_init();
-    whitelist_load();
     advertising_init();
     // services
     qwr_init();
     dis_init();
+#ifndef MULTI_DEVICE_SWITCH
     dfu_init();
+#endif
     conn_params_init();
 }
