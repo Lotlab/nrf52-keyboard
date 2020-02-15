@@ -196,6 +196,9 @@ static void timers_init(void)
 
     err_code = app_timer_init();
     APP_ERROR_CHECK(err_code);
+#ifdef COMMAND_ENABLE
+    command_timer_init();
+#endif
 }
 
 /**@brief Function for initializing services that will be used by the application.
@@ -331,9 +334,6 @@ int main(void)
     timers_start();
     advertising_start(erase_bonds);
 
-#ifdef COMMAND_ENABLE
-    command_timer_init();
-#endif
     set_stage(KBD_STATE_INITED);
 
     // Enter main loop.
