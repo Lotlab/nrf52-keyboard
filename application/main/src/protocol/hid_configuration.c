@@ -61,6 +61,7 @@ const uint32_t keyboard_function_table =
 #ifdef HAS_USB
 
 HID_CONFIG_DEF();
+#ifdef CONFIG_STORAGE
 static struct hid_config_section* hid_config_get(uint8_t id)
 {
     for (uint8_t i = 0; i < HID_CONFIG_COUNT; i++) {
@@ -69,6 +70,7 @@ static struct hid_config_section* hid_config_get(uint8_t id)
     }
     return 0;
 }
+#endif
 
 /**
  * @brief 响应HID成功命令
