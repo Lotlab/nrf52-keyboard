@@ -88,11 +88,14 @@ static void command_delay_handler(void* p_context)
 #ifdef MULTI_DEVICE_SWITCH
         switch_device_id_write(0);
 #endif
+#ifdef RGBLIGHT_ENABLE
+        rgblight_init();
+#endif
         break;
     case COMMAND_SLEEP:
         sleep(SLEEP_MANUALLY);
         break;
-    case COMMAND_BOOTLOADER:
+    case COMMAND_DFU:
         bootloader_jump();
         break;
     default:
