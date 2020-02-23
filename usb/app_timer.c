@@ -16,9 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "app_timer.h"
+#include "compiler.h"
 
 #define MAX_TIMER_SIZE 2
-volatile __idata timer_info timers[MAX_TIMER_SIZE];
+volatile __IDATA timer_info timers[MAX_TIMER_SIZE];
 uint8_t pos = 0;
 
 /**

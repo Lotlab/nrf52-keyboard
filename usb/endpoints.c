@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * 地址0x00-0x08 为端点0的IN与OUT缓冲区
  *
  */
-uint8_t __xdata __at(0x00) Ep0Buffer[THIS_ENDP0_SIZE];
+uint8_t __XDATA_AT(0x00) Ep0Buffer[THIS_ENDP0_SIZE];
 /**
  * @brief 端点1缓冲区，用于键盘报文
  *
@@ -38,17 +38,17 @@ uint8_t __xdata __at(0x00) Ep0Buffer[THIS_ENDP0_SIZE];
  * 地址0xC8-0xCF为端点1IN缓冲区 (8byte)
  *
  */
-uint8_t __xdata __at(0x0A) Ep1Buffer[MAX_PACKET_SIZE * 2]; //端点1 IN缓冲区,必须是偶地址
+uint8_t __XDATA_AT(0x0A) Ep1Buffer[MAX_PACKET_SIZE * 2]; //端点1 IN缓冲区,必须是偶地址
 /**
  * @brief 端点2IN缓冲区，用于System包和Consumer包的发送
  *
  */
-uint8_t __xdata __at(0x90) Ep2Buffer[MAX_PACKET_SIZE];
+uint8_t __XDATA_AT(0x90) Ep2Buffer[MAX_PACKET_SIZE];
 /**
  * @brief 端点3IN&OUT缓冲区，用于传递配置
  *
  */
-uint8_t __xdata __at(0xB0) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
+uint8_t __XDATA_AT(0xB0) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
 
 bool usb_ready = false;
 bool usb_busy = false;
@@ -107,7 +107,7 @@ void EP0_SETUP()
         len = 0; // 默认为成功并且上传0长度
         SetupReq = UsbSetupBuf->bRequest;
         uint8_t type = UsbSetupBuf->bRequestType & USB_REQ_TYP_MASK;
-        if(type == USB_REQ_TYP_STANDARD)  //标准请求
+        if (type == USB_REQ_TYP_STANDARD) //标准请求
         {
             switch (SetupReq) //请求码
             {
@@ -241,11 +241,11 @@ void EP0_SETUP()
                 len = 0xff; //操作失败
                 break;
             }
-        }
-        else if (type == USB_REQ_TYP_CLASS) //HID类请求
+        } else if (type == USB_REQ_TYP_CLASS) //HID类请求
         {
             len = ClassRequestHandler(UsbSetupBuf);
-            if (len != 0xFF) len = 0; // ignore hid request
+            if (len != 0xFF)
+                len = 0; // ignore hid request
         }
     } else {
         len = 0xff; //包长度错误

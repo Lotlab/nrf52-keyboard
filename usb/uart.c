@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 uart_state uart_rx_state;
 static uint8_t recv_len, pos;
-static uint8_t __xdata recv_buff[64];
-static uint8_t __xdata keyboard_buffer[8];
+static uint8_t __XDATA recv_buff[64];
+static uint8_t __XDATA keyboard_buffer[8];
 
 static bool uart_arrive_flag, last_success;
 static uint8_t last_pos;
@@ -144,7 +144,7 @@ static void uart_send_status()
     uart_tx(data);
 }
 
-static uint8_t __xdata send_buff[64];
+static uint8_t __XDATA send_buff[64];
 static uint8_t send_len = 0;
 
 /**

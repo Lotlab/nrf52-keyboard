@@ -52,7 +52,7 @@ static void CH554USBDevWakeup()
 
 /** \brief CH559USB中断处理函数
  */
-static void DeviceInterrupt(void) __interrupt INT_NO_USB __using 1 //USB中断服务程序,使用寄存器组1
+static INTERRUPT_USING(DeviceInterrupt, INT_NO_USB, 1) //USB中断服务程序,使用寄存器组1
 {
     UsbIsr();
 }
@@ -126,7 +126,7 @@ void ResponseConfigurePacket(uint8_t* packet, uint8_t len)
  * @brief 串口中断
  *
  */
-static void UARTInterrupt(void) __interrupt INT_NO_UART1
+static INTERRUPT(UARTInterrupt, INT_NO_UART1)
 {
     if (U1RI) {
         uart_recv();
@@ -176,7 +176,7 @@ static void FeedWatchDog()
     WDOG_COUNT = 0x00;
 }
 
-static void TimerInterrupt(void) __interrupt INT_NO_TKEY
+static INTERRUPT(TimerInterrupt, INT_NO_TKEY)
 {
     TKEY_CTRL = 0;
     timer_tick();

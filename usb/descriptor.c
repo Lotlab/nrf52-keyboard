@@ -15,13 +15,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "compiler.h"
 #include "config.h"
 #include "usb_descriptor.h"
 #include <stdint.h>
 #include <string.h>
 
 const uint8_t itoa[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-static uint8_t __xdata descBuffer[64];
+static uint8_t __XDATA descBuffer[64];
 
 static uint8_t fillDescBuffer(char* str)
 {
@@ -43,7 +44,7 @@ static uint8_t getSerial()
     descBuffer[i++] = 0x03;
 
     for (uint16_t addr = 0x3FFC; addr <= 0x3FFF; addr++) {
-        uint16_t se = (uint16_t)(*((const uint8_t __code*)(addr)));
+        uint16_t se = (uint16_t)(*((const uint8_t __CODE*)(addr)));
         descBuffer[i++] = itoa[(se >> 4) % 0xF];
         descBuffer[i++] = 0x00;
         descBuffer[i++] = itoa[(se >> 0) % 0xF];
