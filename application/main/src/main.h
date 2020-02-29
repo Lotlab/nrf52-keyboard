@@ -40,6 +40,10 @@ void trig_event_param(enum user_event event, uint8_t arg);
  */
 void sleep(enum SLEEP_REASON reason);
 /**
+ * @brief 使键盘进入关机状态
+ */
+void systemoff(void);
+/**
  * 触发睡眠事件
  * 
  * @param mode: 睡眠模式
