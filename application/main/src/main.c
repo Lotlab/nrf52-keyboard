@@ -240,6 +240,21 @@ static void sleep_mode_enter(void)
 }
 
 /**
+ * @brief 使键盘进入关机状态
+ */
+void systemoff(void)
+{
+    trig_event_param(USER_EVT_SLEEP, SLEEP_EVT_AUTO);  //以自动休眠方式关机，以便开机无需bootcheck
+    reset_prepare();
+#ifdef HAS_USB
+    usb_comm_sleep_prepare();
+#endif
+    // Go to system-off mode (this function will not return; wakeup will cause a reset).
+    ret_code_t err_code = sd_power_system_off();
+    APP_ERROR_CHECK(err_code);
+}
+
+/**
  * @brief 发送键盘睡眠通知
  * 
  * @param reason 
