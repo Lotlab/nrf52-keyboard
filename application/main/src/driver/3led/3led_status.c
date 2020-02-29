@@ -156,6 +156,7 @@ static void status_led_evt_handler(enum user_event event, void* arg)
         default:
             break;
         }
+        break;
     case USER_EVT_CHARGE: // 充电事件
         status_led_charging(arg2 == BATT_CHARGING);
         break;
