@@ -176,6 +176,13 @@ static void FeedWatchDog()
     WDOG_COUNT = 0x00;
 }
 
+/** 定义定时器 */
+const timer_info timers[] = {
+    TIMER_DEF(&FeedWatchDog, 500),
+    TIMER_DEF(&uart_check, 1)
+};
+TIMER_INIT(timer, timers)
+
 static INTERRUPT(TimerInterrupt, INT_NO_TKEY)
 {
     TKEY_CTRL = 0;
@@ -191,17 +198,6 @@ void UsbSuspendEvt(bool suspend)
     usb_sleep = suspend;
 }
 
-/**
- * @brief 初始化时钟
- *
- */
-static void timer_init()
-{
-    timer_create(&FeedWatchDog, true, 500);
-    timer_create(&uart_check, true, 1);
-    IE_TKEY = 1;
-}
-
 static void main()
 {
     CfgSysClock();
@@ -210,7 +206,8 @@ static void main()
     uart_init();
     DelayMs(5);
     // printf_tiny("Build %s %s\n", __TIME__, __DATE__);
-    timer_init();
+    IE_TKEY = 1; // 运行Timer
+
     USBDeviceInit(); //USB设备模式初始化
     EnableWatchDog();
     EA = 1; //允许单片机中断

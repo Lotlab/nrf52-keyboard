@@ -1,20 +1,38 @@
 #pragma once
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-typedef void(*task_t)(void);
+typedef void (*task_t)(void);
 
 typedef struct
 {
     uint16_t period;
-    uint16_t time_count;
-    bool repeat;
-    bool is_start;
-    bool exec_flag;
     task_t task;
 } timer_info;
 
-void timer_tick(void);
-void timer_task_exec(void);
-void timer_create(task_t task, bool repeat, uint16_t period);
+/* 定义一个定时器 */
+#define TIMER_DEF(callback, interval)        \
+    {                                        \
+        .period = interval, .task = callback \
+    }
+
+#define TIMER_STRUCT_SIZE(data) (sizeof(data) / sizeof(timer_info))
+
+/* 定义定时器的函数 */
+#define TIMER_INIT(name, timers)                                              \
+    static uint16_t name##_counter[TIMER_STRUCT_SIZE(timers)];                \
+    static void name##_tick()                                                 \
+    {                                                                         \
+        for (int i = 0; i < sizeof(name##_counter) / sizeof(uint16_t); i++)   \
+            name##_counter[i]++;                                              \
+    }                                                                         \
+    static void name##_task_exec()                                            \
+    {                                                                         \
+        for (int i = 0; i < sizeof(name##_counter) / sizeof(uint16_t); i++) { \
+            if (name##_counter[i] >= timers[i].period) {                      \
+                name##_counter[i] = 0;                                        \
+                (*(timers[i].task))();                                        \
+            }                                                                 \
+        }                                                                     \
+    }
