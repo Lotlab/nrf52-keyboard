@@ -100,7 +100,6 @@ static void send_event(enum user_event event, uint8_t arg)
  * @param host 是否连接到主机
  * @param charge_full 电量是否充满
  * @param protocol USB 当前协议类型
- * @param force 强制更新状态
  */
 static void set_state(bool host, bool charge_full, bool protocol)
 {
