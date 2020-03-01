@@ -222,6 +222,16 @@ static void timers_start(void)
     adc_timer_start();
 }
 
+/**
+ * @brief 发送键盘睡眠通知
+ * 
+ * @param reason 
+ */
+void notify_sleep(enum sleep_evt_type mode)
+{
+    trig_event_param(USER_EVT_SLEEP, mode);
+}
+
 /**@brief Function for putting the chip into sleep mode.
  *
  * @note This function will not return.
@@ -244,7 +254,7 @@ static void sleep_mode_enter(void)
  */
 void systemoff(void)
 {
-    trig_event_param(USER_EVT_SLEEP, SLEEP_EVT_AUTO);  //以自动休眠方式关机，以便开机无需bootcheck
+    notify_sleep(SLEEP_EVT_AUTO);  //以自动休眠方式关机，以便开机无需bootcheck
     reset_prepare();
 #ifdef HAS_USB
     usb_comm_sleep_prepare();
@@ -252,16 +262,6 @@ void systemoff(void)
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
     ret_code_t err_code = sd_power_system_off();
     APP_ERROR_CHECK(err_code);
-}
-
-/**
- * @brief 发送键盘睡眠通知
- * 
- * @param reason 
- */
-void notify_sleep(enum sleep_evt_type mode)
-{
-    trig_event_param(USER_EVT_SLEEP, mode);
 }
 
 /**
@@ -274,12 +274,10 @@ void sleep(enum SLEEP_REASON reason)
     switch (reason) {
     case SLEEP_NO_CONNECTION:
     case SLEEP_TIMEOUT:
-        app_timer_stop_all();
         notify_sleep(SLEEP_EVT_AUTO);
         sleep_mode_enter();
         break;
     case SLEEP_MANUALLY:
-        app_timer_stop_all();
         notify_sleep(SLEEP_EVT_MANUAL);
         sleep_mode_enter();
         break;
