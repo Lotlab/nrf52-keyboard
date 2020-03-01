@@ -64,13 +64,64 @@ static USB_SETUP_REQ SetupReqBuf; //暂存Setup包
 
 static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet);
 
-void nop() {}
+/**
+ * 设置指定Endpoint的状态
+ * 
+ * @param num: Endpoint号
+ * @param data: 指定DATA0或DATA1
+ * @param resp: 默认应答
+ **/
+#define EP_SET(num, data, resp) (UEP##num##_CTRL = (data) | (resp))
+#define EP_IN_RESP(num, resp) (UEP##num##_CTRL = UEP##num##_CTRL & (~MASK_UEP_T_RES) | (resp))
+#define EP_OUT_RESP(num, resp) (UEP##num##_CTRL = UEP##num##_CTRL & (~MASK_UEP_R_RES) | ((resp) << 2))
+/**
+ * 重置端点0的状态。
+ * SETUP/OUT ACK
+ * IN NAK
+ */
+#define EP0_RESET() EP_SET(0, 0, UEP_R_RES_ACK | UEP_T_RES_NAK)
+/**
+ * 端点0响应状态包的Status，ACK
+ */
+#define EP0_DATA1_ACK() EP_SET(0, (bUEP_R_TOG | bUEP_T_TOG), (UEP_R_RES_ACK | UEP_T_RES_ACK))
 
+/**
+ * 设置端点IN NAK
+ */
+#define EP_IN_NAK(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_NAK)
+
+/**
+ * 端点 IN 后续处理
+ * 清空发送长度，并设置NAK
+ */
+#define EP_IN_FINISH(num) \
+    UEP##num##_T_LEN = 0; \
+    EP_IN_NAK(num)
+
+/**
+ * 设置端点 IN NAK 响应并反转 DATA
+ */
+#define EP_IN_NAK_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~(bUEP_T_TOG | MASK_UEP_T_RES) | UEP_T_RES_NAK)
+/**
+ * 设置端点 OUT ACK 响应并反转 DATA
+ */
+#define EP_OUT_ACK_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~(bUEP_R_TOG | MASK_UEP_R_RES) | UEP_R_RES_ACK)
+/**
+ * 设置端点 IN STALL 响应并反转 DATA
+ */
+#define EP_IN_STALL_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL)
+/**
+ * 设置端点 OUT STALL 响应并反转 DATA
+ */
+#define EP_OUT_STALL_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & (~bUEP_R_TOG) | UEP_R_RES_STALL)
+
+/***/
 void EP0_OUT()
 {
     switch (SetupReq) {
     case USB_GET_DESCRIPTOR:
-        UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK; // 准备下一控制传输
+        // 重置端点状态，等待下次传输
+        EP0_RESET();
         break;
     }
 }
@@ -86,13 +137,13 @@ void EP0_IN()
         UEP0_T_LEN = len;
         UEP0_CTRL ^= bUEP_T_TOG; //同步标志位翻转
         break;
-    case USB_SET_ADDRESS:
+    case USB_SET_ADDRESS: // 延迟设置USB设备的地址
         USB_DEV_AD = USB_DEV_AD & bUDA_GP_BIT | SetupLen;
-        UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;
+        EP0_RESET();
         break;
     default:
         UEP0_T_LEN = 0; //状态阶段完成中断或者是强制上传0长度数据包结束控制传输
-        UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;
+        EP0_RESET();
         break;
     }
 }
@@ -149,22 +200,22 @@ void EP0_SETUP()
                 case USB_REQ_RECIP_ENDP: {
                     switch (UsbSetupBuf->wIndexL) {
                     case 0x83:
-                        UEP3_CTRL = UEP3_CTRL & ~(bUEP_T_TOG | MASK_UEP_T_RES) | UEP_T_RES_NAK;
+                        EP_IN_NAK_TOG(3);
                         break;
                     case 0x82:
-                        UEP2_CTRL = UEP2_CTRL & ~(bUEP_T_TOG | MASK_UEP_T_RES) | UEP_T_RES_NAK;
+                        EP_IN_NAK_TOG(2);
                         break;
                     case 0x81:
-                        UEP1_CTRL = UEP1_CTRL & ~(bUEP_T_TOG | MASK_UEP_T_RES) | UEP_T_RES_NAK;
+                        EP_IN_NAK_TOG(1);
                         break;
                     case 0x03:
-                        UEP3_CTRL = UEP3_CTRL & ~(bUEP_R_TOG | MASK_UEP_R_RES) | UEP_R_RES_ACK;
+                        EP_OUT_ACK_TOG(3);
                         break;
                     case 0x02:
-                        UEP2_CTRL = UEP2_CTRL & ~(bUEP_R_TOG | MASK_UEP_R_RES) | UEP_R_RES_ACK;
+                        EP_OUT_ACK_TOG(2);
                         break;
                     case 0x01:
-                        UEP1_CTRL = UEP1_CTRL & ~(bUEP_R_TOG | MASK_UEP_R_RES) | UEP_R_RES_ACK;
+                        EP_OUT_ACK_TOG(1);
                         break;
                     default:
                         len = 0xFF; // 不支持的端点
@@ -183,22 +234,23 @@ void EP0_SETUP()
             case USB_SET_FEATURE: /* Set Feature */
             {
                 switch (UsbSetupBuf->bRequestType & USB_REQ_RECIP_MASK) {
+                // 接口
                 case USB_REQ_RECIP_ENDP: {
-
-                    if ((((uint16_t)UsbSetupBuf->wValueH << 8) | UsbSetupBuf->wValueL) == 0x00) {
+                    // 接口的Value始终为0
+                    if (!UsbSetupBuf->wValueH && !UsbSetupBuf->wValueL) {
                         // Zero, Interface endpoint
                         switch (((uint16_t)UsbSetupBuf->wIndexH << 8) | UsbSetupBuf->wIndexL) {
                         case 0x83:
-                            UEP3_CTRL = UEP3_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL; /* 设置端点3 IN STALL */
+                            EP_IN_STALL_TOG(3);
                             break;
                         case 0x82:
-                            UEP2_CTRL = UEP2_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL; /* 设置端点2 IN STALL */
+                            EP_IN_STALL_TOG(2);
                             break;
                         case 0x81:
-                            UEP1_CTRL = UEP1_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL; /* 设置端点1 IN STALL */
+                            EP_IN_STALL_TOG(1);
                             break;
                         case 0x02:
-                            UEP2_CTRL = UEP2_CTRL & (~bUEP_R_TOG) | UEP_R_RES_STALL; /* 设置断点2 OUT STALL */
+                            EP_OUT_STALL_TOG(2);
                             break;
                         default:
                             len = 0xFF; //操作失败
@@ -209,6 +261,7 @@ void EP0_SETUP()
                     }
                     break;
                 }
+                // 设备
                 case USB_REQ_RECIP_DEVICE: {
                     if ((((uint16_t)UsbSetupBuf->wValueH << 8) | UsbSetupBuf->wValueL) == 0x01) {
                         /*
@@ -253,35 +306,33 @@ void EP0_SETUP()
 
     if (len == 0xff) {
         SetupReq = 0xFF;
-        UEP0_CTRL = bUEP_R_TOG | bUEP_T_TOG | UEP_R_RES_STALL | UEP_T_RES_STALL; //STALL
+        // 内部错误，返回STALL
+        EP_SET(0, bUEP_R_TOG | bUEP_T_TOG, UEP_R_RES_STALL | UEP_T_RES_STALL);
     } else if (len <= DEFAULT_ENDP0_SIZE) //上传数据或者状态阶段返回0长度包
     {
         UEP0_T_LEN = len;
-        UEP0_CTRL = bUEP_R_TOG | bUEP_T_TOG | UEP_R_RES_ACK | UEP_T_RES_ACK; //默认数据包是DATA1，返回应答ACK
+        EP0_DATA1_ACK(); // 使用DATA1响应数据，或响应SETUP包的status
     } else {
         UEP0_T_LEN = 0; //虽然尚未到状态阶段，但是提前预置上传0长度数据包以防主机提前进入状态阶段
-        UEP0_CTRL = bUEP_R_TOG | bUEP_T_TOG | UEP_R_RES_ACK | UEP_T_RES_ACK; //默认数据包是DATA1,返回应答ACK
+        EP0_DATA1_ACK(); // 响应SETUP包的STATUS
     }
 }
 
 void EP1_IN()
 {
-    UEP1_T_LEN = 0; //预使用发送长度一定要清空
-    UEP1_CTRL = UEP1_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_NAK; //默认应答NAK
+    EP_IN_FINISH(1);
     usb_busy = false;
 }
 
 void EP2_IN()
 {
-    UEP2_T_LEN = 0; //预使用发送长度一定要清空
-    UEP2_CTRL = UEP2_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_NAK; //默认应答NAK
+    EP_IN_FINISH(2);
     usb_busy = false;
 }
 
 void EP3_IN()
 {
-    UEP3_T_LEN = 0; //预使用发送长度一定要清空
-    UEP3_CTRL = UEP3_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_NAK; //默认应答NAK
+    EP_IN_FINISH(3);
     usb_busy = false;
 }
 

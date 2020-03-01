@@ -220,6 +220,8 @@ extern void _nop(void);
  */
 #else
 #warning unrecognized compiler
+#include <stdbool.h>
+
 #define SBIT(name, addr, bit) volatile bool name
 #define SFR(name, addr) volatile unsigned char name
 #define SFRX(name, addr) volatile unsigned char name
