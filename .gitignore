@@ -6,9 +6,6 @@ JLinkLog.txt
 JLinkSettings.ini
 EventRecorderStub.scvd
 
-# ignore sdk
-/SDK
-
 # ignore virtualenv
 /venv
 
