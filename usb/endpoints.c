@@ -52,14 +52,13 @@ uint8_t __XDATA_AT(0xB0) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,�
 
 bool usb_ready = false;
 bool usb_busy = false;
-static uint8_t SetupReq, SetupLen, Count, UsbConfig;
+static uint8_t SetupReq, SetupLen, UsbConfig;
 static uint8_t* pDescr;
 
 // 键盘报文类型。0为Boot，1为Report
 uint8_t keyboard_protocol = 1; // HID规范要求默认的Protocol是Report
 static uint8_t keyboard_idle = 0;
 
-static USB_SETUP_REQ SetupReqBuf; //暂存Setup包
 #define UsbSetupBuf ((PUSB_SETUP_REQ)Ep0Buffer)
 
 static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet);
@@ -71,7 +70,7 @@ static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet);
  * @param data: 指定DATA0或DATA1
  * @param resp: 默认应答
  **/
-#define EP_SET(num, data, resp) (UEP##num##_CTRL = (data) | (resp))
+#define EP_SET(num, data, resp) (UEP##num##_CTRL = ((data) | (resp)) & 0xFF)
 #define EP_IN_RESP(num, resp) (UEP##num##_CTRL = UEP##num##_CTRL & (~MASK_UEP_T_RES) | (resp))
 #define EP_OUT_RESP(num, resp) (UEP##num##_CTRL = UEP##num##_CTRL & (~MASK_UEP_R_RES) | ((resp) << 2))
 /**
@@ -115,7 +114,10 @@ static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet);
  */
 #define EP_OUT_STALL_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & (~bUEP_R_TOG) | UEP_R_RES_STALL)
 
-/***/
+void nop()
+{
+}
+
 void EP0_OUT()
 {
     switch (SetupReq) {
