@@ -26,12 +26,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define REMOTE_WAKE true
 
 /**
- * @brief 端点0缓冲区。
+ * @brief 端点0/4缓冲区。
  *
- * 地址0x00-0x08 为端点0的IN与OUT缓冲区
+ * 0x00-0x3F 为端点0的IN与OUT缓冲区
+ * 0x40-0x7F 端点4 OUT
+ * 0x80-0xBF 端点4 IN
  *
  */
-uint8_t __XDATA_AT(0x00) Ep0Buffer[THIS_ENDP0_SIZE];
+uint8_t __XDATA_AT(0x00) Ep0Buffer[MAX_PACKET_SIZE * 3];
 /**
  * @brief 端点1缓冲区，用于键盘报文
  *
@@ -39,17 +41,17 @@ uint8_t __XDATA_AT(0x00) Ep0Buffer[THIS_ENDP0_SIZE];
  * 地址0xC8-0xCF为端点1IN缓冲区 (8byte)
  *
  */
-uint8_t __XDATA_AT(0x0A) Ep1Buffer[MAX_PACKET_SIZE * 2]; //端点1 IN缓冲区,必须是偶地址
+uint8_t __XDATA_AT(0xC0) Ep1Buffer[MAX_PACKET_SIZE * 2]; //端点1 IN缓冲区,必须是偶地址
 /**
  * @brief 端点2IN缓冲区，用于System包和Consumer包的发送
  *
  */
-uint8_t __XDATA_AT(0x90) Ep2Buffer[MAX_PACKET_SIZE];
+uint8_t __XDATA_AT(0x140) Ep2Buffer[MAX_PACKET_SIZE];
 /**
  * @brief 端点3IN&OUT缓冲区，用于传递配置
  *
  */
-uint8_t __XDATA_AT(0xB0) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
+uint8_t __XDATA_AT(0x180) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
 
 static uint8_t SetupReq, SetupLen, UsbConfig;
 static uint8_t* pDescr;
@@ -203,6 +205,9 @@ void EP0_SETUP()
                 switch (UsbSetupBuf->bRequestType & USB_REQ_RECIP_MASK) {
                 case USB_REQ_RECIP_ENDP: {
                     switch (UsbSetupBuf->wIndexL) {
+                    case 0x84:
+                        EP_IN_NAK_TOG(4);
+                        break;
                     case 0x83:
                         EP_IN_NAK_TOG(3);
                         break;
@@ -211,6 +216,9 @@ void EP0_SETUP()
                         break;
                     case 0x81:
                         EP_IN_NAK_TOG(1);
+                        break;
+                    case 0x04:
+                        EP_OUT_ACK_TOG(4);
                         break;
                     case 0x03:
                         EP_OUT_ACK_TOG(3);
@@ -254,6 +262,9 @@ void EP0_SETUP()
                     if (!UsbSetupBuf->wValueH && !UsbSetupBuf->wValueL) {
                         // Zero, Interface endpoint
                         switch (((uint16_t)UsbSetupBuf->wIndexH << 8) | UsbSetupBuf->wIndexL) {
+                        case 0x84:
+                            EP_IN_STALL_TOG(4);
+                            break;
                         case 0x83:
                             EP_IN_STALL_TOG(3);
                             break;
@@ -346,6 +357,11 @@ void EP3_IN()
     usb_state.is_busy = false;
 }
 
+void EP4_IN()
+{
+    EP_IN_FINISH(4);
+}
+
 static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet)
 {
     uint8_t request = packet->bRequest;
@@ -403,7 +419,7 @@ void USBDeviceInit()
     USB_CTRL = 0x00; // 先设定USB设备模式
 
     UEP0_DMA = (uint16_t)Ep0Buffer; //端点0数据传输地址
-    UEP4_1_MOD &= ~(bUEP4_RX_EN | bUEP4_TX_EN); //端点0单64字节收发缓冲区, 端点4单64字节收发缓冲区
+    UEP4_1_MOD |= ~(bUEP4_RX_EN | bUEP4_TX_EN); //端点0单64字节收发缓冲区, 端点4单64字节收发缓冲区
     UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK; //OUT事务返回ACK，IN事务返回NAK
 
     UEP1_DMA = (uint16_t)Ep1Buffer; //端点1数据传输地址
@@ -417,6 +433,8 @@ void USBDeviceInit()
     UEP3_DMA = (uint16_t)Ep3Buffer; //端点3数据传输地址
     UEP2_3_MOD = UEP2_3_MOD & ~bUEP3_BUF_MOD | bUEP3_TX_EN | bUEP1_RX_EN; //端点3接收使能 64字节缓冲区
     UEP3_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK; //端点3自动翻转同步标志位，IN事务返回NAK
+
+    UEP4_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK; //端点4自动翻转同步标志位，IN事务返回NAK
 
     USB_DEV_AD = 0x00;
     UDEV_CTRL = bUD_PD_DIS; // 禁止DP/DM下拉电阻

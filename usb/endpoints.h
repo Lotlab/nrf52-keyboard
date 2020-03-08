@@ -4,9 +4,9 @@
 #include <stdint.h>
 
 extern uint8_t __XDATA_AT(0x00) Ep0Buffer[];
-extern uint8_t __XDATA_AT(0x0a) Ep1Buffer[];
-extern uint8_t __XDATA_AT(0x90) Ep2Buffer[];
-extern uint8_t __XDATA_AT(0xB0) Ep3Buffer[];
+extern uint8_t __XDATA_AT(0xc0) Ep1Buffer[];
+extern uint8_t __XDATA_AT(0x140) Ep2Buffer[];
+extern uint8_t __XDATA_AT(0x180) Ep3Buffer[];
 
 extern uint8_t keyboard_protocol;
 extern bool usb_ready, usb_busy;
@@ -59,13 +59,13 @@ extern void nop();
 #define USB_OUT_EP1 EP1_OUT
 #define USB_OUT_EP2 nop
 #define USB_OUT_EP3 EP3_OUT
-#define USB_OUT_EP4 nop
+#define USB_OUT_EP4 EP4_OUT
 
 #define USB_IN_EP0 EP0_IN
 #define USB_IN_EP1 EP1_IN
 #define USB_IN_EP2 EP2_IN
 #define USB_IN_EP3 EP3_IN
-#define USB_IN_EP4 nop
+#define USB_IN_EP4 EP4_IN
 
 #define USB_SETUP_EP0 EP0_SETUP
 #define USB_SETUP_EP1 nop

@@ -73,6 +73,7 @@ static uint8_t getStringDescriptor(uint8_t order, uint8_t** strPtor)
     case INTF_STRING_INDEX:
     case INTF_STRING_INDEX + 1:
     case INTF_STRING_INDEX + 2:
+    case INTF_STRING_INDEX + 3:
         order -= INTF_STRING_INDEX;
         do {
             header += strlen;

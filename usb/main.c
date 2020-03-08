@@ -152,6 +152,11 @@ void EP1_OUT()
     uart_send_led(Ep1Buffer[0]);
 }
 
+void EP4_OUT()
+{
+    // todo
+}
+
 /**
  * @brief 启用看门狗
  *
