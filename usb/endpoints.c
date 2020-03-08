@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "endpoints.h"
 
 #define THIS_ENDP0_SIZE DEFAULT_ENDP0_SIZE
+#define REMOTE_WAKE true
 
 /**
  * @brief 端点0缓冲区。
@@ -50,13 +51,14 @@ uint8_t __XDATA_AT(0x90) Ep2Buffer[MAX_PACKET_SIZE];
  */
 uint8_t __XDATA_AT(0xB0) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
 
-bool usb_ready = false;
-bool usb_busy = false;
 static uint8_t SetupReq, SetupLen, UsbConfig;
 static uint8_t* pDescr;
 
-// 键盘报文类型。0为Boot，1为Report
-uint8_t keyboard_protocol = 1; // HID规范要求默认的Protocol是Report
+// USB 状态
+union Usb_state usb_state = {
+    .protocol = true, // HID规范要求默认的Protocol是Report
+};
+
 static uint8_t keyboard_idle = 0;
 
 #define UsbSetupBuf ((PUSB_SETUP_REQ)Ep0Buffer)
@@ -187,8 +189,8 @@ void EP0_SETUP()
 
             case USB_SET_CONFIGURATION:
                 UsbConfig = UsbSetupBuf->wValueL;
-                if (UsbConfig) // USB枚举完毕
-                    usb_ready = true;
+                // USB枚举完毕
+                usb_state.is_ready = UsbConfig > 0;
                 break;
 
             case USB_GET_INTERFACE:
@@ -226,6 +228,16 @@ void EP0_SETUP()
                     break;
                 }
                 case USB_REQ_RECIP_DEVICE:
+                    if ((((uint16_t)UsbSetupBuf->wValueH << 8) | UsbSetupBuf->wValueL) == 0x01) {
+#if REMOTE_WAKE
+                        // 设置唤醒使能标志
+                        usb_state.remote_wake = false;
+#else
+                        len = 0xFF; // 操作失败
+#endif
+                    } else {
+                        len = 0xFF; /* 操作失败 */
+                    }
                     break;
                 default: //unsupport
                     len = 0xff;
@@ -266,16 +278,12 @@ void EP0_SETUP()
                 // 设备
                 case USB_REQ_RECIP_DEVICE: {
                     if ((((uint16_t)UsbSetupBuf->wValueH << 8) | UsbSetupBuf->wValueL) == 0x01) {
-                        /*
-                        if( USB_SUPPORT_REM_WAKE & 0x20 )
-                        {
-                            // 设置唤醒使能标志
-                        }
-                        else
-                        {
-                            len = 0xFF;                                        // 操作失败
-                        }
-                        */
+#if REMOTE_WAKE
+                        // 设置唤醒使能标志
+                        usb_state.remote_wake = true;
+#else
+                        len = 0xFF; // 操作失败
+#endif
                     } else {
                         len = 0xFF; /* 操作失败 */
                     }
@@ -288,7 +296,7 @@ void EP0_SETUP()
                 break;
             }
             case USB_GET_STATUS:
-                Ep0Buffer[0] = 0x00;
+                Ep0Buffer[0] = 0x00 | (usb_state.remote_wake ? 0x02 : 0x00);
                 Ep0Buffer[1] = 0x00;
                 len = SetupLen > 2 ? 2 : SetupLen;
                 break;
@@ -323,19 +331,19 @@ void EP0_SETUP()
 void EP1_IN()
 {
     EP_IN_FINISH(1);
-    usb_busy = false;
+    usb_state.is_busy = false;
 }
 
 void EP2_IN()
 {
     EP_IN_FINISH(2);
-    usb_busy = false;
+    usb_state.is_busy = false;
 }
 
 void EP3_IN()
 {
     EP_IN_FINISH(3);
-    usb_busy = false;
+    usb_state.is_busy = false;
 }
 
 static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet)
@@ -359,7 +367,7 @@ static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet)
         break;
     case 0x03: //GetProtocol
         if (interface == 0 && recipient == USB_REQ_RECIP_INTERF) {
-            Ep0Buffer[0] = keyboard_protocol;
+            Ep0Buffer[0] = usb_state.protocol ? 1 : 0;
             return 1;
         }
         break;
@@ -376,7 +384,7 @@ static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet)
         break;
     case 0x0B: //SetProtocol
         if (interface == 0 && recipient == USB_REQ_RECIP_INTERF) {
-            keyboard_protocol = UsbSetupBuf->wValueL;
+            usb_state.protocol = UsbSetupBuf->wValueL > 0;
         }
         break;
     default:

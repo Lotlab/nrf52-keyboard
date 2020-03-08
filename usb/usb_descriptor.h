@@ -52,7 +52,7 @@ uint8_t const DeviceDescriptor[SIZEOF_DEVICE_DESCRIPTOR] = {
 
 #define DESCRIPTOR_TOTAL_LENGTH             sizeof(ConfigDescriptor)
 #define USB_NUM_INTERFACES                  0x03
-#define USB_SUPPORT_REM_WAKE                0x00    // not support
+#define USB_SUPPORT_REM_WAKE                0x20    // support
 #define USB_SUPPORT_SELF_POWERED            0x80    // not self-powered
 #define USB_MAX_POWER                       0xfa    // 500 mA
 

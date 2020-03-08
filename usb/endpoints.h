@@ -11,6 +11,30 @@ extern uint8_t __XDATA_AT(0xB0) Ep3Buffer[];
 extern uint8_t keyboard_protocol;
 extern bool usb_ready, usb_busy;
 
+enum UsbSetupState {
+    SETUP_IDLE,     // 当前处于空闲状态
+    SETUP_DATA_IN,  // 即将传入数据 (DATA OUT)
+    SETUP_DATA_OUT, // 即将传出数据 (DATA IN)
+    SETUP_STATE_IN, // 传入后返回状态 (DATA IN)
+    SETUP_STATE_OUT // 传出后返回状态 (DATA OUT)
+};
+
+union Usb_state
+{
+    uint8_t raw;
+    struct
+    {
+        bool is_ready: 1; // 设备已配置
+        bool is_busy: 1; // 数据等待发送
+        bool is_sleep: 1; // 设备已挂起
+        bool remote_wake: 1; // 支持远程唤醒
+        bool protocol: 1; // 当前HID报文类型
+        enum UsbSetupState setup_state: 3;
+    };
+};
+
+extern union Usb_state usb_state;
+
 extern void USBDeviceInit();
 
 extern void EP0_OUT();

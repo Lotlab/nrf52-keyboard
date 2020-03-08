@@ -27,8 +27,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
-bool usb_sleep = false;
-
 /**
  * @brief CH554 软复位
  *
@@ -63,8 +61,8 @@ static INTERRUPT_USING(DeviceInterrupt, INT_NO_USB, 1) //USB中断服务程序,�
  */
 static void UsbOnKeySend()
 {
-    if (usb_sleep) {
-        usb_sleep = false;
+    if (usb_state.is_sleep) {
+        usb_state.is_sleep = false;
         CH554USBDevWakeup();
     }
 }
@@ -81,7 +79,7 @@ void KeyboardGenericUpload(uint8_t* packet, uint8_t len)
         return;
     UsbOnKeySend();
 
-    usb_busy = true;
+    usb_state.is_busy = true;
     memcpy(&Ep1Buffer[64], packet, len);
     UEP1_T_LEN = len;
     UEP1_CTRL = UEP1_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
@@ -97,7 +95,7 @@ void KeyboardExtraUpload(uint8_t* packet, uint8_t len)
 {
     UsbOnKeySend();
 
-    usb_busy = true;
+    usb_state.is_busy = true;
     memcpy(Ep2Buffer, packet, len);
     UEP2_T_LEN = len;
     UEP2_CTRL = UEP2_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
@@ -114,7 +112,7 @@ void ResponseConfigurePacket(uint8_t* packet, uint8_t len)
     if (len > 64)
         return;
 
-    usb_busy = true;
+    usb_state.is_busy = true;
     Ep3Buffer[64] = 0x3f; // packet id
     memcpy(&Ep3Buffer[65], packet, len);
     memset(&Ep3Buffer[65 + len], 0, 64 - len - 2);
@@ -195,7 +193,7 @@ static INTERRUPT(TimerInterrupt, INT_NO_TKEY)
  */
 void UsbSuspendEvt(bool suspend)
 {
-    usb_sleep = suspend;
+    usb_state.is_sleep = suspend;
 }
 
 static void main()

@@ -135,9 +135,9 @@ static void uart_send_status()
     uint8_t data = 0x10;
     if (!IS_CHARGING) // 是否充满
         data |= 0x02;
-    if (usb_ready) // 是否连接主机
+    if (usb_state.is_ready) // 是否连接主机
         data |= 0x04;
-    if (keyboard_protocol)
+    if (usb_state.protocol)
         data |= 0x08;
     if (last_success) // 上次接收状态
         data |= 0x01;
@@ -171,7 +171,7 @@ void uart_check()
                 uart_tx(send_buff[i]);
             }
             send_len = 0;
-        } else if (!usb_busy) { // USB 当前空闲，可以轮询下一个数据包
+        } else if (!usb_state.is_busy) { // USB 当前空闲，可以轮询下一个数据包
             // 没有等待发送的数据，发送定期Query状态包
             uart_send_status();
             // 重置success状态，默认接收失败
