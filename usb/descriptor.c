@@ -38,7 +38,18 @@ static uint8_t fillDescBuffer(char* str)
     return len * 2 + 2;
 }
 
-static uint8_t getSerial()
+uint8_t getSerial(char* str)
+{
+    uint8_t i = 0;
+    for (uint16_t addr = 0x3FFC; addr <= 0x3FFF; addr++) {
+        uint16_t se = (uint16_t)(*((const uint8_t __CODE*)(addr)));
+        str[i++] = itoa[(se >> 4) % 0xF];
+        str[i++] = itoa[(se >> 0) % 0xF];
+    }
+    return i;
+}
+
+static uint8_t fillSerial()
 {
     uint8_t i = 1;
     descBuffer[i++] = 0x03;
@@ -79,7 +90,7 @@ static uint8_t getStringDescriptor(uint8_t order, uint8_t** strPtor)
         *strPtor = descBuffer;
         break;
     case STRING_DESCRIPTOR_SERIAL:
-        strlen = getSerial();
+        strlen = fillSerial();
         *strPtor = descBuffer;
         break;
     default:
