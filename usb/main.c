@@ -61,7 +61,7 @@ static INTERRUPT_USING(DeviceInterrupt, INT_NO_USB, 1) //USB中断服务程序,�
  */
 static void UsbOnKeySend()
 {
-    if (usb_state.is_sleep) {
+    if (usb_state.is_sleep && usb_state.remote_wake) {
         usb_state.is_sleep = false;
         CH554USBDevWakeup();
     }
