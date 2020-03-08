@@ -969,7 +969,7 @@ typedef struct _USB_SETUP_REQ {
     uint8_t wLengthH;
 } USB_SETUP_REQ, *PUSB_SETUP_REQ;
 
-typedef USB_SETUP_REQ __xdata *PXUSB_SETUP_REQ;
+typedef USB_SETUP_REQ __XDATA *PXUSB_SETUP_REQ;
 
 typedef struct _USB_DEVICE_DESCR {
     uint8_t bLength;
@@ -992,7 +992,7 @@ typedef struct _USB_DEVICE_DESCR {
     uint8_t bNumConfigurations;
 } USB_DEV_DESCR, *PUSB_DEV_DESCR;
 
-typedef USB_DEV_DESCR __xdata *PXUSB_DEV_DESCR;
+typedef USB_DEV_DESCR __XDATA *PXUSB_DEV_DESCR;
 
 typedef struct _USB_CONFIG_DESCR {
     uint8_t bLength;
@@ -1006,7 +1006,7 @@ typedef struct _USB_CONFIG_DESCR {
     uint8_t MaxPower;
 } USB_CFG_DESCR, *PUSB_CFG_DESCR;
 
-typedef USB_CFG_DESCR __xdata *PXUSB_CFG_DESCR;
+typedef USB_CFG_DESCR __XDATA *PXUSB_CFG_DESCR;
 
 typedef struct _USB_INTERF_DESCR {
     uint8_t bLength;
@@ -1020,7 +1020,7 @@ typedef struct _USB_INTERF_DESCR {
     uint8_t iInterface;
 } USB_ITF_DESCR, *PUSB_ITF_DESCR;
 
-typedef USB_ITF_DESCR __xdata *PXUSB_ITF_DESCR;
+typedef USB_ITF_DESCR __XDATA *PXUSB_ITF_DESCR;
 
 typedef struct _USB_ENDPOINT_DESCR {
     uint8_t bLength;
@@ -1032,7 +1032,7 @@ typedef struct _USB_ENDPOINT_DESCR {
     uint8_t bInterval;
 } USB_ENDP_DESCR, *PUSB_ENDP_DESCR;
 
-typedef USB_ENDP_DESCR __xdata *PXUSB_ENDP_DESCR;
+typedef USB_ENDP_DESCR __XDATA *PXUSB_ENDP_DESCR;
 
 typedef struct _USB_CONFIG_DESCR_LONG {
     USB_CFG_DESCR   cfg_descr;
@@ -1040,7 +1040,7 @@ typedef struct _USB_CONFIG_DESCR_LONG {
     USB_ENDP_DESCR  endp_descr[1];
 } USB_CFG_DESCR_LONG, *PUSB_CFG_DESCR_LONG;
 
-typedef USB_CFG_DESCR_LONG __xdata *PXUSB_CFG_DESCR_LONG;
+typedef USB_CFG_DESCR_LONG __XDATA *PXUSB_CFG_DESCR_LONG;
 
 typedef struct _USB_HUB_DESCR {
     uint8_t bDescLength;
@@ -1054,7 +1054,7 @@ typedef struct _USB_HUB_DESCR {
     uint8_t PortPwrCtrlMask;
 } USB_HUB_DESCR, *PUSB_HUB_DESCR;
 
-typedef USB_HUB_DESCR __xdata *PXUSB_HUB_DESCR;
+typedef USB_HUB_DESCR __XDATA *PXUSB_HUB_DESCR;
 
 typedef struct _USB_HID_DESCR {
     uint8_t bLength;
@@ -1068,7 +1068,7 @@ typedef struct _USB_HID_DESCR {
     uint8_t wDescriptorLengthH;
 } USB_HID_DESCR, *PUSB_HID_DESCR;
 
-typedef USB_HID_DESCR __xdata *PXUSB_HID_DESCR;
+typedef USB_HID_DESCR __XDATA *PXUSB_HID_DESCR;
 
 typedef struct _UDISK_BOC_CBW {         /* command of BulkOnly USB-FlashDisk */
     uint8_t mCBW_Sig0;
@@ -1089,7 +1089,7 @@ typedef struct _UDISK_BOC_CBW {         /* command of BulkOnly USB-FlashDisk */
     uint8_t mCBW_CB_Buf[16];              /* command block buffer */
 } UDISK_BOC_CBW, *PUDISK_BOC_CBW;
 
-typedef UDISK_BOC_CBW __xdata *PXUDISK_BOC_CBW;
+typedef UDISK_BOC_CBW __XDATA *PXUDISK_BOC_CBW;
 
 typedef struct _UDISK_BOC_CSW {         /* status of BulkOnly USB-FlashDisk */
     uint8_t mCSW_Sig0;
@@ -1107,7 +1107,7 @@ typedef struct _UDISK_BOC_CSW {         /* status of BulkOnly USB-FlashDisk */
     uint8_t mCSW_Status;                  /* return: result status */
 } UDISK_BOC_CSW, *PUDISK_BOC_CSW;
 
-typedef UDISK_BOC_CSW __xdata *PXUDISK_BOC_CSW;
+typedef UDISK_BOC_CSW __XDATA *PXUDISK_BOC_CSW;
 
 #ifdef __cplusplus
 }
