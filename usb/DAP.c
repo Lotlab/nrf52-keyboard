@@ -35,6 +35,7 @@
 #include "DAP.h"
 // #include "info.h"
 #include "dap_strings.h"
+#include "system.h"
 
 
 #if (DAP_PACKET_SIZE < 64U)
@@ -60,7 +61,7 @@
  (((CPU_CLOCK/2U) / swj_clock) - IO_PORT_WRITE_CYCLES)
 
 
-         DAP_Data_t DAP_Data;           // DAP Data
+__XDATA DAP_Data_t DAP_Data;           // DAP Data
 volatile uint8_t    DAP_TransferAbort;  // Transfer Abort Flag
 
 
@@ -158,8 +159,7 @@ static uint8_t DAP_Info(uint8_t id, uint8_t *info) {
 // Delay for specified time
 //    delay:  delay time in ms
 void Delayms(uint32_t delay) {
-  delay *= ((CPU_CLOCK/1000U) + (DELAY_SLOW_CYCLES-1U)) / DELAY_SLOW_CYCLES;
-  PIN_DELAY_SLOW(delay);
+  DelayMs(delay);
 }
 
 
@@ -173,12 +173,10 @@ static uint32_t DAP_Delay(const uint8_t *request, uint8_t *response) {
 
   delay  = (uint32_t)(*(request+0)) |
            (uint32_t)(*(request+1) << 8);
-  delay *= ((CPU_CLOCK/1000000U) + (DELAY_SLOW_CYCLES-1U)) / DELAY_SLOW_CYCLES;
-
-  PIN_DELAY_SLOW(delay);
+  Delayms(delay);
 
   *response = DAP_OK;
-  return ((2U << 16) | 1U);
+  return (((uint32_t)2U << 16) | 1U);
 }
 
 
@@ -198,11 +196,11 @@ static uint32_t DAP_HostStatus(const uint8_t *request, uint8_t *response) {
       break;
     default:
       *response = DAP_ERROR;
-      return ((2U << 16) | 1U);
+      return (((uint32_t)2U << 16) | 1U);
   }
 
   *response = DAP_OK;
-  return ((2U << 16) | 1U);
+  return (((uint32_t)2U << 16) | 1U);
 }
 
 
@@ -239,7 +237,7 @@ static uint32_t DAP_Connect(const uint8_t *request, uint8_t *response) {
   }
 
   *response = (uint8_t)port;
-  return ((1U << 16) | 1U);
+  return (((uint32_t)1U << 16) | 1U);
 }
 
 
@@ -366,7 +364,7 @@ static uint32_t DAP_SWJ_Pins(const uint8_t *request, uint8_t *response) {
   *response = 0U;
 #endif
 
-  return ((6U << 16) | 1U);
+  return (((uint32_t)6U << 16) | 1U);
 }
 
 
@@ -377,42 +375,14 @@ static uint32_t DAP_SWJ_Pins(const uint8_t *request, uint8_t *response) {
 //             number of bytes in request (upper 16 bits)
 static uint32_t DAP_SWJ_Clock(const uint8_t *request, uint8_t *response) {
 #if ((DAP_SWD != 0) || (DAP_JTAG != 0))
-  uint32_t clock;
-  uint32_t delay;
-
-  clock = (uint32_t)(*(request+0) <<  0) |
-          (uint32_t)(*(request+1) <<  8) |
-          (uint32_t)(*(request+2) << 16) |
-          (uint32_t)(*(request+3) << 24);
-
-  if (clock == 0U) {
-    *response = DAP_ERROR;
-    return ((4U << 16) | 1U);
-  }
-
-  if (clock >= MAX_SWJ_CLOCK(DELAY_FAST_CYCLES)) {
-    DAP_Data.fast_clock  = 1U;
-    DAP_Data.clock_delay = 1U;
-  } else {
-    DAP_Data.fast_clock  = 0U;
-
-    delay = ((CPU_CLOCK/2U) + (clock - 1U)) / clock;
-    if (delay > IO_PORT_WRITE_CYCLES) {
-      delay -= IO_PORT_WRITE_CYCLES;
-      delay  = (delay + (DELAY_SLOW_CYCLES - 1U)) / DELAY_SLOW_CYCLES;
-    } else {
-      delay  = 1U;
-    }
-
-    DAP_Data.clock_delay = delay;
-  }
+  (void)request;
 
   *response = DAP_OK;
 #else
   *response = DAP_ERROR;
 #endif
 
-  return ((4U << 16) | 1U);
+  return (((uint32_t)4U << 16) | 1U);
 }
 
 
@@ -438,7 +408,7 @@ static uint32_t DAP_SWJ_Sequence(const uint8_t *request, uint8_t *response) {
 
   count = (count + 7U) >> 3;
 
-  return (((count + 1U) << 16) | 1U);
+  return (((uint32_t)(count + 1U) << 16) | 1U);
 }
 
 
@@ -460,7 +430,7 @@ static uint32_t DAP_SWD_Configure(const uint8_t *request, uint8_t *response) {
   *response = DAP_ERROR;
 #endif
 
-  return ((1U << 16) | 1U);
+  return (((uint32_t)1U << 16) | 1U);
 }
 
 
@@ -638,7 +608,7 @@ static uint32_t DAP_JTAG_IDCode(const uint8_t *request, uint8_t *response) {
 id_error:
 #endif
   *response = DAP_ERROR;
-  return ((1U << 16) | 1U);
+  return (((uint32_t)1U << 16) | 1U);
 }
 
 
@@ -656,7 +626,7 @@ static uint32_t DAP_TransferConfigure(const uint8_t *request, uint8_t *response)
                                   (uint16_t)(*(request+4) << 8);
 
   *response = DAP_OK;
-  return ((5U << 16) | 1U);
+  return (((uint32_t)5U << 16) | 1U);
 }
 
 
@@ -1777,7 +1747,7 @@ void DAP_Setup(void) {
 
   // Default settings
   DAP_Data.debug_port  = 0U;
-  DAP_Data.fast_clock  = 0U;
+  DAP_Data.fast_clock  = 1U;
   DAP_Data.clock_delay = CLOCK_DELAY(DAP_DEFAULT_SWJ_CLOCK);
   DAP_Data.transfer.idle_cycles = 0U;
   DAP_Data.transfer.retry_count = 100U;
