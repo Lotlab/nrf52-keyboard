@@ -227,8 +227,8 @@ extern "C" {
 #endif
 
 // Functions
-extern void SWJ_Sequence(uint32_t count, const uint8_t* data);
-extern void SWD_Sequence(uint32_t info, const uint8_t* swdo, uint8_t* swdi);
+extern void SWJ_Sequence(uint16_t count, const uint8_t* data);
+extern void SWD_Sequence(uint8_t info, const uint8_t* swdo, uint8_t* swdi);
 extern void JTAG_Sequence(uint32_t info, const uint8_t* tdi, uint8_t* tdo);
 extern void JTAG_IR(uint32_t ir);
 extern uint32_t JTAG_ReadIDCode(void);
@@ -262,9 +262,9 @@ extern uint32_t Manchester_SWO_Control(uint32_t active);
 extern void Manchester_SWO_Capture(uint8_t* buf, uint32_t num);
 extern uint32_t Manchester_SWO_GetCount(void);
 
-extern uint32_t DAP_ProcessVendorCommand(const uint8_t* request, uint8_t* response);
-extern uint32_t DAP_ProcessCommand(const uint8_t* request, uint8_t* response);
-extern uint32_t DAP_ExecuteCommand(const uint8_t* request, uint8_t* response);
+extern uint16_t DAP_ProcessVendorCommand(const uint8_t* request, uint8_t* response);
+extern uint16_t DAP_ProcessCommand(const uint8_t* request, uint8_t* response);
+extern uint16_t DAP_ExecuteCommand(const uint8_t* request, uint8_t* response);
 
 extern void DAP_Setup(void);
 

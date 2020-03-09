@@ -139,37 +139,29 @@ static uint8_t DAP_Info(uint8_t id, uint8_t* info)
     return (length);
 }
 
-// Delay for specified time
-//    delay:  delay time in ms
-void Delayms(uint32_t delay)
-{
-    DelayMs(delay);
-}
-
 // Process Delay command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_Delay(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_Delay(const uint8_t* request, uint8_t* response)
 {
-    uint32_t delay;
+    uint16_t delay;
 
-    delay = (uint32_t)(*(request + 0)) | (uint32_t)(*(request + 1) << 8);
-    Delayms(delay);
+    delay = (uint16_t)(*(request + 0)) | (uint16_t)(*(request + 1) << 8);
+    DelayMs(delay);
 
     *response = DAP_OK;
-    return (((uint32_t)2U << 16) | 1U);
+    return (((uint16_t)2U << 8) | 1U);
 }
 
 // Process Host Status command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_HostStatus(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_HostStatus(const uint8_t* request, uint8_t* response)
 {
-
     switch (*request) {
     case DAP_DEBUGGER_CONNECTED:
         LED_CONNECTED_OUT((*(request + 1) & 1U));
@@ -179,19 +171,19 @@ static uint32_t DAP_HostStatus(const uint8_t* request, uint8_t* response)
         break;
     default:
         *response = DAP_ERROR;
-        return (((uint32_t)2U << 16) | 1U);
+        return (((uint16_t)2U << 8) | 1U);
     }
 
     *response = DAP_OK;
-    return (((uint32_t)2U << 16) | 1U);
+    return (((uint16_t)2U << 8) | 1U);
 }
 
 // Process Connect command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_Connect(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_Connect(const uint8_t* request, uint8_t* response)
 {
     uint8_t port;
 
@@ -212,13 +204,13 @@ static uint32_t DAP_Connect(const uint8_t* request, uint8_t* response)
     }
 
     *response = port;
-    return (((uint32_t)1U << 16) | 1U);
+    return (((uint16_t)1U << 8) | 1U);
 }
 
 // Process Disconnect command and prepare response
 //   response: pointer to response data
 //   return:   number of bytes in response
-static uint32_t DAP_Disconnect(uint8_t* response)
+static uint8_t DAP_Disconnect(uint8_t* response)
 {
     DAP_Data.debug_port = DAP_PORT_DISABLED;
     PORT_OFF();
@@ -230,7 +222,7 @@ static uint32_t DAP_Disconnect(uint8_t* response)
 // Process Reset Target command and prepare response
 //   response: pointer to response data
 //   return:   number of bytes in response
-static uint32_t DAP_ResetTarget(uint8_t* response)
+static uint8_t DAP_ResetTarget(uint8_t* response)
 {
     *(response + 1) = RESET_TARGET();
     *(response + 0) = DAP_OK;
@@ -240,20 +232,17 @@ static uint32_t DAP_ResetTarget(uint8_t* response)
 // Process SWJ Pins command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_SWJ_Pins(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_SWJ_Pins(const uint8_t* request, uint8_t* response)
 {
     uint8_t value;
     uint8_t select;
-    uint32_t wait;
+    uint8_t wait;
 
     value = *(request + 0);
     select = *(request + 1);
-    wait = (uint32_t)(*(request + 2) << 0)
-        | (uint32_t)(*(request + 3) << 8)
-        | (uint32_t)((uint32_t)(*(request + 4)) << 16)
-        | (uint32_t)((uint32_t)(*(request + 5)) << 24);
+    wait = (*(request + 2)) | (*(request + 3)) | (*(request + 4)) | (*(request + 5));
 
     if ((select & (1U << DAP_SWJ_SWCLK_TCK)) != 0U) {
         if ((value & (1U << DAP_SWJ_SWCLK_TCK)) != 0U) {
@@ -280,7 +269,6 @@ static uint32_t DAP_SWJ_Pins(const uint8_t* request, uint8_t* response)
     }
 
     if (wait != 0U) {
-        wait = 1U;
         do {
             if ((select & (1U << DAP_SWJ_SWCLK_TCK)) != 0U) {
                 if ((value >> DAP_SWJ_SWCLK_TCK) ^ PIN_SWCLK_TCK_IN()) {
@@ -315,27 +303,27 @@ static uint32_t DAP_SWJ_Pins(const uint8_t* request, uint8_t* response)
 
     *response = (uint8_t)value;
 
-    return (((uint32_t)6U << 16) | 1U);
+    return (((uint16_t)6U << 8) | 1U);
 }
 
 // Process SWJ Clock command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_SWJ_Clock(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_SWJ_Clock(const uint8_t* request, uint8_t* response)
 {
     (void)request;
     *response = DAP_OK;
-    return (((uint32_t)4U << 16) | 1U);
+    return (((uint16_t)4U << 8) | 1U);
 }
 
 // Process SWJ Sequence command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_SWJ_Sequence(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_SWJ_Sequence(const uint8_t* request, uint8_t* response)
 {
     uint16_t count;
 
@@ -349,15 +337,15 @@ static uint32_t DAP_SWJ_Sequence(const uint8_t* request, uint8_t* response)
 
     count = (count + 7U) >> 3;
 
-    return (((uint32_t)(count + 1U) << 16) | 1U);
+    return (((uint16_t)(count + 1U) << 8) | 1U);
 }
 
 // Process SWD Configure command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_SWD_Configure(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_SWD_Configure(const uint8_t* request, uint8_t* response)
 {
     uint8_t value;
 
@@ -367,15 +355,15 @@ static uint32_t DAP_SWD_Configure(const uint8_t* request, uint8_t* response)
 
     *response = DAP_OK;
 
-    return (((uint32_t)1U << 16) | 1U);
+    return (((uint16_t)1U << 8) | 1U);
 }
 
 // Process SWD Sequence command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_SWD_Sequence(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_SWD_Sequence(const uint8_t* request, uint8_t* response)
 {
     uint8_t sequence_info;
     uint8_t sequence_count;
@@ -414,15 +402,15 @@ static uint32_t DAP_SWD_Sequence(const uint8_t* request, uint8_t* response)
         }
     }
 
-    return (((uint32_t)request_count << 16) | response_count);
+    return (((uint16_t)request_count << 8) | response_count);
 }
 
 // Process JTAG Sequence command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_JTAG_Sequence(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_JTAG_Sequence(const uint8_t* request, uint8_t* response)
 {
     uint8_t sequence_info;
     uint8_t sequence_count;
@@ -446,56 +434,56 @@ static uint32_t DAP_JTAG_Sequence(const uint8_t* request, uint8_t* response)
         request_count += count + 1U;
     }
 
-    return (((uint32_t)request_count << 16) | response_count);
+    return (((uint16_t)request_count << 8) | response_count);
 }
 
 // Process JTAG Configure command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_JTAG_Configure(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_JTAG_Configure(const uint8_t* request, uint8_t* response)
 {
     uint8_t count;
     count = *request;
     *response = DAP_ERROR;
 
-    return ((((uint32_t)count + 1U) << 16) | 1U);
+    return ((((uint16_t)count + 1U) << 8) | 1U);
 }
 
 // Process JTAG IDCODE command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_JTAG_IDCode(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_JTAG_IDCode(const uint8_t* request, uint8_t* response)
 {
     (void)request;
     *response = DAP_ERROR;
-    return (((uint32_t)1U << 16) | 1U);
+    return (((uint16_t)1U << 8) | 1U);
 }
 
 // Process Transfer Configure command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_TransferConfigure(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_TransferConfigure(const uint8_t* request, uint8_t* response)
 {
     DAP_Data.transfer.idle_cycles = *(request + 0);
     DAP_Data.transfer.retry_count = (uint16_t) * (request + 1) | (uint16_t)(*(request + 2) << 8);
     DAP_Data.transfer.match_retry = (uint16_t) * (request + 3) | (uint16_t)(*(request + 4) << 8);
 
     *response = DAP_OK;
-    return (((uint32_t)5U << 16) | 1U);
+    return (((uint16_t)5U << 8) | 1U);
 }
 
 // Process SWD Transfer command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_SWD_Transfer(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_SWD_Transfer(const uint8_t* request, uint8_t* response)
 {
     const uint8_t* request_head;
     uint8_t request_count;
@@ -706,15 +694,15 @@ end:
     *(response_head + 0) = (uint8_t)response_count;
     *(response_head + 1) = (uint8_t)response_value;
 
-    return (((uint32_t)(request - request_head) << 16) | (uint32_t)(response - response_head));
+    return (((uint16_t)(request - request_head) << 8) | (uint16_t)(response - response_head));
 }
 
 // Process Dummy Transfer command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_Dummy_Transfer(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_Dummy_Transfer(const uint8_t* request, uint8_t* response)
 {
     const uint8_t* request_head;
     uint8_t request_count;
@@ -744,17 +732,17 @@ static uint32_t DAP_Dummy_Transfer(const uint8_t* request, uint8_t* response)
     *(response + 0) = 0U; // Response count
     *(response + 1) = 0U; // Response value
 
-    return (((uint32_t)(request - request_head) << 16) | 2U);
+    return (((uint16_t)(request - request_head) << 8) | 2U);
 }
 
 // Process Transfer command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_Transfer(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_Transfer(const uint8_t* request, uint8_t* response)
 {
-    uint32_t num;
+    uint16_t num;
 
     switch (DAP_Data.debug_port) {
     case DAP_PORT_SWD:
@@ -772,7 +760,7 @@ static uint32_t DAP_Transfer(const uint8_t* request, uint8_t* response)
 //   request:  pointer to request data
 //   response: pointer to response data
 //   return:   number of bytes in response
-static uint32_t DAP_SWD_TransferBlock(const uint8_t* request, uint8_t* response)
+static uint8_t DAP_SWD_TransferBlock(const uint8_t* request, uint8_t* response)
 {
     uint16_t request_count;
     uint8_t request_value;
@@ -859,17 +847,17 @@ end:
     *(response_head + 1) = (uint8_t)(response_count >> 8);
     *(response_head + 2) = (uint8_t)response_value;
 
-    return ((uint32_t)(response - response_head));
+    return ((uint8_t)(response - response_head));
 }
 
 // Process Transfer Block command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_TransferBlock(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_TransferBlock(const uint8_t* request, uint8_t* response)
 {
-    uint32_t num;
+    uint8_t num;
 
     switch (DAP_Data.debug_port) {
     case DAP_PORT_SWD:
@@ -885,13 +873,11 @@ static uint32_t DAP_TransferBlock(const uint8_t* request, uint8_t* response)
 
     if ((*(request + 3) & DAP_TRANSFER_RnW) != 0U) {
         // Read register block
-        num |= (uint32_t)4U << 16;
+        return ((uint16_t)4U << 8) | num;
     } else {
         // Write register block
-        num |= (4U + (((uint32_t)(*(request + 1)) | (uint32_t)(*(request + 2) << 8)) * 4)) << 16;
+        return ((4U + (((uint16_t)(*(request + 1)) | (uint16_t)(*(request + 2) << 8)) * 4)) << 8) | num;
     }
-
-    return (num);
 }
 
 // Process SWD Write ABORT command and prepare response
@@ -910,9 +896,9 @@ static uint8_t DAP_SWD_WriteAbort(const uint8_t* request, uint8_t* response)
 // Process Write ABORT command and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-static uint32_t DAP_WriteAbort(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+static uint16_t DAP_WriteAbort(const uint8_t* request, uint8_t* response)
 {
     uint8_t num;
 
@@ -925,43 +911,43 @@ static uint32_t DAP_WriteAbort(const uint8_t* request, uint8_t* response)
         num = 1U;
         break;
     }
-    return (((uint32_t)5U << 16) | num);
+    return (((uint16_t)5U << 8) | num);
 }
 
 // Process DAP Vendor command request and prepare response
 // Default function (can be overridden)
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-uint32_t DAP_ProcessVendorCommand(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+uint16_t DAP_ProcessVendorCommand(const uint8_t* request, uint8_t* response)
 {
     (void)request;
     *response = ID_DAP_Invalid;
-    return (((uint32_t)1U << 16) | 1U);
+    return (((uint16_t)1U << 8) | 1U);
 }
 
 // Process DAP Vendor extended command request and prepare response
 // Default function (can be overridden)
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-uint32_t DAP_ProcessVendorCommandEx(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+uint16_t DAP_ProcessVendorCommandEx(const uint8_t* request, uint8_t* response)
 {
     (void)request;
     *response = ID_DAP_Invalid;
-    return (((uint32_t)1U << 16) | 1U);
+    return (((uint16_t)1U << 8) | 1U);
 }
 
 // Process DAP command request and prepare response
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-uint32_t DAP_ProcessCommand(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+uint16_t DAP_ProcessCommand(const uint8_t* request, uint8_t* response)
 {
-    uint32_t num;
+    uint16_t num;
 
     if ((*request >= ID_DAP_Vendor0) && (*request <= ID_DAP_Vendor31)) {
         return DAP_ProcessVendorCommand(request, response);
@@ -977,7 +963,7 @@ uint32_t DAP_ProcessCommand(const uint8_t* request, uint8_t* response)
     case ID_DAP_Info:
         num = DAP_Info(*request, response + 1);
         *response = (uint8_t)num;
-        return (((uint32_t)2U << 16) + 2U + num);
+        return (((uint32_t)2U << 8) + 2U + num);
 
     case ID_DAP_HostStatus:
         num = DAP_HostStatus(request, response);
@@ -1041,32 +1027,32 @@ uint32_t DAP_ProcessCommand(const uint8_t* request, uint8_t* response)
 
     default:
         *(response - 1) = ID_DAP_Invalid;
-        return (((uint32_t)1U << 16) | 1U);
+        return (((uint16_t)1U << 8) | 1U);
     }
 
-    return (((uint32_t)1U << 16) + 1U + num);
+    return (((uint16_t)1U << 8) + 1U + num);
 }
 
 // Execute DAP command (process request and prepare response)
 //   request:  pointer to request data
 //   response: pointer to response data
-//   return:   number of bytes in response (lower 16 bits)
-//             number of bytes in request (upper 16 bits)
-uint32_t DAP_ExecuteCommand(const uint8_t* request, uint8_t* response)
+//   return:   number of bytes in response (lower 8 bits)
+//             number of bytes in request (upper 8 bits)
+uint16_t DAP_ExecuteCommand(const uint8_t* request, uint8_t* response)
 {
-    uint32_t num, n;
+    uint16_t num, n;
     uint8_t cnt;
 
     if (*request == ID_DAP_ExecuteCommands) {
         *response++ = *request++;
         cnt = *request++;
         *response++ = (uint8_t)cnt;
-        num = ((uint32_t)2U << 16) | 2U;
+        num = ((uint16_t)2U << 8) | 2U;
         while (cnt--) {
             n = DAP_ProcessCommand(request, response);
             num += n;
-            request += (uint16_t)(n >> 16);
-            response += (uint16_t)n;
+            request += (uint8_t)(n >> 8);
+            response += (uint8_t)n;
         }
         return (num);
     }

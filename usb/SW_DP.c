@@ -60,10 +60,10 @@
 //   data:   pointer to sequence bit data
 //   return: none
 #if ((DAP_SWD != 0) || (DAP_JTAG != 0))
-void SWJ_Sequence(uint32_t count, const uint8_t* data)
+void SWJ_Sequence(uint16_t count, const uint8_t* data)
 {
-    uint32_t val;
-    uint32_t n;
+    uint8_t val;
+    uint8_t n;
 
     val = 0U;
     n = 0U;
@@ -90,11 +90,11 @@ void SWJ_Sequence(uint32_t count, const uint8_t* data)
 //   swdi:   pointer to SWDIO captured data
 //   return: none
 #if (DAP_SWD != 0)
-void SWD_Sequence(uint32_t info, const uint8_t* swdo, uint8_t* swdi)
+void SWD_Sequence(uint8_t info, const uint8_t* swdo, uint8_t* swdi)
 {
-    uint32_t val;
-    uint32_t bit;
-    uint32_t n, k;
+    uint8_t val;
+    uint8_t bit;
+    uint8_t n, k;
 
     n = info & SWD_SEQUENCE_CLK;
     if (n == 0U) {
@@ -129,10 +129,10 @@ void SWD_Sequence(uint32_t info, const uint8_t* swdo, uint8_t* swdi)
 //   return:  ACK[2:0]
 uint8_t SWD_Transfer(uint8_t request, uint8_t* data)
 {
-    uint32_t ack;
-    uint32_t bit;
-    uint32_t val;
-    uint32_t parity;
+    uint8_t ack;
+    uint8_t bit;
+    uint8_t val;
+    uint8_t parity;
 
     /* Packet Request */
     parity = 0U;
@@ -173,21 +173,19 @@ uint8_t SWD_Transfer(uint8_t request, uint8_t* data)
             /* Read data */
             val = 0U;
             parity = 0U;
-            for (uint8_t n = 32U; n; n--) {
-                SW_READ_BIT(bit); /* Read RDATA[0:31] */
-                parity += bit;
-                val >>= 1;
-                val |= bit << 31;
+            for (uint8_t b = 0; b < 4; b++) {
+                for (uint8_t n = 8; n; n--) {
+                    SW_READ_BIT(bit); /* Read RDATA[0:31] */
+                    parity += bit;
+                    if (data) {
+                        data[b - 1] >>= 1;
+                        data[b - 1] |= bit << 7;
+                    }
+                }
             }
             SW_READ_BIT(bit); /* Read Parity */
             if ((parity ^ bit) & 1U) {
                 ack = DAP_TRANSFER_ERROR;
-            }
-            if (data) {
-                *data = (uint8_t)val;
-                *(data + 1) = (uint8_t)(val >> 8);
-                *(data + 2) = (uint8_t)(val >> 16);
-                *(data + 3) = (uint8_t)(val >> 24);
             }
             /* Turnaround */
             for (uint8_t n = DAP_Data.swd_conf.turnaround; n; n--) {
