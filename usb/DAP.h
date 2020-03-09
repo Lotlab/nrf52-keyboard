@@ -262,7 +262,6 @@ extern uint32_t Manchester_SWO_Control(uint32_t active);
 extern void Manchester_SWO_Capture(uint8_t* buf, uint32_t num);
 extern uint32_t Manchester_SWO_GetCount(void);
 
-extern uint16_t DAP_ProcessVendorCommand(const uint8_t* request, uint8_t* response);
 extern uint16_t DAP_ProcessCommand(const uint8_t* request, uint8_t* response);
 extern uint16_t DAP_ExecuteCommand(const uint8_t* request, uint8_t* response);
 
