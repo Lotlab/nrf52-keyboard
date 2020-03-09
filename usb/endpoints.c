@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "CH554_SDCC.h"
-#include "DAP_hid.h"
 #include "compiler.h"
 #include "descriptor.h"
 #include "endpoints.h"
@@ -406,8 +405,8 @@ void EP3_IN()
 
 void EP4_IN()
 {
-    if (!dap_EP_IN())
-        EP_IN_FINISH(4);
+    EP_IN_FINISH(4);
+    usb_state.is_busy = false;
 }
 
 static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet)

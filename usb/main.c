@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "CH554_SDCC.h"
-#include "DAP_hid.h"
 #include "app_timer.h"
 #include "compiler.h"
 #include "endpoints.h"
@@ -209,7 +208,6 @@ static void main()
 
     USBDeviceInit(); //USB设备模式初始化
     EnableWatchDog();
-    dap_init();
     EA = 1; //允许单片机中断
     UEP1_T_LEN = 0; //预使用发送长度一定要清空
     UEP2_T_LEN = 0; //预使用发送长度一定要清空
