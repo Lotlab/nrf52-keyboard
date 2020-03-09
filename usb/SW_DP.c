@@ -127,14 +127,12 @@ void SWD_Sequence(uint32_t info, const uint8_t* swdo, uint8_t* swdi)
 //   request: A[3:2] RnW APnDP
 //   data:    DATA[31:0]
 //   return:  ACK[2:0]
-uint8_t SWD_Transfer(uint32_t request, uint32_t* data)
+uint8_t SWD_Transfer(uint8_t request, uint8_t* data)
 {
     uint32_t ack;
     uint32_t bit;
     uint32_t val;
     uint32_t parity;
-
-    uint32_t n;
 
     /* Packet Request */
     parity = 0U;
@@ -157,7 +155,7 @@ uint8_t SWD_Transfer(uint32_t request, uint32_t* data)
 
     /* Turnaround */
     PIN_SWDIO_OUT_DISABLE();
-    for (n = DAP_Data.swd_conf.turnaround; n; n--) {
+    for (uint8_t n = DAP_Data.swd_conf.turnaround; n; n--) {
         SW_CLOCK_CYCLE();
     }
 
@@ -175,7 +173,7 @@ uint8_t SWD_Transfer(uint32_t request, uint32_t* data)
             /* Read data */
             val = 0U;
             parity = 0U;
-            for (n = 32U; n; n--) {
+            for (uint8_t n = 32U; n; n--) {
                 SW_READ_BIT(bit); /* Read RDATA[0:31] */
                 parity += bit;
                 val >>= 1;
@@ -186,26 +184,31 @@ uint8_t SWD_Transfer(uint32_t request, uint32_t* data)
                 ack = DAP_TRANSFER_ERROR;
             }
             if (data) {
-                *data = val;
+                *data = (uint8_t)val;
+                *(data + 1) = (uint8_t)(val >> 8);
+                *(data + 2) = (uint8_t)(val >> 16);
+                *(data + 3) = (uint8_t)(val >> 24);
             }
             /* Turnaround */
-            for (n = DAP_Data.swd_conf.turnaround; n; n--) {
+            for (uint8_t n = DAP_Data.swd_conf.turnaround; n; n--) {
                 SW_CLOCK_CYCLE();
             }
             PIN_SWDIO_OUT_ENABLE();
         } else {
             /* Turnaround */
-            for (n = DAP_Data.swd_conf.turnaround; n; n--) {
+            for (uint8_t n = DAP_Data.swd_conf.turnaround; n; n--) {
                 SW_CLOCK_CYCLE();
             }
             PIN_SWDIO_OUT_ENABLE();
             /* Write data */
-            val = *data;
             parity = 0U;
-            for (n = 32U; n; n--) {
-                SW_WRITE_BIT(val); /* Write WDATA[0:31] */
-                parity += val;
-                val >>= 1;
+            for (uint8_t b = 4; b; b--) {
+                val = *(data + b - 1);
+                for (uint8_t n = 8U; n; n--) {
+                    SW_WRITE_BIT(val); /* Write WDATA[0:31] */
+                    parity += val;
+                    val >>= 1;
+                }
             }
             SW_WRITE_BIT(parity); /* Write Parity Bit */
         }
@@ -214,10 +217,9 @@ uint8_t SWD_Transfer(uint32_t request, uint32_t* data)
             DAP_Data.timestamp = TIMESTAMP_GET();
         }
         /* Idle cycles */
-        n = DAP_Data.transfer.idle_cycles;
-        if (n) {
+        if (DAP_Data.transfer.idle_cycles) {
             PIN_SWDIO_OUT(0U);
-            for (; n; n--) {
+            for (uint8_t cycles = DAP_Data.transfer.idle_cycles; cycles; cycles--) {
                 SW_CLOCK_CYCLE();
             }
         }
@@ -228,18 +230,18 @@ uint8_t SWD_Transfer(uint32_t request, uint32_t* data)
     if ((ack == DAP_TRANSFER_WAIT) || (ack == DAP_TRANSFER_FAULT)) {
         /* WAIT or FAULT response */
         if (DAP_Data.swd_conf.data_phase && ((request & DAP_TRANSFER_RnW) != 0U)) {
-            for (n = 32U + 1U; n; n--) {
+            for (uint8_t n = 32U + 1U; n; n--) {
                 SW_CLOCK_CYCLE(); /* Dummy Read RDATA[0:31] + Parity */
             }
         }
         /* Turnaround */
-        for (n = DAP_Data.swd_conf.turnaround; n; n--) {
+        for (uint8_t n = DAP_Data.swd_conf.turnaround; n; n--) {
             SW_CLOCK_CYCLE();
         }
         PIN_SWDIO_OUT_ENABLE();
         if (DAP_Data.swd_conf.data_phase && ((request & DAP_TRANSFER_RnW) == 0U)) {
             PIN_SWDIO_OUT(0U);
-            for (n = 32U + 1U; n; n--) {
+            for (uint8_t n = 32U + 1U; n; n--) {
                 SW_CLOCK_CYCLE(); /* Dummy Write WDATA[0:31] + Parity */
             }
         }
@@ -248,7 +250,7 @@ uint8_t SWD_Transfer(uint32_t request, uint32_t* data)
     }
 
     /* Protocol error */
-    for (n = DAP_Data.swd_conf.turnaround + 32U + 1U; n; n--) {
+    for (uint8_t n = DAP_Data.swd_conf.turnaround + 32U + 1U; n; n--) {
         SW_CLOCK_CYCLE(); /* Back off data phase */
     }
     PIN_SWDIO_OUT_ENABLE();

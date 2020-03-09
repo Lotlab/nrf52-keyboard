@@ -203,7 +203,6 @@
 // DAP Data structure
 typedef struct {
     uint8_t debug_port; // Debug Port
-    uint8_t fast_clock; // Fast Clock Flag
     uint8_t padding[2];
     uint32_t clock_delay; // Clock Delay
     uint32_t timestamp; // Last captured Timestamp
@@ -212,25 +211,12 @@ typedef struct {
         uint8_t padding[3];
         uint16_t retry_count; // Number of retries after WAIT response
         uint16_t match_retry; // Number of retries if read value does not match
-        uint32_t match_mask; // Match Mask
+        uint8_t match_mask[4]; // Match Mask
     } transfer;
-#if (DAP_SWD != 0)
     struct { // SWD Configuration
         uint8_t turnaround; // Turnaround period
         uint8_t data_phase; // Always generate Data Phase
     } swd_conf;
-#endif
-#if (DAP_JTAG != 0)
-    struct { // JTAG Device Chain
-        uint8_t count; // Number of devices
-        uint8_t index; // Device index (device at TDO has index 0)
-#if (DAP_JTAG_DEV_CNT != 0)
-        uint8_t ir_length[DAP_JTAG_DEV_CNT]; // IR Length in bits
-        uint16_t ir_before[DAP_JTAG_DEV_CNT]; // Bits before IR
-        uint16_t ir_after[DAP_JTAG_DEV_CNT]; // Bits after IR
-#endif
-    } jtag_dev;
-#endif
 } DAP_Data_t;
 
 extern __XDATA DAP_Data_t DAP_Data; // DAP Data
@@ -248,7 +234,7 @@ extern void JTAG_IR(uint32_t ir);
 extern uint32_t JTAG_ReadIDCode(void);
 extern void JTAG_WriteAbort(uint32_t data);
 extern uint8_t JTAG_Transfer(uint32_t request, uint32_t* data);
-extern uint8_t SWD_Transfer(uint32_t request, uint32_t* data);
+extern uint8_t SWD_Transfer(uint8_t request, uint8_t* data);
 
 extern void Delayms(uint32_t delay);
 
@@ -281,26 +267,6 @@ extern uint32_t DAP_ProcessCommand(const uint8_t* request, uint8_t* response);
 extern uint32_t DAP_ExecuteCommand(const uint8_t* request, uint8_t* response);
 
 extern void DAP_Setup(void);
-
-// Configurable delay for clock generation
-#ifndef DELAY_SLOW_CYCLES
-#define DELAY_SLOW_CYCLES 3U // Number of cycles for one iteration
-#endif
-#if defined(__CC_ARM)
-__STATIC_FORCEINLINE void PIN_DELAY_SLOW(uint32_t delay)
-{
-    uint32_t count = delay;
-    while (--count)
-        ;
-}
-#else
-void PIN_DELAY_SLOW(uint32_t delay)
-{
-    uint32_t count = delay;
-    while (--count)
-        ;
-}
-#endif
 
 // Fixed delay for fast clock generation
 #ifndef DELAY_FAST_CYCLES
