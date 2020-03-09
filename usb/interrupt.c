@@ -20,7 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "endpoints.h"
 // #include <stdio.h>
 
-const __CODE void (*EndpointPacketOutHandler[5])(void) = {
+typedef void (*handler_t)(void);
+
+const __CODE handler_t EndpointPacketOutHandler[5] = {
     USB_OUT_EP0,
     USB_OUT_EP1,
     USB_OUT_EP2,
@@ -28,7 +30,7 @@ const __CODE void (*EndpointPacketOutHandler[5])(void) = {
     USB_OUT_EP4
 };
 
-const __CODE void (*EndpointPacketInHandler[5])(void) = {
+const __CODE handler_t EndpointPacketInHandler[5] = {
     USB_IN_EP0,
     USB_IN_EP1,
     USB_IN_EP2,
@@ -36,7 +38,7 @@ const __CODE void (*EndpointPacketInHandler[5])(void) = {
     USB_IN_EP4
 };
 
-const __CODE void (*EndpointPacketSetupHandler[5])(void) = {
+const __CODE handler_t EndpointPacketSetupHandler[5] = {
     USB_SETUP_EP0,
     USB_SETUP_EP1,
     USB_SETUP_EP2,
@@ -44,7 +46,7 @@ const __CODE void (*EndpointPacketSetupHandler[5])(void) = {
     USB_SETUP_EP4
 };
 
-const __CODE void (*EndpointPacketSofHandler[5])(void) = {
+const __CODE handler_t EndpointPacketSofHandler[5] = {
     USB_SOF_EP0,
     USB_SOF_EP1,
     USB_SOF_EP2,
