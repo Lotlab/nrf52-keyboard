@@ -8,18 +8,15 @@ extern uint8_t __XDATA_AT(0xc0) Ep1Buffer[];
 extern uint8_t __XDATA_AT(0x140) Ep2Buffer[];
 extern uint8_t __XDATA_AT(0x180) Ep3Buffer[];
 
-extern uint8_t keyboard_protocol;
-extern bool usb_ready, usb_busy;
-
 enum UsbSetupState {
     SETUP_IDLE,     // 当前处于空闲状态
-    SETUP_DATA_IN,  // 即将传入数据 (DATA OUT)
-    SETUP_DATA_OUT, // 即将传出数据 (DATA IN)
+    SETUP_DATA_IN,  // 即将传出数据 (DATA IN)
+    SETUP_DATA_OUT, // 即将传入数据 (DATA OUT)
     SETUP_STATE_IN, // 传入后返回状态 (DATA IN)
     SETUP_STATE_OUT // 传出后返回状态 (DATA OUT)
 };
 
-union Usb_state
+union UsbState
 {
     uint8_t raw;
     struct
@@ -33,7 +30,7 @@ union Usb_state
     };
 };
 
-extern union Usb_state usb_state;
+extern union UsbState usb_state;
 
 extern void USBDeviceInit();
 

@@ -110,7 +110,9 @@
         "chrono": "c",
         "algorithm": "c",
         "nrfx_qdec.h": "c",
-        "adc_convert.h": "c"
+        "adc_convert.h": "c",
+        "functional": "c",
+        "tuple": "c"
     },
     "C_Cpp.default.includePath": [
         "C:/Program Files (x86)/GNU Tools ARM Embedded/7 2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include",

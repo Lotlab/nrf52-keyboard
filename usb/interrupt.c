@@ -56,7 +56,6 @@ const __CODE void (*EndpointPacketSofHandler[5])(void) = {
  */
 static void UsbTransfurEventHandler()
 {
-
     uint8_t ep = USB_INT_ST & MASK_UIS_ENDP;
 
     switch (USB_INT_ST & MASK_UIS_TOKEN) {
@@ -92,6 +91,11 @@ static void UsbBusResetEventHandler()
     UIF_SUSPEND = 0;
     UIF_TRANSFER = 0;
     UIF_BUS_RST = 0; //清中断标志
+
+    // 重置状态
+    usb_state.is_ready = false;
+    usb_state.protocol = true;
+    usb_state.setup_state = SETUP_IDLE;
 }
 
 /** \brief USB 总线挂起或唤醒事件处理

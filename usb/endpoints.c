@@ -53,11 +53,11 @@ uint8_t __XDATA_AT(0x140) Ep2Buffer[MAX_PACKET_SIZE];
  */
 uint8_t __XDATA_AT(0x180) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
 
-static uint8_t SetupReq, SetupLen, UsbConfig;
-static uint8_t* pDescr;
+static uint8_t DataInLen, UsbConfig, UsbAddr;
+static uint8_t* pDataIn;
 
 // USB 状态
-union Usb_state usb_state = {
+union UsbState usb_state = {
     .protocol = true, // HID规范要求默认的Protocol是Report
 };
 
@@ -117,6 +117,11 @@ static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet);
  * 设置端点 OUT STALL 响应并反转 DATA
  */
 #define EP_OUT_STALL_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & (~bUEP_R_TOG) | UEP_R_RES_STALL)
+/**
+ * @brief 为SETUP请求响应STALL
+ * 
+ */
+#define SETUP_STALL() EP_SET(0, bUEP_R_TOG | bUEP_T_TOG, UEP_R_RES_STALL | UEP_T_RES_STALL)
 
 void nop()
 {
@@ -124,214 +129,259 @@ void nop()
 
 void EP0_OUT()
 {
-    switch (SetupReq) {
-    case USB_GET_DESCRIPTOR:
+    switch (usb_state.setup_state) {
+    case SETUP_IDLE:
+        /* code */
+        break;
+    case SETUP_STATE_OUT:
         // 重置端点状态，等待下次传输
         EP0_RESET();
+        usb_state.setup_state = SETUP_IDLE;
+        break;
+    case SETUP_DATA_OUT:
+        // 似乎没有下传的数据
+        break;
+    default:
+        // ERROR
+        EP0_RESET();
+        usb_state.setup_state = SETUP_IDLE;
         break;
     }
 }
 void EP0_IN()
 {
-    uint8_t len = 0;
-    switch (SetupReq) {
-    case USB_GET_DESCRIPTOR:
-        len = SetupLen >= THIS_ENDP0_SIZE ? THIS_ENDP0_SIZE : SetupLen; //本次传输长度
-        memcpy(Ep0Buffer, pDescr, len); //加载上传数据
-        SetupLen -= len;
-        pDescr += len;
+    switch (usb_state.setup_state) {
+    case SETUP_IDLE:
+        /* code */
+        break;
+
+    case SETUP_DATA_IN:
+        if (DataInLen == 0) {
+            usb_state.setup_state = SETUP_STATE_OUT;
+        }
+        uint8_t len = DataInLen >= THIS_ENDP0_SIZE ? THIS_ENDP0_SIZE : DataInLen; //本次传输长度
+        memcpy(Ep0Buffer, pDataIn, len); //加载上传数据
+        DataInLen -= len;
+        pDataIn += len;
         UEP0_T_LEN = len;
         UEP0_CTRL ^= bUEP_T_TOG; //同步标志位翻转
         break;
-    case USB_SET_ADDRESS: // 延迟设置USB设备的地址
-        USB_DEV_AD = USB_DEV_AD & bUDA_GP_BIT | SetupLen;
+
+    case SETUP_STATE_IN:
+        // 延迟设置USB设备的地址
+        if (UsbAddr) {
+            USB_DEV_AD = USB_DEV_AD & bUDA_GP_BIT | UsbAddr;
+            UsbAddr = 0;
+        }
+        // 状态阶段完成中断或者是强制上传0长度数据包结束控制传输
+        UEP0_T_LEN = 0;
         EP0_RESET();
+        usb_state.setup_state = SETUP_IDLE;
         break;
     default:
-        UEP0_T_LEN = 0; //状态阶段完成中断或者是强制上传0长度数据包结束控制传输
+        // ERROR
         EP0_RESET();
+        usb_state.setup_state = SETUP_IDLE;
         break;
     }
 }
 void EP0_SETUP()
 {
-    uint8_t len = USB_RX_LEN;
-    if (len == (sizeof(USB_SETUP_REQ))) {
-        SetupLen = UsbSetupBuf->wLength > 0xFF ? 0xFF : UsbSetupBuf->wLength; // 限制总长度
-        len = 0; // 默认为成功并且上传0长度
-        SetupReq = UsbSetupBuf->bRequest;
-        if (UsbSetupBuf->bmRequestType.Type == 0) //标准请求
+    if (USB_RX_LEN != (sizeof(USB_SETUP_REQ))) {
+        SETUP_STALL();
+        return;
+    }
+    uint8_t datalen = 0;
+    DataInLen = UsbSetupBuf->wLength > 0xFF ? 0xFF : UsbSetupBuf->wLength; // 限制总长度
+    if (UsbSetupBuf->bmRequestType.Type == 0) //标准请求
+    {
+        switch (UsbSetupBuf->bRequest) //请求码
         {
-            switch (SetupReq) //请求码
-            {
-            case USB_GET_DESCRIPTOR:
-                len = GetUsbDescriptor(UsbSetupBuf->wValueH, UsbSetupBuf->wValueL, UsbSetupBuf->wIndexL, &pDescr);
+        case USB_GET_DESCRIPTOR:
+            datalen = GetUsbDescriptor(UsbSetupBuf->wValueH, UsbSetupBuf->wValueL, UsbSetupBuf->wIndexL, &pDataIn);
+            usb_state.setup_state = SETUP_DATA_IN;
+            break;
 
-                if (SetupLen > len)
-                    SetupLen = len; //限制总长度
-                len = SetupLen >= THIS_ENDP0_SIZE ? THIS_ENDP0_SIZE : SetupLen; //本次传输长度
-                memcpy(Ep0Buffer, pDescr, len); //加载上传数据
-                SetupLen -= len;
-                pDescr += len;
-                break;
+        case USB_SET_ADDRESS:
+            UsbAddr = UsbSetupBuf->wValueL; //暂存USB设备地址
+            usb_state.setup_state = SETUP_STATE_IN;
+            break;
 
-            case USB_SET_ADDRESS:
-                SetupLen = UsbSetupBuf->wValueL; //暂存USB设备地址
-                break;
+        case USB_GET_CONFIGURATION:
+            Ep0Buffer[0] = UsbConfig;
+            pDataIn = Ep0Buffer;
+            datalen = 1;
 
-            case USB_GET_CONFIGURATION:
-                Ep0Buffer[0] = UsbConfig;
-                if (SetupLen >= 1)
-                    len = 1;
-                break;
+            usb_state.setup_state = SETUP_DATA_IN;
+            break;
 
-            case USB_SET_CONFIGURATION:
-                UsbConfig = UsbSetupBuf->wValueL;
-                // USB枚举完毕
-                usb_state.is_ready = UsbConfig > 0;
-                break;
+        case USB_SET_CONFIGURATION:
+            UsbConfig = UsbSetupBuf->wValueL;
+            // USB枚举完毕
+            usb_state.is_ready = UsbConfig > 0;
+            usb_state.setup_state = SETUP_STATE_IN;
+            break;
 
-            case USB_GET_INTERFACE:
-                Ep0Buffer[0] = 0x00;
-                if (SetupLen >= 1)
-                    len = 1;
-                break;
+        case USB_GET_INTERFACE:
+            Ep0Buffer[0] = 0x00;
+            pDataIn = Ep0Buffer;
+            datalen = 1;
 
-            case USB_CLEAR_FEATURE: {
-                switch (UsbSetupBuf->bmRequestType.Recipient) {
-                case USB_REQ_TO_ENDPOINT: {
-                    switch (UsbSetupBuf->wIndexL) {
-                    case 0x84:
-                        EP_IN_NAK_TOG(4);
-                        break;
-                    case 0x83:
-                        EP_IN_NAK_TOG(3);
-                        break;
-                    case 0x82:
-                        EP_IN_NAK_TOG(2);
-                        break;
-                    case 0x81:
-                        EP_IN_NAK_TOG(1);
-                        break;
-                    case 0x04:
-                        EP_OUT_ACK_TOG(4);
-                        break;
-                    case 0x03:
-                        EP_OUT_ACK_TOG(3);
-                        break;
-                    case 0x02:
-                        EP_OUT_ACK_TOG(2);
-                        break;
-                    case 0x01:
-                        EP_OUT_ACK_TOG(1);
-                        break;
-                    default:
-                        len = 0xFF; // 不支持的端点
-                        break;
-                    }
+            usb_state.setup_state = SETUP_DATA_IN;
+            break;
+
+        case USB_CLEAR_FEATURE: {
+            switch (UsbSetupBuf->bmRequestType.Recipient) {
+            case USB_REQ_TO_ENDPOINT: {
+                switch (UsbSetupBuf->wIndexL) {
+                case 0x84:
+                    EP_IN_NAK_TOG(4);
                     break;
-                }
-                case USB_REQ_TO_DEVICE:
-                    if ((((uint16_t)UsbSetupBuf->wValueH << 8) | UsbSetupBuf->wValueL) == 0x01) {
-#if REMOTE_WAKE
-                        // 设置唤醒使能标志
-                        usb_state.remote_wake = false;
-#else
-                        len = 0xFF; // 操作失败
-#endif
-                    } else {
-                        len = 0xFF; /* 操作失败 */
-                    }
+                case 0x83:
+                    EP_IN_NAK_TOG(3);
                     break;
-                default: //unsupport
-                    len = 0xff;
+                case 0x82:
+                    EP_IN_NAK_TOG(2);
                     break;
-                }
-                break;
-            }
-            case USB_SET_FEATURE: /* Set Feature */
-            {
-                switch (UsbSetupBuf->bmRequestType.Recipient) {
-                // 接口
-                case USB_REQ_TO_ENDPOINT: {
-                    // 接口的Value始终为0
-                    if (!UsbSetupBuf->wValueH && !UsbSetupBuf->wValueL) {
-                        // Zero, Interface endpoint
-                        switch (UsbSetupBuf->wIndex) {
-                        case 0x84:
-                            EP_IN_STALL_TOG(4);
-                            break;
-                        case 0x83:
-                            EP_IN_STALL_TOG(3);
-                            break;
-                        case 0x82:
-                            EP_IN_STALL_TOG(2);
-                            break;
-                        case 0x81:
-                            EP_IN_STALL_TOG(1);
-                            break;
-                        case 0x02:
-                            EP_OUT_STALL_TOG(2);
-                            break;
-                        default:
-                            len = 0xFF; //操作失败
-                            break;
-                        }
-                    } else {
-                        len = 0xFF; //操作失败
-                    }
+                case 0x81:
+                    EP_IN_NAK_TOG(1);
                     break;
-                }
-                // 设备
-                case USB_REQ_TO_DEVICE: {
-                    if (UsbSetupBuf->wValue == 0x01) {
-#if REMOTE_WAKE
-                        // 设置唤醒使能标志
-                        usb_state.remote_wake = true;
-#else
-                        len = 0xFF; // 操作失败
-#endif
-                    } else {
-                        len = 0xFF; /* 操作失败 */
-                    }
+                case 0x04:
+                    EP_OUT_ACK_TOG(4);
                     break;
-                }
+                case 0x03:
+                    EP_OUT_ACK_TOG(3);
+                    break;
+                case 0x02:
+                    EP_OUT_ACK_TOG(2);
+                    break;
+                case 0x01:
+                    EP_OUT_ACK_TOG(1);
+                    break;
                 default:
-                    len = 0xff;
-                    break;
+                    SETUP_STALL();
+                    return;
                 }
                 break;
             }
-            case USB_GET_STATUS:
-                Ep0Buffer[0] = 0x00 | (usb_state.remote_wake ? 0x02 : 0x00);
-                Ep0Buffer[1] = 0x00;
-                len = SetupLen > 2 ? 2 : SetupLen;
+#if REMOTE_WAKE
+            case USB_REQ_TO_DEVICE:
+                if (UsbSetupBuf->wValue != 0x01) {
+                    // 操作失败
+                    SETUP_STALL();
+                    return;
+                }
+                // 设置唤醒使能标志
+                usb_state.remote_wake = false;
                 break;
-            default:
-                len = 0xff; //操作失败
+#endif
+            default: //unsupport
+                SETUP_STALL();
+                return;
+            }
+            usb_state.setup_state = SETUP_STATE_IN;
+            break;
+        }
+        case USB_SET_FEATURE: /* Set Feature */
+        {
+            switch (UsbSetupBuf->bmRequestType.Recipient) {
+            // 接口
+            case USB_REQ_TO_ENDPOINT: {
+                // 接口的Value始终为0
+                if (UsbSetupBuf->wValue != 0) {
+                    SETUP_STALL();
+                    return;
+                }
+                // Zero, Interface endpoint
+                switch (UsbSetupBuf->wIndex) {
+                case 0x84:
+                    EP_IN_STALL_TOG(4);
+                    break;
+                case 0x83:
+                    EP_IN_STALL_TOG(3);
+                    break;
+                case 0x82:
+                    EP_IN_STALL_TOG(2);
+                    break;
+                case 0x81:
+                    EP_IN_STALL_TOG(1);
+                    break;
+                case 0x02:
+                    EP_OUT_STALL_TOG(2);
+                    break;
+                default:
+                    SETUP_STALL();
+                    return;
+                }
                 break;
             }
-        } else if (UsbSetupBuf->bmRequestType.Type == 1) {
-            //HID类请求
-            len = ClassRequestHandler(UsbSetupBuf);
-            if (len != 0xFF)
-                len = 0; // ignore hid request
+#if REMOTE_WAKE
+            case USB_REQ_TO_DEVICE: {
+                if (UsbSetupBuf->wValue != 0x01) {
+                    SETUP_STALL();
+                    return;
+                }
+                // 设置唤醒使能标志
+                usb_state.remote_wake = true;
+                break;
+            }
+#endif
+            default:
+                SETUP_STALL();
+                return;
+            }
+            usb_state.setup_state = SETUP_STATE_IN;
+            break;
+        }
+        case USB_GET_STATUS:
+            Ep0Buffer[0] = 0x00 | (usb_state.remote_wake ? 0x02 : 0x00);
+            Ep0Buffer[1] = 0x00;
+            datalen = 2;
+            usb_state.setup_state = SETUP_DATA_IN;
+            break;
+        default:
+            SETUP_STALL();
+            return;
+        }
+    } else if (UsbSetupBuf->bmRequestType.Type == 1) {
+        //HID类请求
+        datalen = ClassRequestHandler(UsbSetupBuf);
+        if (datalen == 0xFF) {
+            SETUP_STALL();
+            return;
+        }
+        if (datalen > 0) {
+            usb_state.setup_state = SETUP_STATE_IN;
+        } else {
+            pDataIn = Ep0Buffer;
+            usb_state.setup_state = SETUP_DATA_IN;
         }
     } else {
-        len = 0xff; //包长度错误
+        SETUP_STALL();
+        return;
     }
 
-    if (len == 0xff) {
-        SetupReq = 0xFF;
-        // 内部错误，返回STALL
-        EP_SET(0, bUEP_R_TOG | bUEP_T_TOG, UEP_R_RES_STALL | UEP_T_RES_STALL);
-    } else if (len <= DEFAULT_ENDP0_SIZE) //上传数据或者状态阶段返回0长度包
-    {
-        UEP0_T_LEN = len;
-        EP0_DATA1_ACK(); // 使用DATA1响应数据，或响应SETUP包的status
-    } else {
+    switch (usb_state.setup_state) {
+    case SETUP_STATE_IN:
         UEP0_T_LEN = 0; //虽然尚未到状态阶段，但是提前预置上传0长度数据包以防主机提前进入状态阶段
         EP0_DATA1_ACK(); // 响应SETUP包的STATUS
+        // usb_state.setup_state = SETUP_IDLE;
+        break;
+    case SETUP_DATA_IN:
+        DataInLen = DataInLen > datalen ? datalen : DataInLen;
+        uint8_t len = DataInLen >= THIS_ENDP0_SIZE ? THIS_ENDP0_SIZE : DataInLen; //本次传输长度
+        memcpy(Ep0Buffer, pDataIn, len); //加载上传数据
+        DataInLen -= len;
+        pDataIn += len;
+
+        UEP0_T_LEN = len;
+        EP0_DATA1_ACK(); // 使用DATA1响应数据
+
+        if (DataInLen == 0)
+            usb_state.setup_state = SETUP_STATE_OUT;
+        break;
+    default:
+        break;
     }
 }
 
@@ -360,11 +410,10 @@ void EP4_IN()
 
 static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet)
 {
-    uint8_t request = packet->bRequest;
     uint8_t interface = packet->wIndexL;
     uint8_t recipient = UsbSetupBuf->bmRequestType.Recipient;
 
-    switch (request) {
+    switch (packet->bRequest) {
     case 0x01: //GetReport
         if (interface == 0 && recipient == USB_REQ_TO_INTERFACE) {
             memcpy(Ep0Buffer, &Ep1Buffer[64], 8);
