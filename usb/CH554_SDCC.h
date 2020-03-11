@@ -842,22 +842,21 @@ extern "C" {
 #endif
 
 /* Bit define for USB request type */
-#ifndef USB_REQ_TYP_MASK
-#define USB_REQ_TYP_IN          0x80            /* control IN, device to host */
-#define USB_REQ_TYP_OUT         0x00            /* control OUT, host to device */
-#define USB_REQ_TYP_READ        0x80            /* control read, device to host */
-#define USB_REQ_TYP_WRITE       0x00            /* control write, host to device */
-#define USB_REQ_TYP_MASK        0x60            /* bit mask of request type */
-#define USB_REQ_TYP_STANDARD    0x00
-#define USB_REQ_TYP_CLASS       0x20
-#define USB_REQ_TYP_VENDOR      0x40
-#define USB_REQ_TYP_RESERVED    0x60
-#define USB_REQ_RECIP_MASK      0x1F            /* bit mask of request recipient */
-#define USB_REQ_RECIP_DEVICE    0x00
-#define USB_REQ_RECIP_INTERF    0x01
-#define USB_REQ_RECIP_ENDP      0x02
-#define USB_REQ_RECIP_OTHER     0x03
-#endif
+/* bmRequestType.Dir */
+#define USB_REQ_HOST_TO_DEVICE     0
+#define USB_REQ_DEVICE_TO_HOST     1
+
+/* bmRequestType.Type */
+#define USB_REQ_STANDARD           0
+#define USB_REQ_CLASS              1
+#define USB_REQ_VENDOR             2
+#define USB_REQ_RESERVED           3
+
+/* bmRequestType.Recipient */
+#define USB_REQ_TO_DEVICE          0
+#define USB_REQ_TO_INTERFACE       1
+#define USB_REQ_TO_ENDPOINT        2
+#define USB_REQ_TO_OTHER           3
 
 /* USB request type for hub class request */
 #ifndef HUB_GET_HUB_DESCRIPTOR
@@ -958,15 +957,30 @@ extern "C" {
 #define USB_BO_CSW_SIG3         0x53
 #endif
 
+struct _USB_REQ_TYPE {
+    uint8_t Recipient : 5;                     /* D4..0: Recipient */
+    uint8_t Type      : 2;                     /* D6..5: Type */
+    uint8_t Dir       : 1;                     /* D7:    Data Phase Txsfer Direction */
+};
+
 typedef struct _USB_SETUP_REQ {
-    uint8_t bRequestType;
+    struct _USB_REQ_TYPE bmRequestType;
     uint8_t bRequest;
-    uint8_t wValueL;
-    uint8_t wValueH;
-    uint8_t wIndexL;
-    uint8_t wIndexH;
-    uint8_t wLengthL;
-    uint8_t wLengthH;
+    union {
+        uint16_t wValue;
+        struct {
+            uint8_t wValueL;
+            uint8_t wValueH;
+        };
+    };
+    union {
+        uint16_t wIndex;
+        struct {
+            uint8_t wIndexL;
+            uint8_t wIndexH;
+        };
+    };
+    uint16_t wLength;
 } USB_SETUP_REQ, *PUSB_SETUP_REQ;
 
 typedef USB_SETUP_REQ __XDATA *PXUSB_SETUP_REQ;

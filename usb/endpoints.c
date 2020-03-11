@@ -157,14 +157,10 @@ void EP0_SETUP()
 {
     uint8_t len = USB_RX_LEN;
     if (len == (sizeof(USB_SETUP_REQ))) {
-        SetupLen = UsbSetupBuf->wLengthL;
-        if (UsbSetupBuf->wLengthH) {
-            SetupLen = 0xFF; // 限制总长度
-        }
+        SetupLen = UsbSetupBuf->wLength > 0xFF ? 0xFF : UsbSetupBuf->wLength; // 限制总长度
         len = 0; // 默认为成功并且上传0长度
         SetupReq = UsbSetupBuf->bRequest;
-        uint8_t type = UsbSetupBuf->bRequestType & USB_REQ_TYP_MASK;
-        if (type == USB_REQ_TYP_STANDARD) //标准请求
+        if (UsbSetupBuf->bmRequestType.Type == 0) //标准请求
         {
             switch (SetupReq) //请求码
             {
@@ -202,8 +198,8 @@ void EP0_SETUP()
                 break;
 
             case USB_CLEAR_FEATURE: {
-                switch (UsbSetupBuf->bRequestType & USB_REQ_RECIP_MASK) {
-                case USB_REQ_RECIP_ENDP: {
+                switch (UsbSetupBuf->bmRequestType.Recipient) {
+                case USB_REQ_TO_ENDPOINT: {
                     switch (UsbSetupBuf->wIndexL) {
                     case 0x84:
                         EP_IN_NAK_TOG(4);
@@ -235,7 +231,7 @@ void EP0_SETUP()
                     }
                     break;
                 }
-                case USB_REQ_RECIP_DEVICE:
+                case USB_REQ_TO_DEVICE:
                     if ((((uint16_t)UsbSetupBuf->wValueH << 8) | UsbSetupBuf->wValueL) == 0x01) {
 #if REMOTE_WAKE
                         // 设置唤醒使能标志
@@ -255,13 +251,13 @@ void EP0_SETUP()
             }
             case USB_SET_FEATURE: /* Set Feature */
             {
-                switch (UsbSetupBuf->bRequestType & USB_REQ_RECIP_MASK) {
+                switch (UsbSetupBuf->bmRequestType.Recipient) {
                 // 接口
-                case USB_REQ_RECIP_ENDP: {
+                case USB_REQ_TO_ENDPOINT: {
                     // 接口的Value始终为0
                     if (!UsbSetupBuf->wValueH && !UsbSetupBuf->wValueL) {
                         // Zero, Interface endpoint
-                        switch (((uint16_t)UsbSetupBuf->wIndexH << 8) | UsbSetupBuf->wIndexL) {
+                        switch (UsbSetupBuf->wIndex) {
                         case 0x84:
                             EP_IN_STALL_TOG(4);
                             break;
@@ -287,8 +283,8 @@ void EP0_SETUP()
                     break;
                 }
                 // 设备
-                case USB_REQ_RECIP_DEVICE: {
-                    if ((((uint16_t)UsbSetupBuf->wValueH << 8) | UsbSetupBuf->wValueL) == 0x01) {
+                case USB_REQ_TO_DEVICE: {
+                    if (UsbSetupBuf->wValue == 0x01) {
 #if REMOTE_WAKE
                         // 设置唤醒使能标志
                         usb_state.remote_wake = true;
@@ -315,8 +311,8 @@ void EP0_SETUP()
                 len = 0xff; //操作失败
                 break;
             }
-        } else if (type == USB_REQ_TYP_CLASS) //HID类请求
-        {
+        } else if (UsbSetupBuf->bmRequestType.Type == 1) {
+            //HID类请求
             len = ClassRequestHandler(UsbSetupBuf);
             if (len != 0xFF)
                 len = 0; // ignore hid request
@@ -366,40 +362,40 @@ static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet)
 {
     uint8_t request = packet->bRequest;
     uint8_t interface = packet->wIndexL;
-    uint8_t recipient = UsbSetupBuf->bRequestType & USB_REQ_RECIP_MASK;
+    uint8_t recipient = UsbSetupBuf->bmRequestType.Recipient;
 
     switch (request) {
     case 0x01: //GetReport
-        if (interface == 0 && recipient == USB_REQ_RECIP_INTERF) {
+        if (interface == 0 && recipient == USB_REQ_TO_INTERFACE) {
             memcpy(Ep0Buffer, &Ep1Buffer[64], 8);
             return 8;
         }
         break;
     case 0x02: //GetIdle
-        if (interface == 0 && recipient == USB_REQ_RECIP_INTERF) {
+        if (interface == 0 && recipient == USB_REQ_TO_INTERFACE) {
             Ep0Buffer[0] = keyboard_idle;
             return 1;
         }
         break;
     case 0x03: //GetProtocol
-        if (interface == 0 && recipient == USB_REQ_RECIP_INTERF) {
+        if (interface == 0 && recipient == USB_REQ_TO_INTERFACE) {
             Ep0Buffer[0] = usb_state.protocol ? 1 : 0;
             return 1;
         }
         break;
     case 0x09: //SetReport
-        if (interface == 0 && recipient == USB_REQ_RECIP_INTERF) {
+        if (interface == 0 && recipient == USB_REQ_TO_INTERFACE) {
             Ep1Buffer[0] = Ep0Buffer[0];
             EP1_OUT();
         }
         break;
     case 0x0A: //SetIdle
-        if (interface == 0 && recipient == USB_REQ_RECIP_INTERF) {
+        if (interface == 0 && recipient == USB_REQ_TO_INTERFACE) {
             keyboard_idle = UsbSetupBuf->wValueH;
         }
         break;
     case 0x0B: //SetProtocol
-        if (interface == 0 && recipient == USB_REQ_RECIP_INTERF) {
+        if (interface == 0 && recipient == USB_REQ_TO_INTERFACE) {
             usb_state.protocol = UsbSetupBuf->wValueL > 0;
         }
         break;
