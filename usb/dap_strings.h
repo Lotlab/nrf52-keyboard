@@ -20,6 +20,7 @@
 
 #include "descriptor.h"
 #include <stdint.h>
+#include <string.h>
 
 /** Get Vendor ID string.
 \param str Pointer to buffer to store the string.
@@ -46,7 +47,6 @@
 uint8_t DAP_GetFirmwareVersionString(char* str)
 {
     const char* data = "0254";
-    uint8_t length = (uint8_t)strlen(data) + 1;
-    memcpy(str, data, length);
-    return length;
+    memcpy(str, data, sizeof(data));
+    return sizeof(data);
 }

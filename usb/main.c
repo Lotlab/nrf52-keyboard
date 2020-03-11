@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "CH554_SDCC.h"
+#include "DAP_hid.h"
 #include "app_timer.h"
 #include "compiler.h"
 #include "endpoints.h"
@@ -177,7 +178,8 @@ static void FeedWatchDog()
 /** 定义定时器 */
 const timer_info timers[] = {
     TIMER_DEF(&FeedWatchDog, 500),
-    TIMER_DEF(&uart_check, 1)
+    TIMER_DEF(&uart_check, 1),
+    TIMER_DEF(&Dap_Routine, 1)
 };
 TIMER_INIT(timer, timers)
 
@@ -208,10 +210,12 @@ static void main()
 
     USBDeviceInit(); //USB设备模式初始化
     EnableWatchDog();
+    Dap_Init();
     EA = 1; //允许单片机中断
     UEP1_T_LEN = 0; //预使用发送长度一定要清空
     UEP2_T_LEN = 0; //预使用发送长度一定要清空
     UEP3_T_LEN = 0;
+    UEP4_T_LEN = 0;
 
     // 拉低P1.5，通知主控使用UART接收
     P1_MOD_OC -= (P1_MOD_OC & bMOSI);

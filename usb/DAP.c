@@ -62,8 +62,8 @@
 __XDATA DAP_Data_t DAP_Data; // DAP Data
 volatile uint8_t DAP_TransferAbort; // Transfer Abort Flag
 
-const uint8_t* request;
-uint8_t* response;
+static const uint8_t* request;
+static uint8_t* response;
 
 // static const char DAP_FW_Ver [] = DAP_FW_VER;
 
@@ -968,7 +968,7 @@ uint16_t DAP_ProcessCommand(const uint8_t* req, uint8_t* resp)
     case ID_DAP_Info:
         num = DAP_Info(*request, response + 1);
         *response = (uint8_t)num;
-        return (((uint32_t)2U << 8) + 2U + num);
+        return (((uint16_t)2U << 8) + 2U + num);
 
     case ID_DAP_HostStatus:
         num = DAP_HostStatus();

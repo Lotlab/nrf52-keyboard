@@ -68,16 +68,6 @@ static uint8_t keyboard_idle = 0;
 static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet);
 
 /**
- * 设置指定Endpoint的状态
- * 
- * @param num: Endpoint号
- * @param data: 指定DATA0或DATA1
- * @param resp: 默认应答
- **/
-#define EP_SET(num, data, resp) (UEP##num##_CTRL = ((data) | (resp)) & 0xFF)
-#define EP_IN_RESP(num, resp) (UEP##num##_CTRL = UEP##num##_CTRL & (~MASK_UEP_T_RES) | (resp))
-#define EP_OUT_RESP(num, resp) (UEP##num##_CTRL = UEP##num##_CTRL & (~MASK_UEP_R_RES) | ((resp) << 2))
-/**
  * 重置端点0的状态。
  * SETUP/OUT ACK
  * IN NAK
@@ -88,35 +78,6 @@ static uint8_t ClassRequestHandler(PUSB_SETUP_REQ packet);
  */
 #define EP0_DATA1_ACK() EP_SET(0, (bUEP_R_TOG | bUEP_T_TOG), (UEP_R_RES_ACK | UEP_T_RES_ACK))
 
-/**
- * 设置端点IN NAK
- */
-#define EP_IN_NAK(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_NAK)
-
-/**
- * 端点 IN 后续处理
- * 清空发送长度，并设置NAK
- */
-#define EP_IN_FINISH(num) \
-    UEP##num##_T_LEN = 0; \
-    EP_IN_NAK(num)
-
-/**
- * 设置端点 IN NAK 响应并反转 DATA
- */
-#define EP_IN_NAK_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~(bUEP_T_TOG | MASK_UEP_T_RES) | UEP_T_RES_NAK)
-/**
- * 设置端点 OUT ACK 响应并反转 DATA
- */
-#define EP_OUT_ACK_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~(bUEP_R_TOG | MASK_UEP_R_RES) | UEP_R_RES_ACK)
-/**
- * 设置端点 IN STALL 响应并反转 DATA
- */
-#define EP_IN_STALL_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL)
-/**
- * 设置端点 OUT STALL 响应并反转 DATA
- */
-#define EP_OUT_STALL_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & (~bUEP_R_TOG) | UEP_R_RES_STALL)
 /**
  * @brief 为SETUP请求响应STALL
  * 
@@ -465,7 +426,7 @@ void USBDeviceInit()
     USB_CTRL = 0x00; // 先设定USB设备模式
 
     UEP0_DMA = (uint16_t)Ep0Buffer; //端点0数据传输地址
-    UEP4_1_MOD |= ~(bUEP4_RX_EN | bUEP4_TX_EN); //端点0单64字节收发缓冲区, 端点4单64字节收发缓冲区
+    UEP4_1_MOD |= bUEP4_RX_EN | bUEP4_TX_EN; //端点0单64字节收发缓冲区, 端点4单64字节收发缓冲区
     UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK; //OUT事务返回ACK，IN事务返回NAK
 
     UEP1_DMA = (uint16_t)Ep1Buffer; //端点1数据传输地址

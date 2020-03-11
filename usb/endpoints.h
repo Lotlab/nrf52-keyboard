@@ -75,3 +75,67 @@ extern void nop();
 #define USB_SOF_EP2 nop
 #define USB_SOF_EP3 nop
 #define USB_SOF_EP4 nop
+
+/**
+ * 设置指定Endpoint的状态
+ * 
+ * @param num: Endpoint号
+ * @param data: 指定DATA0或DATA1
+ * @param resp: 默认应答
+ **/
+#define EP_SET(num, data, resp) (UEP##num##_CTRL = ((data) | (resp)) & 0xFF)
+
+/**
+ * @brief 设置指定Endpoint IN的响应
+ * 
+ * @param num: Endpoint号
+ * @param resp: 默认应答
+ */
+#define EP_IN_RESP(num, resp) (UEP##num##_CTRL = UEP##num##_CTRL & (~MASK_UEP_T_RES) | (resp))
+
+/**
+ * @brief 设置指定Endpoint OUT的响应
+ * 
+ * @param num: Endpoint号
+ * @param resp: 默认应答
+ */
+#define EP_OUT_RESP(num, resp) (UEP##num##_CTRL = UEP##num##_CTRL & (~MASK_UEP_R_RES) | ((resp) << 2))
+
+/**
+ * 设置端点IN NAK
+ */
+#define EP_IN_NAK(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_NAK)
+
+/**
+ * 设置端点OUT NAK
+ */
+#define EP_OUT_NAK(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~MASK_UEP_R_RES | UEP_R_RES_NAK)
+
+/**
+ * 端点 IN 后续处理
+ * 清空发送长度，并设置NAK
+ */
+#define EP_IN_FINISH(num) \
+    UEP##num##_T_LEN = 0; \
+    EP_IN_NAK(num)
+
+/**
+ * 设置端点 IN NAK 响应并反转 DATA
+ */
+#define EP_IN_NAK_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~(bUEP_T_TOG | MASK_UEP_T_RES) | UEP_T_RES_NAK)
+/**
+ * 设置端点 OUT ACK 响应并反转 DATA
+ */
+#define EP_OUT_ACK_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & ~(bUEP_R_TOG | MASK_UEP_R_RES) | UEP_R_RES_ACK)
+/**
+ * 设置端点 IN STALL 响应并反转 DATA
+ */
+#define EP_IN_STALL_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & (~bUEP_T_TOG) | UEP_T_RES_STALL)
+/**
+ * 设置端点 OUT STALL 响应并反转 DATA
+ */
+#define EP_OUT_STALL_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & (~bUEP_R_TOG) | UEP_R_RES_STALL)
+/**
+ * 设置端点 OUT NAK 响应并反转 DATA
+ */
+#define EP_OUT_NAK_TOG(num) (UEP##num##_CTRL = UEP##num##_CTRL & (~bUEP_R_TOG) | UEP_R_RES_NAK)
