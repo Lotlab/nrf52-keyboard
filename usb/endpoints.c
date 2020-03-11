@@ -367,6 +367,7 @@ void EP3_IN()
 void EP4_IN()
 {
     EP_IN_FINISH(4);
+    UEP4_CTRL ^= bUEP_T_TOG;
     usb_state.is_busy = false;
 }
 

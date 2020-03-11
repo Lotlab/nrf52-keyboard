@@ -11,7 +11,7 @@ volatile static uint8_t ep4_len = 0;
 void EP4_OUT()
 {
     if (ep4_len > 0) {
-        EP_OUT_RESP(4, UEP_T_RES_NAK);
+        UEP4_CTRL = UEP4_CTRL ^ bUEP_R_TOG & ~(MASK_UEP_R_RES) | UEP_R_RES_NAK;
         return;
     }
 
@@ -24,8 +24,8 @@ void EP4_OUT()
         return;
     }
 
-    EP_OUT_RESP(4, UEP_T_RES_ACK);
     ep4_len = USB_RX_LEN;
+    UEP4_CTRL = UEP4_CTRL ^ bUEP_R_TOG & ~(MASK_UEP_R_RES) | UEP_R_RES_ACK;
 }
 
 void Dap_Init()
@@ -37,11 +37,9 @@ void Dap_Routine()
 {
     if (ep4_len > 0 && !usb_state.is_busy) {
         uint8_t len = DAP_ExecuteCommand(EP4_OUT_BUF, EP4_IN_BUF) & 0xFF;
-        if (len <= MAX_PACKET_SIZE) {
-            usb_state.is_busy = true;
-            UEP4_T_LEN = MAX_PACKET_SIZE;
-            EP_IN_RESP(4, UEP_T_RES_ACK);
-        }
+        usb_state.is_busy = true;
+        UEP4_T_LEN = MAX_PACKET_SIZE;
+        UEP4_CTRL = UEP4_CTRL & ~(MASK_UEP_T_RES) | UEP_T_RES_ACK;
 
         ep4_len = 0;
     }

@@ -46,7 +46,7 @@
 */
 uint8_t DAP_GetFirmwareVersionString(char* str)
 {
-    const char* data = "0254";
-    memcpy(str, data, sizeof(data));
-    return sizeof(data);
+    #define VER "0254"
+    memcpy(str, VER, sizeof(VER));
+    return sizeof(VER);
 }
