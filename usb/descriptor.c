@@ -66,39 +66,36 @@ static uint8_t getStringDescriptor(uint8_t order, uint8_t** strPtor)
 {
     uint8_t header = 0, strlen = 0;
     switch (order) {
-    case 0:
+    case STRING_DESCRIPTOR_LANG:
         *strPtor = (uint8_t*)&LangStringDesc[0];
         strlen = LangStringDesc[0];
         break;
-    case INTF_STRING_INDEX:
-    case INTF_STRING_INDEX + 1:
-    case INTF_STRING_INDEX + 2:
-    case INTF_STRING_INDEX + 3:
-        order -= INTF_STRING_INDEX;
-        do {
-            header += strlen;
-            if (header >= sizeof(InterfaceStringDesc)) // 超过长度就直接返回
-            {
-                return 0xFF;
-            }
-            strlen = InterfaceStringDesc[header];
-        } while (order--);
-        *strPtor = (uint8_t*)&InterfaceStringDesc[header];
-        break;
-    case 1:
+    case STRING_DESCRIPTOR_MANUFACTURER:
         strlen = fillDescBuffer(MANUFACTURER);
         *strPtor = descBuffer;
         break;
-    case 2:
+    case STRING_DESCRIPTOR_DEVICE:
         strlen = fillDescBuffer(PRODUCT);
         *strPtor = descBuffer;
         break;
-    case 3:
+    case STRING_DESCRIPTOR_SERIAL:
         strlen = getSerial();
         *strPtor = descBuffer;
         break;
     default:
-        strlen = 0xFF;
+        if (order >= STRING_DESCRIPTOR_INTERFACE_0 && order < STRING_DESCRIPTOR_INTERFACE_END) {
+            order -= STRING_DESCRIPTOR_INTERFACE_0;
+            do {
+                header += strlen;
+                if (header >= sizeof(InterfaceStringDesc)) // 超过长度就直接返回
+                    return 0xFF;
+
+                strlen = InterfaceStringDesc[header];
+            } while (order--);
+            *strPtor = (uint8_t*)&InterfaceStringDesc[header];
+        } else {
+            strlen = 0xFF;
+        }
         break;
     }
 
@@ -109,6 +106,7 @@ static uint8_t getStringDescriptor(uint8_t order, uint8_t** strPtor)
  *
  * \param type1 uint8_t 描述符类型1 (hType)
  * \param type2 uint8_t 描述符类型2 (lType)
+ * \param index uint8_t HID报告描述符Index
  * \param strPtr uint8_t** 描述符指针
  * \return uint8_t 描述符长度
  *
@@ -119,11 +117,11 @@ uint8_t GetUsbDescriptor(uint8_t type1, uint8_t type2, uint8_t index, uint8_t** 
     switch (type1) {
     /**< 设备描述符 */
     case 1:
-        *strPtr = (uint8_t*)&DeviceDescriptor[0];
+        *strPtr = (uint8_t*)DeviceDescriptor;
         return sizeof(DeviceDescriptor);
     /**< 配置描述符 */
     case 2:
-        *strPtr = (uint8_t*)&ConfigDescriptor[0];
+        *strPtr = (uint8_t*)ConfigDescriptor;
         return sizeof(ConfigDescriptor);
     /**< 字符串描述符 */
     case 3:

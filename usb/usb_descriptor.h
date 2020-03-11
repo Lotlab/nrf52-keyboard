@@ -24,29 +24,38 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define USB_PID               PRODUCT_ID    // Product ID (PID)
 #define VER_FW_H              ((DEVICE_VER & 0xFF00) >> 8) // Device release number, in binary-coded decimal
 #define VER_FW_L              (DEVICE_VER & 0xFF) // Device release number, in binary-coded decimal
-#define USB_STR_INDEX_SERNUM  3
-#define SIZEOF_DEVICE_DESCRIPTOR  0x12
+
 #define EP0_PACKET_SIZE       0x08
 #define NKRO_REPORT_KEYS      (NKRO_EPSIZE - 1)
 #define MAX_PACKET_SIZE       64
 
+enum StringDescriptor {
+    STRING_DESCRIPTOR_LANG,
+    STRING_DESCRIPTOR_MANUFACTURER,
+    STRING_DESCRIPTOR_DEVICE,
+    STRING_DESCRIPTOR_SERIAL,
+    STRING_DESCRIPTOR_INTERFACE_0,
+    STRING_DESCRIPTOR_INTERFACE_1,
+    STRING_DESCRIPTOR_INTERFACE_2,
+    STRING_DESCRIPTOR_INTERFACE_3,
+    STRING_DESCRIPTOR_INTERFACE_END,
+};
 
-uint8_t const DeviceDescriptor[SIZEOF_DEVICE_DESCRIPTOR] = {
-    SIZEOF_DEVICE_DESCRIPTOR,               // Length of this descriptor
+
+uint8_t const DeviceDescriptor[] = {
+    sizeof(DeviceDescriptor),               // Length of this descriptor
     0x01,                                   // Type code of this descriptor
     0x10, 0x01,                             // Release of USB spec
     0x00,                                   // Device's base class code
     0x00,                                   // Device's sub class code
     0x00,                                   // Device's protocol type code
     EP0_PACKET_SIZE,                        // End point 0's packet size
-    USB_VID&0xFF, USB_VID>>8,               // Vendor ID for device, TI=0x0451
-                                            // You can order your own VID at www.usb.org"
-    USB_PID&0xFF, USB_PID>>8,               // Product ID for device,
-                                            // this ID is to only with this example
+    USB_VID&0xFF, USB_VID>>8,               // Vendor ID for device
+    USB_PID&0xFF, USB_PID>>8,               // Product ID for device
     VER_FW_L, VER_FW_H,                     // Revision level of device
-    1,                                      // Index of manufacturer name string desc
-    2,                                      // Index of product name string desc
-    USB_STR_INDEX_SERNUM,                   // Index of serial number string desc
+    STRING_DESCRIPTOR_MANUFACTURER,         // Index of manufacturer name string desc
+    STRING_DESCRIPTOR_DEVICE,               // Index of product name string desc
+    STRING_DESCRIPTOR_SERIAL,               // Index of serial number string desc
     1                                       //  Number of configurations supported
 };
 
@@ -56,14 +65,10 @@ uint8_t const DeviceDescriptor[SIZEOF_DEVICE_DESCRIPTOR] = {
 #define USB_SUPPORT_SELF_POWERED            0x80    // not self-powered
 #define USB_MAX_POWER                       0xfa    // 500 mA
 
-#define report_desc_size_HID0               sizeof(report_desc_HID0)        // 63
-#define report_desc_size_HID1               sizeof(report_desc_HID1)        // 36
-#define report_desc_size_HID2               sizeof(report_desc_HID2)        //
-#define report_desc_size_HID3               sizeof(report_desc_HID3)        //
-//#define SIZEOF_REPORT_DESCRIPTOR  36
-//#define USBHID_REPORT_LENGTH      64  // length of whole HID report (including Report ID)
-#define INTF_STRING_INDEX         5
-
+#define report_desc_size_HID0               sizeof(report_desc_HID0)
+#define report_desc_size_HID1               sizeof(report_desc_HID1)
+#define report_desc_size_HID2               sizeof(report_desc_HID2)
+#define report_desc_size_HID3               sizeof(report_desc_HID3)
 
 #define HID0_REPORT_INTERFACE              0              // Report interface number of HID0
 #define HID0_OUTEP_ADDR                    0x01           // Output Endpoint number of HID0
@@ -113,7 +118,7 @@ uint8_t const ConfigDescriptor []=
     0x03,                               // bInterfaceClass: 3 = HID Device
     1,                                  // bInterfaceSubClass:
     1,                                  // bInterfaceProtocol:
-    INTF_STRING_INDEX + 0,              // iInterface:1
+    STRING_DESCRIPTOR_INTERFACE_0,      // iInterface:
 
     // HID DESCRIPTOR (9 bytes)
     0x09,                                 // bLength of HID descriptor
@@ -150,7 +155,7 @@ uint8_t const ConfigDescriptor []=
     0x03,                               // bInterfaceClass: 3 = HID Device
     0,                                  // bInterfaceSubClass:
     0,                                  // bInterfaceProtocol:
-    INTF_STRING_INDEX + 1,              // iInterface:1
+    STRING_DESCRIPTOR_INTERFACE_1,      // iInterface:
 
     // HID DESCRIPTOR (9 bytes)
     0x09,                                 // bLength of HID descriptor
@@ -180,7 +185,7 @@ uint8_t const ConfigDescriptor []=
     0x03,                               // bInterfaceClass: 3 = HID Device
     0,                                  // bInterfaceSubClass:
     0,                                  // bInterfaceProtocol:
-    INTF_STRING_INDEX + 2,                  // iInterface:1
+    STRING_DESCRIPTOR_INTERFACE_2,      // iInterface:
 
     // HID DESCRIPTOR (9 bytes)
     0x09,                                 // bLength of HID descriptor
@@ -216,7 +221,7 @@ uint8_t const ConfigDescriptor []=
     0x03,                               // bInterfaceClass: 3 = HID Device
     0,                                  // bInterfaceSubClass:
     0,                                  // bInterfaceProtocol:
-    INTF_STRING_INDEX + 3,                  // iInterface:1
+    STRING_DESCRIPTOR_INTERFACE_3,      // iInterface:1
 
     // HID DESCRIPTOR (9 bytes)
     0x09,                                 // bLength of HID descriptor
