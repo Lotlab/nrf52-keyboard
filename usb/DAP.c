@@ -513,12 +513,13 @@ static uint16_t DAP_SWD_Transfer()
     post_read = 0U;
     check_write = 0U;
 
-    request++; // Ignore DAP index
+    const uint8_t* req = request;
+    req++; // Ignore DAP index
 
-    request_count = *request++;
+    request_count = *req++;
 
     for (; request_count != 0U; request_count--) {
-        request_value = *request++;
+        request_value = *req++;
         if ((request_value & DAP_TRANSFER_RnW) != 0U) {
             // Read register
             if (post_read) {
@@ -547,7 +548,7 @@ static uint16_t DAP_SWD_Transfer()
             if ((request_value & DAP_TRANSFER_MATCH_VALUE) != 0U) {
                 // Read with value match
                 for (uint8_t i = 0; i < 4; i++)
-                    match_value[i] = *(request++);
+                    match_value[i] = *(req++);
 
                 match_retry = DAP_Data.transfer.match_retry;
                 if ((request_value & DAP_TRANSFER_APnDP) != 0U) {
@@ -630,7 +631,7 @@ static uint16_t DAP_SWD_Transfer()
             }
             // Load data
             for (uint8_t i = 0; i < 4; i++) {
-                data[i] = *request++;
+                data[i] = *req++;
             }
             if ((request_value & DAP_TRANSFER_MATCH_MASK) != 0U) {
                 // Write match mask
@@ -657,16 +658,16 @@ static uint16_t DAP_SWD_Transfer()
 
     for (; request_count != 0U; request_count--) {
         // Process canceled requests
-        request_value = *request++;
+        request_value = *req++;
         if ((request_value & DAP_TRANSFER_RnW) != 0U) {
             // Read register
             if ((request_value & DAP_TRANSFER_MATCH_VALUE) != 0U) {
                 // Read with value match
-                request += 4;
+                req += 4;
             }
         } else {
             // Write register
-            request += 4;
+            req += 4;
         }
     }
 
@@ -712,30 +713,31 @@ static uint16_t DAP_Dummy_Transfer()
     uint8_t request_value;
 
     request_head = request;
+    const uint8_t* req = request;
 
-    request++; // Ignore DAP index
+    req++; // Ignore DAP index
 
-    request_count = *request++;
+    request_count = *req++;
 
     for (; request_count != 0U; request_count--) {
         // Process dummy requests
-        request_value = *request++;
+        request_value = *req++;
         if ((request_value & DAP_TRANSFER_RnW) != 0U) {
             // Read register
             if ((request_value & DAP_TRANSFER_MATCH_VALUE) != 0U) {
                 // Read with value match
-                request += 4;
+                req += 4;
             }
         } else {
             // Write register
-            request += 4;
+            req += 4;
         }
     }
 
     *(response + 0) = 0U; // Response count
     *(response + 1) = 0U; // Response value
 
-    return (((uint16_t)(request - request_head) << 8) | 2U);
+    return (((uint16_t)(req - request_head) << 8) | 2U);
 }
 
 // Process Transfer command and prepare response
@@ -780,15 +782,16 @@ static uint8_t DAP_SWD_TransferBlock()
 
     DAP_TransferAbort = 0U;
 
-    request++; // Ignore DAP index
+    const uint8_t* req = request;
+    req++; // Ignore DAP index
 
-    request_count = (uint16_t)(*(request + 0) << 0) | (uint16_t)(*(request + 1) << 8);
-    request += 2;
+    request_count = (uint16_t)(*(req + 0) << 0) | (uint16_t)(*(req + 1) << 8);
+    req += 2;
     if (request_count == 0U) {
         goto end;
     }
 
-    request_value = *request++;
+    request_value = *req++;
     if ((request_value & DAP_TRANSFER_RnW) != 0U) {
         // Read register block
         if ((request_value & DAP_TRANSFER_APnDP) != 0U) {
@@ -825,7 +828,7 @@ static uint8_t DAP_SWD_TransferBlock()
         while (request_count--) {
             // Load data
             for (uint8_t i = 0; i < 4; i++) {
-                data[i] = *request++;
+                data[i] = *req++;
             }
 
             // Write DP/AP register

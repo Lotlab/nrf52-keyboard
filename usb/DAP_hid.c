@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define EP4_OUT_BUF (&Ep0Buffer[64])
-#define EP4_IN_BUF (&EP4_OUT_BUF[64])
+#define EP4_IN_BUF (&Ep0Buffer[128])
 
 volatile static uint8_t ep4_len = 0;
 
@@ -36,6 +36,8 @@ void Dap_Init()
 void Dap_Routine()
 {
     if (ep4_len > 0 && !usb_state.is_busy) {
+        for (uint8_t i = 0; i < MAX_PACKET_SIZE; i++)
+            Ep0Buffer[i + 128] = 0;
         uint8_t len = DAP_ExecuteCommand(EP4_OUT_BUF, EP4_IN_BUF) & 0xFF;
         usb_state.is_busy = true;
         UEP4_T_LEN = MAX_PACKET_SIZE;
