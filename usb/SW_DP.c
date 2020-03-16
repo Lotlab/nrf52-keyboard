@@ -178,8 +178,8 @@ uint8_t SWD_Transfer(uint8_t request, uint8_t* data)
                     SW_READ_BIT(bit); /* Read RDATA[0:31] */
                     parity += bit;
                     if (data) {
-                        data[b - 1] >>= 1;
-                        data[b - 1] |= bit << 7;
+                        data[b] >>= 1;
+                        data[b] |= bit << 7;
                     }
                 }
             }
@@ -200,8 +200,8 @@ uint8_t SWD_Transfer(uint8_t request, uint8_t* data)
             PIN_SWDIO_OUT_ENABLE();
             /* Write data */
             parity = 0U;
-            for (uint8_t b = 4; b; b--) {
-                val = *(data + b - 1);
+            for (uint8_t b = 0; b < 4; b++) {
+                val = *(data + b);
                 for (uint8_t n = 8U; n; n--) {
                     SW_WRITE_BIT(val); /* Write WDATA[0:31] */
                     parity += val;
