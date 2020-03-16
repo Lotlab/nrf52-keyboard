@@ -15,13 +15,13 @@ endif
 
 SDCC := sdcc
 SDCC_CFLAGS += -mmcs51 --model-small --stack-auto --std-c11 -o $(OBJ_DIR)/ --opt-code-size -I .
-SDCC_LDFLAGS := --xram-size 1024 --iram-size 256 --code-size 14336 --out-fmt-ihx
+SDCC_LDFLAGS := --xram-size 1024 --iram-size 256 --code-size 14336 --out-fmt-ihx --xram-loc 0
 
 USB_SOURCES := $(USB_SOURCE_DIR)/main.c \
+			   $(USB_SOURCE_DIR)/endpoints.c \
 			   $(USB_SOURCE_DIR)/system.c \
 			   $(USB_SOURCE_DIR)/uart.c \
 			   $(USB_SOURCE_DIR)/interrupt.c \
-			   $(USB_SOURCE_DIR)/endpoints.c \
 			   $(USB_SOURCE_DIR)/descriptor.c \
 
 ifeq (yes,$(strip $(ONBOARD_CMSIS_DAP)))

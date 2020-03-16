@@ -33,7 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * 0x80-0xBF 端点4 IN
  *
  */
-uint8_t __XDATA_AT(0x00) Ep0Buffer[MAX_PACKET_SIZE * 3];
+volatile uint8_t __XDATA Ep0Buffer[MAX_PACKET_SIZE * 3];
 /**
  * @brief 端点1缓冲区，用于键盘报文
  *
@@ -41,17 +41,17 @@ uint8_t __XDATA_AT(0x00) Ep0Buffer[MAX_PACKET_SIZE * 3];
  * 地址0xC8-0xCF为端点1IN缓冲区 (8byte)
  *
  */
-uint8_t __XDATA_AT(0xC0) Ep1Buffer[MAX_PACKET_SIZE * 2]; //端点1 IN缓冲区,必须是偶地址
+volatile uint8_t __XDATA Ep1Buffer[MAX_PACKET_SIZE * 2]; //端点1 IN缓冲区,必须是偶地址
 /**
  * @brief 端点2IN缓冲区，用于System包和Consumer包的发送
  *
  */
-uint8_t __XDATA_AT(0x140) Ep2Buffer[MAX_PACKET_SIZE];
+volatile uint8_t __XDATA Ep2Buffer[MAX_PACKET_SIZE];
 /**
  * @brief 端点3IN&OUT缓冲区，用于传递配置
  *
  */
-uint8_t __XDATA_AT(0x180) Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
+volatile uint8_t __XDATA Ep3Buffer[MAX_PACKET_SIZE * 2]; //端点3 IN缓冲区,必须是偶地址
 
 static uint8_t DataInLen, UsbConfig, UsbAddr;
 static uint8_t* pDataIn;

@@ -3,10 +3,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-extern uint8_t __XDATA_AT(0x00) Ep0Buffer[];
-extern uint8_t __XDATA_AT(0xc0) Ep1Buffer[];
-extern uint8_t __XDATA_AT(0x140) Ep2Buffer[];
-extern uint8_t __XDATA_AT(0x180) Ep3Buffer[];
+extern volatile uint8_t __XDATA Ep0Buffer[];
+extern volatile uint8_t __XDATA Ep1Buffer[];
+extern volatile uint8_t __XDATA Ep2Buffer[];
+extern volatile uint8_t __XDATA Ep3Buffer[];
 
 enum UsbSetupState {
     SETUP_IDLE,     // 当前处于空闲状态

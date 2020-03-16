@@ -32,8 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 uart_state uart_rx_state;
 static uint8_t recv_len, pos;
-static uint8_t __XDATA recv_buff[64];
-static uint8_t __XDATA keyboard_buffer[8];
+static uint8_t __XDATA volatile recv_buff[64];
 
 static bool uart_arrive_flag, last_success;
 static uint8_t last_pos;
@@ -97,31 +96,29 @@ void uart_init()
  */
 static void uart_data_parser(void)
 {
+    if (checksum(recv_buff, recv_len - 1) != recv_buff[recv_len - 1]) {
+        // 不做任何事情，等待下次重发
+        return;
+    }
+
     uint8_t command = recv_buff[0];
     if (command >= 0x80) {
-        if (checksum(recv_buff, recv_len - 1) == recv_buff[recv_len - 1]) {
-            // 通信响应数据包
-            uint8_t datalen = command & 0x7F;
-            ResponseConfigurePacket(&recv_buff[1], datalen);
-            last_success = true;
-        }
+        // 通信响应数据包
+        uint8_t datalen = command & 0x7F;
+        ResponseConfigurePacket(&recv_buff[1], datalen);
+        last_success = true;
     } else if (command >= 0x40) {
         uint8_t index = recv_buff[1];
         uint8_t kplen = (command & 0x3F);
-        if (checksum(recv_buff, recv_len - 1) == recv_buff[recv_len - 1]) {
-            if (index == 0) {
-                // 通常键盘数据包
-                memcpy(keyboard_buffer, &recv_buff[2], 8);
-                KeyboardGenericUpload(keyboard_buffer, kplen);
-                last_success = true;
-            } else if (index == 1 || index == 2 || index == 3 || index == 0x80) {
-                // system, consumer, mouse数据包
-                // 发过来的包的id和reportID一致，不用处理
-                KeyboardExtraUpload(&recv_buff[1], kplen + 1);
-                last_success = true;
-            }
-        } else {
-            // 不做任何事情，等待下次重发
+        if (index == 0) {
+            // 通常键盘数据包
+            KeyboardGenericUpload(&recv_buff[2], kplen);
+            last_success = true;
+        } else if (index == 1 || index == 2 || index == 3 || index == 0x80) {
+            // system, consumer, mouse数据包
+            // 发过来的包的id和reportID一致，不用处理
+            KeyboardExtraUpload(&recv_buff[1], kplen + 1);
+            last_success = true;
         }
     }
 }
@@ -144,7 +141,7 @@ static void uart_send_status()
     uart_tx(data);
 }
 
-static uint8_t __XDATA send_buff[64];
+static uint8_t volatile __XDATA send_buff[64];
 static uint8_t send_len = 0;
 
 /**
