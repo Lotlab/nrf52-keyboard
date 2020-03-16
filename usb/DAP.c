@@ -1085,4 +1085,5 @@ void DAP_Setup(void)
     DAP_Data.swd_conf.data_phase = 0U;
 
     DAP_SETUP(); // Device specific setup
+    PORT_OFF(); // Avoid influence other device.
 }

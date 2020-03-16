@@ -125,18 +125,18 @@ Provides definitions about:
 #define SWD_CLK_PORT P1
 #endif
 
-#define _GPIO_PP(port, mask) \
+#define _GPIO_OC(port, mask) \
     port##_MOD_OC &= ~mask; \
-    port##_DIR_PU |= mask
+    port##_DIR_PU &= ~mask
 #define _GPIO_DR(port, mask) \
     port##_MOD_OC |= mask;  \
     port##_DIR_PU |= mask
 
-#define GPIO_PP(port, mask) _GPIO_PP(port, mask)
+#define GPIO_OC(port, mask) _GPIO_OC(port, mask)
 #define GPIO_DR(port, mask) _GPIO_DR(port, mask)
 
-#define SWD_DAT_PP() GPIO_PP(SWD_DAT_PORT, SWD_DAT_MASK)
-#define SWD_CLK_PP() GPIO_PP(SWD_CLK_PORT, SWD_CLK_MASK)
+#define SWD_DAT_OC() GPIO_OC(SWD_DAT_PORT, SWD_DAT_MASK)
+#define SWD_CLK_OC() GPIO_OC(SWD_CLK_PORT, SWD_CLK_MASK)
 #define SWD_DAT_DR() GPIO_DR(SWD_DAT_PORT, SWD_DAT_MASK)
 #define SWD_CLK_DR() GPIO_DR(SWD_CLK_PORT, SWD_CLK_MASK)
 
@@ -195,8 +195,8 @@ Configures the DAP Hardware I/O pins for Serial Wire Debug (SWD) mode:
     do {                 \
         SWD_DAT_IO = 1;  \
         SWD_CLK_IO = 1;  \
-        SWD_DAT_PP();    \
-        SWD_CLK_PP();    \
+        SWD_DAT_DR();    \
+        SWD_CLK_DR();    \
     } while (0)
 
 /** Disable JTAG/SWD I/O Pins.
@@ -204,8 +204,8 @@ Disables the DAP Hardware I/O pins which configures:
  - TCK/SWCLK, TMS/SWDIO, TDI, TDO, nTRST, nRESET to High-Z mode.
 */
 #define PORT_OFF() \
-    SWD_DAT_DR();  \
-    SWD_CLK_DR();
+    SWD_DAT_OC();  \
+    SWD_CLK_OC();
 
 // SWCLK/TCK I/O pin -------------------------------------
 
@@ -255,13 +255,13 @@ Set the SWDIO/TMS DAP hardware I/O pin to low level.
 Configure the SWDIO DAP hardware I/O pin to output mode. This function is
 called prior \ref PIN_SWDIO_OUT function calls.
 */
-#define PIN_SWDIO_OUT_ENABLE() SWD_DAT_PP()
+#define PIN_SWDIO_OUT_ENABLE() 
 
 /** SWDIO I/O pin: Switch to Input mode (used in SWD mode only).
 Configure the SWDIO DAP hardware I/O pin to input mode. This function is
 called prior \ref PIN_SWDIO_IN function calls.
 */
-#define PIN_SWDIO_OUT_DISABLE() SWD_DAT_DR()
+#define PIN_SWDIO_OUT_DISABLE() 
 
 // TDI Pin I/O ---------------------------------------------
 
