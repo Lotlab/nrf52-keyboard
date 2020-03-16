@@ -42,6 +42,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 uint8_t keyboard_led_val_usb;
 
 static uint8_t recv_buf[64];
+static uint8_t send_buf[64];
+static uint8_t send_index;
+static uint8_t send_len;
 static uint8_t recv_index;
 
 static bool has_host;
@@ -118,16 +121,31 @@ static void set_state(bool host, bool charge_full, bool protocol)
 }
 
 /**
- * @brief 直接向 UART 写入数据
+ * @brief 加载 UART 发送缓冲区的数据
+ * 
+ */
+static void uart_on_tx_empty()
+{
+    while (send_index < send_len) {
+        uint32_t ret_code = app_uart_put(send_buf[send_index]);
+        if (ret_code != NRF_SUCCESS)
+            break;
+        send_index++;
+    }
+}
+
+/**
+ * @brief 向 UART 发送缓冲区写入数据并启动发送
  * 
  * @param data 
  * @param len 
  */
 static void uart_send(uint8_t* data, uint8_t len)
 {
-    while (len--) {
-        app_uart_put(*(data++));
-    }
+    memcpy(send_buf, data, len);
+    send_len = len;
+    send_index = 0;
+    uart_on_tx_empty();
 }
 
 uint8_t recv_len;
@@ -213,6 +231,7 @@ static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
         break;
 
     case APP_UART_TX_EMPTY:
+        uart_on_tx_empty();
         break;
 
     case APP_UART_FIFO_ERROR:
