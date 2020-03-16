@@ -17,7 +17,22 @@ SDCC := sdcc
 SDCC_CFLAGS += -mmcs51 --model-small --stack-auto --std-c11 -o $(OBJ_DIR)/ --opt-code-size -I .
 SDCC_LDFLAGS := --xram-size 1024 --iram-size 256 --code-size 14336 --out-fmt-ihx
 
-LIBS := $(patsubst $(USB_SOURCE_DIR)/%.c,$(OBJ_DIR)/%.rel,$(wildcard $(USB_SOURCE_DIR)/*.c))
+USB_SOURCES := $(USB_SOURCE_DIR)/main.c \
+			   $(USB_SOURCE_DIR)/system.c \
+			   $(USB_SOURCE_DIR)/uart.c \
+			   $(USB_SOURCE_DIR)/interrupt.c \
+			   $(USB_SOURCE_DIR)/endpoints.c \
+			   $(USB_SOURCE_DIR)/descriptor.c \
+
+ifeq (yes,$(strip $(ONBOARD_CMSIS_DAP)))
+SDCC_CFLAGS += -DONBOARD_CMSIS_DAP
+USB_SOURCES += $(USB_SOURCE_DIR)/DAP.c \
+               $(USB_SOURCE_DIR)/DAP_hid.c \
+			   $(USB_SOURCE_DIR)/SW_DP.c \
+
+endif
+
+LIBS := $(patsubst $(USB_SOURCE_DIR)/%.c,$(OBJ_DIR)/%.rel,$(USB_SOURCES))
 
 OUTPUT_IHX := $(OBJ_DIR)/$(PROJ_NAME).ihx
 ifndef OUTPUT_HEX

@@ -84,8 +84,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0 // 电量检测引脚
 
 // 充电检测配置
-#define PIN_CHARGING !UCC1 // CH554的充电检测。当UCC1拉低时表示正在充电
-#define PIN_STANDBY !UCC2 // CH554的充电检测。当UCC2拉低时表示充电完成。若不配置则只使用PIN_CHARGING作为是否充电的检测标志
+#define PIN_CHARGING !PWM2_ // CH554的充电检测。当UCC1拉低时表示正在充电
+#define PIN_STANDBY !PWM1_ // CH554的充电检测。当UCC2拉低时表示充电完成。若不配置则只使用PIN_CHARGING作为是否充电的检测标志
 
 // 按键阵列配置
 #define MATRIX_ROWS 6 /* 硬件阵列行数 */
@@ -119,4 +119,16 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 2
 #define ROTARY_ENCODER_NEG 5,5
 #else
 #error "请指定左手还是右手"
+#endif
+
+// 调试器配置
+#ifndef SWD_DAT_IO
+#define SWD_DAT_IO UCC1
+#define SWD_DAT_MASK bUCC1
+#define SWD_DAT_PORT P1
+#endif
+#ifndef SWD_CLK_IO
+#define SWD_CLK_IO UCC2
+#define SWD_CLK_MASK bUCC2
+#define SWD_CLK_PORT P1
 #endif

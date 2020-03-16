@@ -58,6 +58,10 @@ extern void nop();
 #define USB_OUT_EP3 EP3_OUT
 #define USB_OUT_EP4 EP4_OUT
 
+#ifndef ONBOARD_CMSIS_DAP
+#define EP4_OUT nop
+#endif
+
 #define USB_IN_EP0 EP0_IN
 #define USB_IN_EP1 EP1_IN
 #define USB_IN_EP2 EP2_IN

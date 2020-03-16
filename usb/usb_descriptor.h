@@ -60,7 +60,11 @@ uint8_t const DeviceDescriptor[] = {
 };
 
 #define DESCRIPTOR_TOTAL_LENGTH             sizeof(ConfigDescriptor)
+#ifdef ONBOARD_CMSIS_DAP
 #define USB_NUM_INTERFACES                  0x04
+#else
+#define USB_NUM_INTERFACES                  0x03
+#endif
 #define USB_SUPPORT_REM_WAKE                0x20    // support
 #define USB_SUPPORT_SELF_POWERED            0x80    // not self-powered
 #define USB_MAX_POWER                       0xfa    // 500 mA
@@ -211,6 +215,7 @@ uint8_t const ConfigDescriptor []=
     0x40, 0x00,                         // wMaxPacketSize, 64 bytes
     1,                                  // bInterval, ms
 
+#ifdef ONBOARD_CMSIS_DAP
     //-------- Descriptor for HID class device -------------------------------------
     // INTERFACE DESCRIPTOR (9 bytes)
     0x09,                               // bLength
@@ -247,7 +252,7 @@ uint8_t const ConfigDescriptor []=
     0x40, 0x00,                         // wMaxPacketSize, 64 bytes
     1,                                  // bInterval, ms
     /******************************************************* end of HID**************************************/
-
+#endif
 };
 
 /*-----------------------------------------------------------------------------+
@@ -280,12 +285,13 @@ const uint8_t InterfaceStringDesc[] = {
     'K',0x00,'e',0x00,'y',0x00,'b',0x00,'o',0x00,'a',0x00,
     'r',0x00,'d',0x00,' ',0x00,'K',0x00,'e',0x00,'y',0x00,
     'm',0x00,'a',0x00,'p',0x00,
-
+#ifdef ONBOARD_CMSIS_DAP
     // String index 7, Interface String
     20,     // Length of this string descriptor
     3,      // bDescriptorType
     'C',0x00,'M',0x00,'S',0x00,'I',0x00,'S',0x00,'-',0x00,
     'D',0x00,'A',0x00,'P',0x00,
+#endif
 };
 
 
@@ -300,7 +306,9 @@ StrPtrL const ReportDescriptor[] = {
     STRPTRL(report_desc_HID0),
     STRPTRL(report_desc_HID1),
     STRPTRL(report_desc_HID2),
+#ifdef ONBOARD_CMSIS_DAP
     STRPTRL(report_desc_HID3),
+#endif
 };
 
 uint8_t const report_desc_HID0[]=
@@ -465,6 +473,7 @@ uint8_t const report_desc_HID2[]=
     0xc0    // end Application Collection
 };
 
+#ifdef ONBOARD_CMSIS_DAP
 uint8_t const report_desc_HID3[] = {
     0x06, 0x00, 0xff,   // Usage Page (Vendor Defined)
     0x09, 0x01,         // Usage (0x01)
@@ -483,3 +492,4 @@ uint8_t const report_desc_HID3[] = {
     0xB1, 0x02,         // Feature (Data,Var,Abs)
     0xc0                // End Application Collection
 };
+#endif

@@ -179,7 +179,9 @@ static void FeedWatchDog()
 const timer_info timers[] = {
     TIMER_DEF(&FeedWatchDog, 500),
     TIMER_DEF(&uart_check, 1),
+#ifdef ONBOARD_CMSIS_DAP
     TIMER_DEF(&Dap_Routine, 1)
+#endif
 };
 TIMER_INIT(timer, timers)
 
@@ -210,7 +212,9 @@ static void main()
 
     USBDeviceInit(); //USB设备模式初始化
     EnableWatchDog();
+#ifdef ONBOARD_CMSIS_DAP
     Dap_Init();
+#endif
     EA = 1; //允许单片机中断
     UEP1_T_LEN = 0; //预使用发送长度一定要清空
     UEP2_T_LEN = 0; //预使用发送长度一定要清空

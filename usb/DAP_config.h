@@ -114,10 +114,31 @@ Provides definitions about:
 #define TARGET_DEVICE_NAME "" ///< String indicating the Target Device
 #endif
 
+#ifndef SWD_DAT_IO
 #define SWD_DAT_IO T2
+#define SWD_DAT_MASK bT2
+#define SWD_DAT_PORT P1
+#endif
+#ifndef SWD_CLK_IO
 #define SWD_CLK_IO T2EX
-#define SWD_DAT_BIT bT2
-#define SWD_CLK_BIT bT2EX
+#define SWD_CLK_MASK bT2EX
+#define SWD_CLK_PORT P1
+#endif
+
+#define _GPIO_PP(port, mask) \
+    port##_MOD_OC &= ~mask; \
+    port##_DIR_PU |= mask
+#define _GPIO_DR(port, mask) \
+    port##_MOD_OC |= mask;  \
+    port##_DIR_PU |= mask
+
+#define GPIO_PP(port, mask) _GPIO_PP(port, mask)
+#define GPIO_DR(port, mask) _GPIO_DR(port, mask)
+
+#define SWD_DAT_PP() GPIO_PP(SWD_DAT_PORT, SWD_DAT_MASK)
+#define SWD_CLK_PP() GPIO_PP(SWD_CLK_PORT, SWD_CLK_MASK)
+#define SWD_DAT_DR() GPIO_DR(SWD_DAT_PORT, SWD_DAT_MASK)
+#define SWD_CLK_DR() GPIO_DR(SWD_CLK_PORT, SWD_CLK_MASK)
 
 ///@}
 
@@ -170,19 +191,21 @@ Configures the DAP Hardware I/O pins for Serial Wire Debug (SWD) mode:
  - SWCLK, SWDIO, nRESET to output mode and set to default high level.
  - TDI, TMS, nTRST to HighZ mode (pins are unused in SWD mode).
 */
-#define PORT_SWD_SETUP()                                     \
-    SWD_DAT_IO = 1;                                          \
-    SWD_CLK_IO = 1;                                          \
-    P1_MOD_OC &= ~(SWD_DAT_BIT | SWD_CLK_BIT); \
-    P1_DIR_PU |= (SWD_DAT_BIT | SWD_CLK_BIT)
+#define PORT_SWD_SETUP() \
+    do {                 \
+        SWD_DAT_IO = 1;  \
+        SWD_CLK_IO = 1;  \
+        SWD_DAT_PP();    \
+        SWD_CLK_PP();    \
+    } while (0)
 
 /** Disable JTAG/SWD I/O Pins.
 Disables the DAP Hardware I/O pins which configures:
  - TCK/SWCLK, TMS/SWDIO, TDI, TDO, nTRST, nRESET to High-Z mode.
 */
-#define PORT_OFF()                                          \
-    P1_MOD_OC |= (SWD_DAT_BIT | SWD_CLK_BIT); \
-    P1_DIR_PU |= (SWD_DAT_BIT | SWD_CLK_BIT)
+#define PORT_OFF() \
+    SWD_DAT_DR();  \
+    SWD_CLK_DR();
 
 // SWCLK/TCK I/O pin -------------------------------------
 
@@ -232,14 +255,13 @@ Set the SWDIO/TMS DAP hardware I/O pin to low level.
 Configure the SWDIO DAP hardware I/O pin to output mode. This function is
 called prior \ref PIN_SWDIO_OUT function calls.
 */
-#define PIN_SWDIO_OUT_ENABLE() P1_MOD_OC &= ~SWD_DAT_BIT
+#define PIN_SWDIO_OUT_ENABLE() SWD_DAT_PP()
 
 /** SWDIO I/O pin: Switch to Input mode (used in SWD mode only).
 Configure the SWDIO DAP hardware I/O pin to input mode. This function is
 called prior \ref PIN_SWDIO_IN function calls.
 */
-#define PIN_SWDIO_OUT_DISABLE() P1_MOD_OC |= SWD_DAT_BIT
-
+#define PIN_SWDIO_OUT_DISABLE() SWD_DAT_DR()
 
 // TDI Pin I/O ---------------------------------------------
 

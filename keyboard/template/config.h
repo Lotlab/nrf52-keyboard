@@ -108,3 +108,11 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 2
 
 #define DEBOUNCE 5 /* 硬件消抖次数，设置为0则不消抖 */
 #define MATRIX_SCAN_DELAY_CYCLE 36 /* 按键扫描等待IO稳定的延时时长 */
+
+// 板载调试器设置
+#define SWD_CLK_IO T2EX
+#define SWD_CLK_MASK bT2EX
+#define SWD_CLK_PORT P1
+#define SWD_DAT_IO T2
+#define SWD_DAT_MASK bT2
+#define SWD_DAT_PORT P1
