@@ -199,30 +199,38 @@ SFR(ROM_CTRL, 0x86);         // WriteOnly: flash-ROM control
 
 /*  Port Registers  */
 SFR(P1, 0x90);         // port 1 input & output
+ SBIT(P1_7, 0x90, 7);
  SBIT(SCK, 0x90, 7);         // serial clock for SPI0
  SBIT(TXD1, 0x90, 7);         // TXD output for UART1
  SBIT(TIN5, 0x90, 7);         // TIN5 for Touch-Key
+ SBIT(P1_6, 0x90, 6);
  SBIT(MISO, 0x90, 6);         // master serial data input or slave serial data output for SPI0
  SBIT(RXD1, 0x90, 6);         // RXD input for UART1
  SBIT(TIN4, 0x90, 6);         // TIN4 for Touch-Key
+ SBIT(P1_5, 0x90, 5);
  SBIT(MOSI, 0x90, 5);         // master serial data output or slave serial data input for SPI0
  SBIT(PWM1, 0x90, 5);         // PWM output for PWM1
  SBIT(TIN3, 0x90, 5);         // TIN3 for Touch-Key
  SBIT(UCC2, 0x90, 5);         // CC2 for USB type-C
  SBIT(AIN2, 0x90, 5);         // AIN2 for ADC
+ SBIT(P1_4, 0x90, 4);
  SBIT(T2_, 0x90, 4);         // alternate pin for T2
  SBIT(CAP1_, 0x90, 4);         // alternate pin for CAP1
  SBIT(SCS, 0x90, 4);         // slave chip-selection input for SPI0
  SBIT(TIN2, 0x90, 4);         // TIN2 for Touch-Key
  SBIT(UCC1, 0x90, 4);         // CC1 for USB type-C
  SBIT(AIN1, 0x90, 4);         // AIN1 for ADC
+ SBIT(P1_3, 0x90, 3);
  SBIT(TXD_, 0x90, 3);         // alternate pin for TXD of UART0
+ SBIT(P1_2, 0x90, 2);
  SBIT(RXD_, 0x90, 2);         // alternate pin for RXD of UART0
+ SBIT(P1_1, 0x90, 1);
  SBIT(T2EX, 0x90, 1);         // external trigger input for timer2 reload & capture
  SBIT(CAP2, 0x90, 1);         // capture2 input for timer2
  SBIT(TIN1, 0x90, 1);         // TIN1 for Touch-Key
  SBIT(VBUS2, 0x90, 1);         // VBUS2 for USB type-C
  SBIT(AIN0, 0x90, 1);         // AIN0 for ADC
+ SBIT(P1_0, 0x90, 0);
  SBIT(T2, 0x90, 0);         // external count input
  SBIT(CAP1, 0x90, 0);         // capture1 input for timer2
  SBIT(TIN0, 0x90, 0);         // TIN0 for Touch-Key
@@ -256,19 +264,27 @@ SFR(P1_DIR_PU, 0x93);         // port 1 direction for push-pull or pullup enable
 #define bCAP1             bT2       // capture1 input for timer2
 SFR(P2, 0xA0);         // port 2
 SFR(P3, 0xB0);         // port 3 input & output
+ SBIT(P3_7, 0xB0, 7);
  SBIT(UDM, 0xB0, 7);         // ReadOnly: pin UDM input
+ SBIT(P3_6, 0xB0, 6);
  SBIT(UDP, 0xB0, 6);         // ReadOnly: pin UDP input
+ SBIT(P3_5, 0xB0, 5);
  SBIT(T1, 0xB0, 5);         // external count input for timer1
+ SBIT(P3_4, 0xB0, 4);
  SBIT(PWM2, 0xB0, 4);         // PWM output for PWM2
  SBIT(RXD1_, 0xB0, 4);         // alternate pin for RXD1
  SBIT(T0, 0xB0, 4);         // external count input for timer0
+ SBIT(P3_3, 0xB0, 3);
  SBIT(INT1, 0xB0, 3);         // external interrupt 1 input
+ SBIT(P3_2, 0xB0, 2);
  SBIT(TXD1_, 0xB0, 2);         // alternate pin for TXD1
  SBIT(INT0, 0xB0, 2);         // external interrupt 0 input
  SBIT(VBUS1, 0xB0, 2);         // VBUS1 for USB type-C
  SBIT(AIN3, 0xB0, 2);         // AIN3 for ADC
+ SBIT(P3_1, 0xB0, 1);
  SBIT(PWM2_, 0xB0, 1);         // alternate pin for PWM2
  SBIT(TXD, 0xB0, 1);         // TXD output for UART0
+ SBIT(P3_0, 0xB0, 0);
  SBIT(PWM1_, 0xB0, 0);         // alternate pin for PWM1
  SBIT(RXD, 0xB0, 0);         // RXD input for UART0
 SFR(P3_MOD_OC, 0x96);         // port 3 output mode: 0=push-pull, 1=open-drain
