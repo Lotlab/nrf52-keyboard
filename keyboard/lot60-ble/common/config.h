@@ -143,8 +143,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0
 
 // 充电检测配置
-#define PIN_CHARGING !UCC1
-#define PIN_STANDBY !UCC2
+#define PIN_CHARGING !P3_3
+#define PIN_STANDBY !P3_4
 
 // 按键阵列配置
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 25, 28, 29, 30, 26 };
