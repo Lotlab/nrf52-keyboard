@@ -81,6 +81,7 @@
 #include "app_scheduler.h"
 #include "app_timer.h"
 #include "nrf_pwr_mgmt.h"
+#include "nrf_delay.h"
 
 #include "ble/ble_bas_service.h"
 #include "ble/ble_hid_service.h"
@@ -244,6 +245,8 @@ static void sleep_mode_enter(void)
     usb_comm_sleep_prepare();
 #endif
 
+    // waiting for some bus
+    nrf_delay_ms(10);
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
     ret_code_t err_code = sd_power_system_off();
     APP_ERROR_CHECK(err_code);
