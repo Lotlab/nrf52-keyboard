@@ -46,20 +46,21 @@
  *
  */
 
-#include <stdint.h>
-#include "boards.h"
-#include "nrf_mbr.h"
+#include "app_error.h"
+#include "app_error_weak.h"
 #include "nrf_bootloader.h"
 #include "nrf_bootloader_app_start.h"
 #include "nrf_bootloader_dfu_timers.h"
+#include "nrf_bootloader_info.h"
+#include "nrf_delay.h"
 #include "nrf_dfu.h"
+#include "nrf_gpio.h"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
-#include "app_error.h"
-#include "app_error_weak.h"
-#include "nrf_bootloader_info.h"
-#include "nrf_delay.h"
+#include "nrf_mbr.h"
+#include "nrf_power.h"
+#include <stdint.h>
 
 static void on_error(void)
 {
@@ -75,20 +76,17 @@ static void on_error(void)
     NVIC_SystemReset();
 }
 
-
-void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p_file_name)
+void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t* p_file_name)
 {
     NRF_LOG_ERROR("%s:%d", p_file_name, line_num);
     on_error();
 }
-
 
 void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)
 {
     NRF_LOG_ERROR("Received a fault! id: 0x%08x, pc: 0x%08x, info: 0x%08x", id, pc, info);
     on_error();
 }
-
 
 void app_error_handler_bare(uint32_t error_code)
 {
@@ -101,27 +99,53 @@ void app_error_handler_bare(uint32_t error_code)
  */
 static void dfu_observer(nrf_dfu_evt_type_t evt_type)
 {
-    switch (evt_type)
-    {
-        case NRF_DFU_EVT_DFU_FAILED:
-        case NRF_DFU_EVT_DFU_ABORTED:
-        case NRF_DFU_EVT_DFU_INITIALIZED:
-            bsp_board_init(BSP_INIT_LEDS);
-            bsp_board_led_on(BSP_BOARD_LED_0);
-            bsp_board_led_on(BSP_BOARD_LED_1);
-            bsp_board_led_off(BSP_BOARD_LED_2);
-            break;
-        case NRF_DFU_EVT_TRANSPORT_ACTIVATED:
-            bsp_board_led_off(BSP_BOARD_LED_1);
-            bsp_board_led_on(BSP_BOARD_LED_2);
-            break;
-        case NRF_DFU_EVT_DFU_STARTED:
-            break;
-        default:
-            break;
+    switch (evt_type) {
+    case NRF_DFU_EVT_DFU_FAILED:
+    case NRF_DFU_EVT_DFU_ABORTED:
+    case NRF_DFU_EVT_DFU_INITIALIZED:
+        // todo: LED init.
+        break;
+    case NRF_DFU_EVT_TRANSPORT_ACTIVATED:
+        // todo: set LED
+        break;
+    case NRF_DFU_EVT_DFU_STARTED:
+        break;
+    default:
+        break;
     }
 }
 
+/**
+ * @brief Force enter the DFU mode
+ * 
+ */
+static void dfu_set_enter()
+{
+    nrf_power_gpregret_set(nrf_power_gpregret_get() | BOOTLOADER_DFU_START);
+}
+
+static void dfu_multi_role_btn()
+{
+#define BTN_PIN 1
+    nrf_gpio_cfg_sense_input(BTN_PIN,
+        NRF_GPIO_PIN_PULLUP,
+        NRF_GPIO_PIN_SENSE_LOW);
+
+    uint32_t press_count = 0;
+
+    while (!nrf_gpio_pin_read(BTN_PIN)) {
+        nrf_delay_ms(1);
+        press_count++;
+    }
+
+    if (press_count > 4000) {
+        if (press_count > 10000) {
+            // todo: clear storage
+        } else if (press_count > 4000) {
+            dfu_set_enter();
+        }
+    }
+}
 
 /**@brief Function for application main entry. */
 int main(void)
@@ -134,10 +158,12 @@ int main(void)
     ret_val = nrf_bootloader_flash_protect(BOOTLOADER_START_ADDR, BOOTLOADER_SIZE, false);
     APP_ERROR_CHECK(ret_val);
 
-    (void) NRF_LOG_INIT(nrf_bootloader_dfu_timer_counter_get);
+    (void)NRF_LOG_INIT(nrf_bootloader_dfu_timer_counter_get);
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 
     NRF_LOG_INFO("Inside main");
+
+    dfu_multi_role_btn();
 
     ret_val = nrf_bootloader_init(dfu_observer);
     APP_ERROR_CHECK(ret_val);
