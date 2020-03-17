@@ -327,6 +327,7 @@ static void set_single_config(uint8_t id, uint8_t len, uint8_t* data)
             hid_response_generic(HID_RESP_WRITE_OVERFLOW);
         } else {
             memcpy(item->section->data, data, len);
+            hid_response_generic(HID_RESP_SUCCESS);
         }
     }
 #else
