@@ -36,7 +36,7 @@ namespace KeymapDownloader
 
         void SetCopyright()
         {
-            setStatusText($"配列下载器 {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
+            setStatusText($"配列下载器 {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()} | 请使用新版配置工具进行配置");
         }
 
         /// <summary>
@@ -140,18 +140,33 @@ namespace KeymapDownloader
                 }
             }
 
+            const int keymap_offset = 0x55;
+
             try
             {
-                byte[] packet = new byte[60];
-                var count = binary.Length / 60;
+                byte[] packet = new byte[56];
+                var count = (binary.Length - keymap_offset) / 56;
+                // Keymap
                 for (int i = 0; i < count; i++)
                 {
-                    Array.Copy(binary, i * 60, packet, 0, 60);
+                    Array.Copy(binary, i * 56 + keymap_offset, packet, 0, 56);
                     setStatusText($"{i + 1}/{count}");
 
                     if (SendPacket(hidStream, (uint)i, packet))
                         break;
                 }
+
+                // Fn
+                for (int i = 0; i < 64; i += 56)
+                {
+                    Array.Copy(binary, i + 0x15, packet, 0, i < 64 ? 56 : i - 56);
+                    if (SendPacketFn(hidStream, (uint)i/56, packet))
+                        break;
+                }
+
+                // Write to storage
+                SendCommand(hidStream, 0x3E, new byte[] { 0xFF });
+
                 setStatusText("下载完毕");
             }
             catch (Exception exp)
@@ -174,11 +189,14 @@ namespace KeymapDownloader
         /// <returns>是否为最后一个</returns>
         bool SendPacket(HidStream stream, uint id, byte[] data)
         {
-            byte[] send = new byte[63];
+            byte[] send = new byte[64];
 
             send[0] = 0x3f;
-            send[1] = (byte)id;
-            Array.Copy(data, 0, send, 2, data.Length);
+            send[1] = 0x33; // CMD: Write keymap
+            send[2] = (byte)(data.Length + 1);
+            send[3] = (byte)id;
+
+            Array.Copy(data, 0, send, 4, data.Length);
 
             int retryCount = 5;
 
@@ -186,16 +204,15 @@ namespace KeymapDownloader
             do
             {
                 stream.Write(send);
-                var ret = stream.Read();
+                byte[] ret = new byte[64];
+                stream.Read(ret);
                 var code = ret[1];
 
-                // 0x10: 校验失败
-                // 0x11: 接收成功
-                // 0x12: 全部发送完毕
-                if (code == 0x12)
+                // 0x04: 写入完毕
+                if (code == 0x04)
                     return true;
 
-                ret_code = code == 0x11;
+                ret_code = (code == 0x00);
             } while (!ret_code && retryCount-- > 0);
 
             if (retryCount <= 0)
@@ -205,9 +222,90 @@ namespace KeymapDownloader
             return false;
         }
 
+        /// <summary>
+        /// 发送数据包
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns>是否为最后一个</returns>
+        bool SendPacketFn(HidStream stream, uint id, byte[] data)
+        {
+            byte[] send = new byte[64];
+
+            send[0] = 0x3f;
+            send[1] = 0x34; // CMD: Write keymap
+            send[2] = (byte)(data.Length + 1);
+            send[3] = (byte)id;
+
+            Array.Copy(data, 0, send, 4, data.Length);
+
+            int retryCount = 5;
+
+            bool ret_code;
+            do
+            {
+                stream.Write(send);
+                byte[] ret = new byte[64];
+                stream.Read(ret);
+                var code = ret[1];
+
+                // 0x04: 写入完毕
+                if (code == 0x04)
+                    return true;
+
+                ret_code = (code == 0x00);
+            } while (!ret_code && retryCount-- > 0);
+
+            if (retryCount <= 0)
+            {
+                throw new Exception("发送重试次数达到上限");
+            }
+            return false;
+        }
+
+        byte[] SendCommand(HidStream stream, uint cmd, byte[] data)
+        {
+            byte[] send = new byte[64];
+
+            send[0] = 0x3f;
+            send[1] = (byte)cmd;
+            send[2] = (byte)data.Length;
+
+            if (data.Length > 0)
+            {
+                Array.Copy(data, 0, send, 3, data.Length);
+            }
+
+            stream.Write(send);
+            byte[] ret = new byte[64];
+            stream.Read(ret);
+            byte[] real;
+            if (ret[2] == 0)
+            {
+                real = new byte[1];
+            } else
+            {
+                real = new byte[2 + ret[2]];
+            }
+            Array.Copy(ret, 1, real, 0, real.Length);
+
+            return real;
+        }
+
         private void Devices_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             device = ((CustomHID)Devices.SelectedItem)?.Device;
+            try
+            {
+                HidStream hidStream = device.Open();
+                var ret = SendCommand(hidStream, 0x20, new byte[0]);
+                System.Console.WriteLine("%02x", ret);
+            }
+            catch (Exception exp)
+            {
+                setStatusText(exp.Message);
+            }
         }
     }
 }
