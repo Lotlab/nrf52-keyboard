@@ -498,7 +498,7 @@ static void gap_params_init(void)
 
     set_device_name();
 
-    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_HID_KEYBOARD);
+    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_GENERIC_HID);
     APP_ERROR_CHECK(err_code);
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
