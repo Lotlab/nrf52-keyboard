@@ -25,38 +25,60 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ble_config.h"
 #include "ble_hid_service.h"
 
-#define OUTPUT_REP_KBD_INDEX 0 /**< Index of Output Report. */
-#define OUTPUT_REPORT_MAX_LEN 2 /**< Maximum length of Output Report. */
-#define INPUT_REP_KBD_INDEX 0 /**< Index of Input Report. */
-#define INPUT_REP_REF_ID 0x7f /**< Id of reference to Keyboard Input Report. */
-#define OUTPUT_REP_REF_ID 0x7f /**< Id of reference to Keyboard Output Report. */
-
-#ifdef MOUSEKEY_ENABLE
-#define INPUT_REP_MOUSE_INDEX INPUT_REP_KBD_INDEX + 1
-#else
-#define INPUT_REP_MOUSE_INDEX INPUT_REP_KBD_INDEX
-#endif
-
-#ifdef EXTRAKEY_ENABLE
-#define INPUT_REP_SYSTEM_INDEX INPUT_REP_MOUSE_INDEX + 1
-#define INPUT_REP_CONSUMER_INDEX INPUT_REP_SYSTEM_INDEX + 1
-#else
-#define INPUT_REP_SYSTEM_INDEX INPUT_REP_MOUSE_INDEX
-#define INPUT_REP_CONSUMER_INDEX INPUT_REP_SYSTEM_INDEX
-#endif
-
-#define INPUT_REP_COUNT INPUT_REP_CONSUMER_INDEX + 1 // In 报文数目
-#define OUTPUT_REP_COUNT OUTPUT_REP_KBD_INDEX + 1 // Out 报文数目
-
 #define MAX_BUFFER_ENTRIES 5 /**< Number of elements that can be enqueued */
-
 #define BASE_USB_HID_SPEC_VERSION 0x0101 /**< Version number of base USB HID Specification implemented by this application. */
 
-#define INPUT_REPORT_KEYS_MAX_LEN 8 /**< Maximum length of the Input Report characteristic. */
+#define INPUT_REP_KEYBOARD_ID 0x7f /**< Id of reference to Keyboard Input Report. */
+#define OUTPUT_REP_KEYBOARD_ID 0x7f /**< Id of reference to Keyboard Output Report. */
+
+#define INPUT_REPORT_LEN_KEYBOARD 8 /**< Maximum length of the Input Report characteristic. */
+#define OUTPUT_REPORT_LEN_KEYBOARD 1 /**< Maximum length of Output Report. */
+#define INPUT_REPORT_LEN_MOUSE 5
+#define INPUT_REPORT_LEN_SYSTEM 2
+#define INPUT_REPORT_LEN_CONSUMER 2
+
+#define INPUT_REP_INDEX_INVALID 0xFF /** Invalid index **/
+
+enum input_report_index {
+    INPUT_REP_KBD_INDEX,
+#ifdef MOUSEKEY_ENABLE
+    INPUT_REP_MOUSE_INDEX,
+#endif
+#ifdef EXTRAKEY_ENABLE
+    INPUT_REP_SYSTEM_INDEX,
+    INPUT_REP_CONSUMER_INDEX,
+#endif
+    INPUT_REP_COUNT
+};
+
+enum output_report_index {
+    OUTPUT_REP_KBD_INDEX,
+    OUTPUT_REP_COUNT
+};
+
+#ifndef MOUSEKEY_ENABLE
+#define INPUT_REP_MOUSE_INDEX INPUT_REP_INDEX_INVALID
+#endif
+
+#ifndef EXTRAKEY_ENABLE
+#define INPUT_REP_SYSTEM_INDEX INPUT_REP_INDEX_INVALID
+#define INPUT_REP_CONSUMER_INDEX INPUT_REP_INDEX_INVALID
+#endif
+
+/**
+ * @brief HID Report Index Lookup table
+ * 
+ * Mapping the internal ID to HID report id
+ * 
+ */
+uint8_t hid_report_map_table[] = {
+    INPUT_REP_KBD_INDEX,
+    INPUT_REP_MOUSE_INDEX,
+    INPUT_REP_SYSTEM_INDEX,
+    INPUT_REP_CONSUMER_INDEX
+};
 
 static bool m_in_boot_mode = false; /**< Current protocol mode. */
-
-uint8_t hid_report_map_table[] = { INPUT_REP_KBD_INDEX, INPUT_REP_MOUSE_INDEX, INPUT_REP_SYSTEM_INDEX, INPUT_REP_CONSUMER_INDEX };
 
 /**Buffer queue access macros
  *
@@ -108,8 +130,15 @@ STATIC_ASSERT(sizeof(buffer_list_t) % 4 == 0);
 static buffer_list_t buffer_list; /**< List to enqueue not just data to be sent, but also related information like the handle, connection handle etc */
 BLE_HIDS_DEF(m_hids, /**< Structure used to identify the HID service. */
     NRF_SDH_BLE_TOTAL_LINK_COUNT,
-    INPUT_REPORT_KEYS_MAX_LEN,
-    OUTPUT_REPORT_MAX_LEN);
+    INPUT_REPORT_LEN_KEYBOARD,
+#ifdef MOUSEKEY_ENABLE
+    INPUT_REPORT_LEN_MOUSE,
+#endif
+#ifdef EXTRAKEY_ENABLE
+    INPUT_REPORT_LEN_SYSTEM,
+    INPUT_REPORT_LEN_CONSUMER,
+#endif
+    OUTPUT_REPORT_LEN_KEYBOARD);
 
 uint8_t keyboard_led_val_ble;
 
@@ -131,23 +160,32 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     // Initialize HID Service
     HID_REP_IN_SETUP(
         input_report_array[INPUT_REP_KBD_INDEX],
-        INPUT_REPORT_KEYS_MAX_LEN,
-        INPUT_REP_REF_ID);
+        INPUT_REPORT_LEN_KEYBOARD,
+        INPUT_REP_KEYBOARD_ID);
 
     // keyboard led report
     HID_REP_OUT_SETUP(
         output_report_array[OUTPUT_REP_KBD_INDEX],
-        OUTPUT_REPORT_MAX_LEN,
-        OUTPUT_REP_REF_ID);
+        OUTPUT_REPORT_LEN_KEYBOARD,
+        OUTPUT_REP_KEYBOARD_ID);
 
 #ifdef MOUSEKEY_ENABLE
-    HID_REP_IN_SETUP(input_report_array[INPUT_REP_MOUSE_INDEX], 5, REPORT_ID_MOUSE);
+    HID_REP_IN_SETUP(
+        input_report_array[INPUT_REP_MOUSE_INDEX],
+        INPUT_REPORT_LEN_MOUSE,
+        REPORT_ID_MOUSE);
 #endif
 #ifdef EXTRAKEY_ENABLE
     // system input report
-    HID_REP_IN_SETUP(input_report_array[INPUT_REP_SYSTEM_INDEX], 2, REPORT_ID_SYSTEM);
+    HID_REP_IN_SETUP(
+        input_report_array[INPUT_REP_SYSTEM_INDEX],
+        INPUT_REPORT_LEN_SYSTEM,
+        REPORT_ID_SYSTEM);
     // consumer input report
-    HID_REP_IN_SETUP(input_report_array[INPUT_REP_CONSUMER_INDEX], 2, REPORT_ID_CONSUMER);
+    HID_REP_IN_SETUP(
+        input_report_array[INPUT_REP_CONSUMER_INDEX],
+        INPUT_REPORT_LEN_CONSUMER,
+        REPORT_ID_CONSUMER);
 #endif
 
     memset(&hids_init_obj, 0, sizeof(hids_init_obj));
@@ -330,7 +368,7 @@ void keys_send(uint8_t report_id, uint8_t key_pattern_len, uint8_t* p_key_patter
     // convert report id to index
     uint8_t report_index = hid_report_map_table[report_id];
     // check if this function is disable
-    if (report_id > 0 && report_index == hid_report_map_table[report_id - 1])
+    if (report_index == INPUT_REP_INDEX_INVALID)
         return;
 
     err_code = send_key(&m_hids, report_index, p_key_pattern, key_pattern_len);
@@ -356,19 +394,19 @@ static void on_hid_rep_char_write(ble_hids_evt_t* p_evt)
 {
     if (p_evt->params.char_write.char_id.rep_type == BLE_HIDS_REP_TYPE_OUTPUT) {
         ret_code_t err_code;
-        uint8_t report_val[2];
+        uint8_t report_val;
         uint8_t report_index = p_evt->params.char_write.char_id.rep_index;
 
         if (report_index == OUTPUT_REP_KBD_INDEX) {
             err_code = ble_hids_outp_rep_get(&m_hids,
                 report_index,
-                OUTPUT_REPORT_MAX_LEN,
+                OUTPUT_REPORT_LEN_KEYBOARD,
                 0,
                 m_conn_handle,
-                report_val);
+                &report_val);
 
             if (err_code == NRF_SUCCESS) {
-                keyboard_led_val_ble = report_val[0] == 0x7F ? report_val[1] : report_val[0];
+                keyboard_led_val_ble = report_val;
             }
         }
     }
