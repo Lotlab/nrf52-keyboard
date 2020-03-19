@@ -74,8 +74,8 @@ BLE_ADVERTISING_DEF(m_advertising); /**< Advertising module instance. */
 
 static ble_uuid_t m_adv_uuids[] = { { BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE } };
 
-
-/**@brief Function for setting filtered whitelist.
+/**
+ * @brief Function for setting filtered whitelist.
  *
  * @param[in] skip  Filter passed to @ref pm_peer_id_list.
  */
@@ -91,7 +91,8 @@ static void whitelist_set(pm_peer_id_list_skip_t skip)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for setting filtered device identities.
+/**
+ * @brief Function for setting filtered device identities.
  *
  * @param[in] skip  Filter passed to @ref pm_peer_id_list.
  */
@@ -138,7 +139,8 @@ NRF_SDH_STATE_OBSERVER(m_buttonless_dfu_state_obs, 0) = {
 #endif
 
 #ifdef MACADDR_SEPRATOR
-/**@brief MAC地址转换为设备名后缀.
+/**
+ * @brief MAC地址转换为设备名后缀.
  *
  * 读取MAC地址，并将其转换后放置到设备名最后
  */
@@ -161,6 +163,10 @@ static void get_device_name(char* device_name, int offset)
 }
 #endif
 
+/**
+ * @brief 设置蓝牙设备的名称
+ * 
+ */
 static void set_device_name(void)
 {
     ret_code_t err_code;
@@ -180,7 +186,8 @@ static void set_device_name(void)
 #endif
     APP_ERROR_CHECK(err_code);
 }
-/**@brief 清空所有绑定数据.
+/**
+ * @brief 清空所有绑定数据.
  */
 void delete_bonds(void)
 {
@@ -193,7 +200,6 @@ void delete_bonds(void)
 #ifdef MULTI_DEVICE_SWITCH
     //清空所有绑定后，自动回到首个设备
     switch_id = 0;
-    switch_device_id_write(switch_id);
     switch_device_select(switch_id);
 #endif
 }
@@ -201,14 +207,17 @@ void delete_bonds(void)
 #ifdef MULTI_DEVICE_SWITCH
 //注册switch需要的存储区
 CONFIG_SECTION(switch_device_id, 1);
-/**@brief 读取switch id.
+
+/**
+ * @brief 读取switch id.
  *
  */
 uint8_t switch_device_id_read(void)
 {
     return switch_device_id.data[0];
 }
-/**@brief 写入switch id.
+/**
+ * @brief 写入switch id.
  *
  */
 void switch_device_id_write(uint8_t val)
@@ -219,15 +228,14 @@ void switch_device_id_write(uint8_t val)
     }
 }
 
-/**@brief 删除当前设备绑定数据.
+/**
+ * @brief 删除当前设备绑定数据.
  *
  * 查找并删除与当前gap addr绑定的绑定数据
  */
 static void peer_list_find_and_delete_bond(void)
 {
-    pm_peer_id_t peer_id;
-
-    peer_id = pm_next_peer_id_get(PM_PEER_ID_INVALID);
+    pm_peer_id_t peer_id = pm_next_peer_id_get(PM_PEER_ID_INVALID);
 
     while (peer_id != PM_PEER_ID_INVALID) {
         uint16_t length = 8;
@@ -243,19 +251,22 @@ static void peer_list_find_and_delete_bond(void)
     }
 }
 
-/**@brief 切换连接设备.
+/**
+ * @brief 切换连接设备.
  *
  * @param[in] id  要切换的设备的ID号
  */
 void switch_device_select(uint8_t id)
 {
+    //如果重复切换，则直接退出，不做任何操作
+    if (id == switch_id)
+        return;
+
     ret_code_t ret;
     ble_gap_addr_t gap_addr;
-    if (id == switch_id) {
-        return; //如果重复切换，则直接退出，不做任何操作
-    } else {
-        ble_disconnect();
-    }
+
+    ble_disconnect();
+
     switch_id = id;
 
     switch_device_id_write(id);
@@ -268,7 +279,8 @@ void switch_device_select(uint8_t id)
     ret = sd_ble_gap_addr_set(&gap_addr);
     APP_ERROR_CHECK(ret);
 }
-/**@brief 重新绑定当前设备.
+/**
+ * @brief 重新绑定当前设备.
  *
  */
 void switch_device_rebond()
@@ -278,13 +290,13 @@ void switch_device_rebond()
     switch_id = 10; //将switch_id设置为无效ID
     switch_device_select(rebond_id);
 }
-/**@brief 切换连接设备初始化.
+/**
+ * @brief 切换连接设备初始化.
  *
  * 读取存储的当前连接设备ID，并激活为当前连接设备
  */
 static void switch_device_init()
 {
-
     ret_code_t ret;
     ble_gap_addr_t gap_addr;
     switch_id = switch_device_id_read();
@@ -297,7 +309,8 @@ static void switch_device_init()
     ret = sd_ble_gap_addr_set(&gap_addr);
     APP_ERROR_CHECK(ret);
 }
-/**@brief 更新切换设备数据.
+/**
+ * @brief 更新切换设备数据.
  *
  * 获取当前gap addr并更新PM数据
  */
@@ -321,7 +334,8 @@ static void switch_device_update(pm_peer_id_t peer_id)
 }
 #endif
 
-/**@brief 开启蓝牙广播.
+/**
+ * @brief 开启蓝牙广播.
  * 
  * @param[in] erase_bonds  是否清空所有绑定数据
  */
@@ -339,7 +353,8 @@ void advertising_start(bool erase_bonds)
         APP_ERROR_CHECK(ret);
     }
 }
-/**@brief 重新开启蓝牙广播.
+/**
+ * @brief 重新开启蓝牙广播.
  * 
  * @param[in] mode  广播模式
  * @param[in] reset  是否重新绑定
@@ -358,6 +373,10 @@ void advertising_restart(ble_adv_mode_t mode, bool reset)
     }
 }
 
+/**
+ * @brief 蓝牙进入慢速广播模式
+ * 
+ */
 void advertising_slow()
 {
     ret_code_t ret = ble_advertising_start(&m_advertising, BLE_ADV_MODE_SLOW);
@@ -365,6 +384,12 @@ void advertising_slow()
 }
 
 #ifndef MULTI_DEVICE_SWITCH
+/**
+ * @brief 断开某个设备的连接
+ * 
+ * @param conn_handle 
+ * @param p_context 
+ */
 static void disconnect(uint16_t conn_handle, void* p_context)
 {
     UNUSED_PARAMETER(p_context);
@@ -395,7 +420,8 @@ static void advertising_config_get(ble_adv_modes_config_t* p_config)
 }
 
 #ifndef MULTI_DEVICE_SWITCH
-/**@brief Function for handling dfu events from the Buttonless Secure DFU service
+/**
+ * @brief Function for handling dfu events from the Buttonless Secure DFU service
  *
  * @param[in]   event   Event from the Buttonless Secure DFU service.
  */
@@ -439,7 +465,8 @@ static void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
 }
 #endif
 
-/**@brief Function for handling Peer Manager events.
+/**
+ * @brief Function for handling Peer Manager events.
  *
  * @param[in] p_evt  Peer Manager event.
  */
@@ -451,7 +478,7 @@ static void pm_evt_handler(pm_evt_t const* p_evt)
     switch (p_evt->evt_id) {
     case PM_EVT_CONN_SEC_SUCCEEDED:
         m_peer_id = p_evt->peer_id;
-#ifdef MULTI_DEVICE_SWITCH        
+#ifdef MULTI_DEVICE_SWITCH
         switch_device_update(m_peer_id);
 #endif
         trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_CONNECTED);
@@ -486,7 +513,8 @@ static void pm_evt_handler(pm_evt_t const* p_evt)
     }
 }
 
-/**@brief Function for the GAP initialization.
+/**
+ * @brief Function for the GAP initialization.
  *
  * @details This function sets up all the necessary GAP (Generic Access Profile) parameters of the
  *          device including the device name, appearance, and the preferred connection parameters.
@@ -512,7 +540,8 @@ static void gap_params_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for initializing the GATT module.
+/**
+ * @brief Function for initializing the GATT module.
  */
 static void gatt_init(void)
 {
@@ -520,7 +549,8 @@ static void gatt_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for handling Queued Write Module errors.
+/**
+ * @brief Function for handling Queued Write Module errors.
  *
  * @details A pointer to this function will be passed to each service which may need to inform the
  *          application about an error.
@@ -532,7 +562,8 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
     APP_ERROR_HANDLER(nrf_error);
 }
 
-/**@brief Function for initializing the Queued Write Module.
+/**
+ * @brief Function for initializing the Queued Write Module.
  */
 static void qwr_init(void)
 {
@@ -545,7 +576,8 @@ static void qwr_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for initializing Device Information Service.
+/**
+ * @brief Function for initializing Device Information Service.
  */
 static void dis_init(void)
 {
@@ -570,6 +602,10 @@ static void dis_init(void)
 }
 
 #ifndef MULTI_DEVICE_SWITCH
+/**
+ * @brief 初始化 Buttonless DFU 服务
+ * 
+ */
 static void dfu_init(void)
 {
     uint32_t err_code;
@@ -582,7 +618,8 @@ static void dfu_init(void)
 }
 #endif
 
-/**@brief Function for handling a Connection Parameters error.
+/**
+ * @brief Function for handling a Connection Parameters error.
  *
  * @param[in]   nrf_error   Error code containing information about what went wrong.
  */
@@ -591,7 +628,8 @@ static void conn_params_error_handler(uint32_t nrf_error)
     APP_ERROR_HANDLER(nrf_error);
 }
 
-/**@brief Function for initializing the Connection Parameters module.
+/**
+ * @brief Function for initializing the Connection Parameters module.
  */
 static void conn_params_init(void)
 {
@@ -613,7 +651,8 @@ static void conn_params_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for handling advertising events.
+/**
+ * @brief Function for handling advertising events.
  *
  * @details This function will be called for advertising events which are passed to the application.
  *
@@ -691,8 +730,14 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     }
 }
 
-#ifdef DYNAMIC_TX_POWER
 //动态发射功率
+#ifdef DYNAMIC_TX_POWER
+/**
+ * @brief BLE 连接句柄改变处理器
+ * 
+ * @param old 旧的句柄
+ * @param new 新的句柄
+ */
 static void ble_conn_handle_change(uint16_t old, uint16_t new)
 {
     if (old != BLE_CONN_HANDLE_INVALID) {
@@ -705,6 +750,11 @@ static void ble_conn_handle_change(uint16_t old, uint16_t new)
 
 static uint8_t current_tx = 6; // 0dbm default.
 
+/**
+ * @brief RSSI 改变事件处理器
+ * 
+ * @param rssi 
+ */
 static void ble_rssi_change(int8_t rssi)
 {
     const int8_t tx_power_table[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
@@ -722,7 +772,8 @@ static void ble_rssi_change(int8_t rssi)
 #define ble_rssi_change(A)
 #endif
 
-/**@brief Function for handling BLE events.
+/**
+ * @brief Function for handling BLE events.
  *
  * @param[in]   p_ble_evt   Bluetooth stack event.
  * @param[in]   p_context   Unused.
@@ -786,7 +837,8 @@ static void ble_evt_handler(ble_evt_t const* p_ble_evt, void* p_context)
     }
 }
 
-/**@brief Function for initializing the BLE stack.
+/**
+ * @brief Function for initializing the BLE stack.
  *
  * @details Initializes the SoftDevice and the BLE event interrupt.
  */
@@ -811,7 +863,8 @@ void ble_stack_init(void)
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
 
-/**@brief Function for the Peer Manager initialization.
+/**
+ * @brief Function for the Peer Manager initialization.
  */
 static void peer_manager_init(void)
 {
@@ -844,7 +897,8 @@ static void peer_manager_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for handling advertising errors.
+/**
+ * @brief Function for handling advertising errors.
  *
  * @param[in] nrf_error  Error code containing information about what went wrong.
  */
@@ -853,7 +907,8 @@ static void ble_advertising_error_handler(uint32_t nrf_error)
     APP_ERROR_HANDLER(nrf_error);
 }
 
-/**@brief Function for initializing the Advertising functionality.
+/**
+ * @brief Function for initializing the Advertising functionality.
  */
 static void advertising_init(void)
 {
