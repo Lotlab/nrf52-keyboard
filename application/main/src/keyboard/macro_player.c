@@ -28,8 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "queue.h"
 
 #ifndef NO_ACTION_MACRO
-#define MACRO_READ() (*(current_macro++))
-#define MACRO_NEXT() (current_macro++)
 #define MAX_MACRO_QUEUE 5
 #define DEFAULT_MACRO_INTERVAL 5
 
@@ -83,47 +81,56 @@ void action_macro_replay()
         return;
 
     // 播放宏
-    switch (MACRO_READ()) {
+    switch (*current_macro) {
     case KEY_DOWN:
+        current_macro++;
         if (IS_MOD(*current_macro)) {
             add_weak_mods(MOD_BIT(*current_macro));
             send_keyboard_report();
         } else {
             register_code(*current_macro);
         }
-        MACRO_NEXT();
+        current_macro++;
         break;
     case KEY_UP:
+        current_macro++;
         if (IS_MOD(*current_macro)) {
             del_weak_mods(MOD_BIT(*current_macro));
             send_keyboard_report();
         } else {
             unregister_code(*current_macro);
         }
-        MACRO_NEXT();
+        current_macro++;
         break;
     case WAIT:
-        macro_delay = MACRO_READ();
+        macro_delay = *++current_macro;
+        current_macro++;
         break;
     case INTERVAL:
-        macro_interval_reload = MACRO_READ();
+        macro_interval_reload = *++current_macro;
+        current_macro++;
         break;
     case MOD_STORE:
         mod_storage = get_mods();
+        current_macro++;
         break;
     case MOD_RESTORE:
         set_mods(mod_storage);
         send_keyboard_report();
+        current_macro++;
         break;
     case MOD_CLEAR:
         clear_mods();
         send_keyboard_report();
+        current_macro++;
         break;
     case 0x04 ... 0x73:
         register_code(*current_macro);
+        current_macro++;
         break;
     case 0x84 ... 0xF3:
         unregister_code(*current_macro & 0x7F);
+        current_macro++;
         break;
     case END:
         // 出队，重置当前宏的设置
