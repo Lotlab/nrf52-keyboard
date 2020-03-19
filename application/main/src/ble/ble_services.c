@@ -200,7 +200,8 @@ void delete_bonds(void)
     APP_ERROR_CHECK(err_code);
 #ifdef MULTI_DEVICE_SWITCH
     // 清空所有绑定后，自动回到首个设备
-    switch_device_select(0);
+    switch_id = 0;
+    switch_device_id_update();
 #endif
 }
 
@@ -254,6 +255,30 @@ static void set_gap_addr_by_id(uint8_t id)
 }
 
 /**
+ * @brief 当前设备ID的绑定信息是否存在
+ * 
+ * @param id 设备ID
+ * @return true 存在
+ * @return false 不存在
+ */
+static bool is_device_id_bond_info_exist(uint8_t id)
+{
+    pm_peer_id_t peer_id = pm_next_peer_id_get(PM_PEER_ID_INVALID);
+    uint16_t length = 4;
+
+    while (peer_id != PM_PEER_ID_INVALID) {
+        uint8_t bound_id[4];
+
+        if (pm_peer_data_app_data_load(peer_id, &bound_id, &length) == NRF_SUCCESS
+            && bound_id[0] == id)
+            return true;
+
+        peer_id = pm_next_peer_id_get(peer_id);
+    }
+    return false;
+}
+
+/**
  * @brief 切换连接设备.
  *
  * @param[in] id  要切换的设备的ID号
@@ -270,6 +295,8 @@ void switch_device_select(uint8_t id)
     switch_device_id_update();
 
     set_gap_addr_by_id(id);
+
+    advertising_restart(BLE_ADV_MODE_FAST, is_device_id_bond_info_exist(id));
 }
 /**
  * @brief 重新绑定当前设备.
@@ -277,8 +304,9 @@ void switch_device_select(uint8_t id)
  */
 void switch_device_rebond()
 {
-    peer_list_find_and_delete_bond(switch_id);
     ble_disconnect();
+    peer_list_find_and_delete_bond(switch_id);
+    advertising_restart(BLE_ADV_MODE_FAST, false);
 }
 /**
  * @brief 切换连接设备初始化.
@@ -325,9 +353,9 @@ void advertising_start(bool erase_bonds)
  * @brief 重新开启蓝牙广播.
  * 
  * @param[in] mode  广播模式
- * @param[in] reset  是否重新绑定
+ * @param[in] whitelist  是否启用白名单
  */
-void advertising_restart(ble_adv_mode_t mode, bool reset)
+void advertising_restart(ble_adv_mode_t mode, bool whitelist)
 {
     if (m_conn_handle == BLE_CONN_HANDLE_INVALID) {
         sd_ble_gap_adv_stop(m_advertising.adv_handle);
@@ -336,7 +364,7 @@ void advertising_restart(ble_adv_mode_t mode, bool reset)
         sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
     }
 
-    if (reset) {
+    if (!whitelist) {
         ble_advertising_restart_without_whitelist(&m_advertising);
     }
 }

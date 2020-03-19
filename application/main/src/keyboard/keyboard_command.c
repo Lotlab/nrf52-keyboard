@@ -42,7 +42,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 APP_TIMER_DEF(command_run_timer);
 #ifdef MULTI_DEVICE_SWITCH
 uint8_t devices_id = 0;
-bool restart_without_whitelist = false;
 #endif
 /**
  * COMMAND延迟处理事件
@@ -67,8 +66,6 @@ static void command_delay_handler(void* p_context)
     case COMMAND_BOND:
 #ifdef MULTI_DEVICE_SWITCH
         switch_device_rebond();
-        restart_without_whitelist = true;
-        advertising_restart(BLE_ADV_MODE_FAST, restart_without_whitelist);
 #else
         delete_bonds();
 #endif
@@ -76,8 +73,6 @@ static void command_delay_handler(void* p_context)
     case COMMAND_SWITCH:
 #ifdef MULTI_DEVICE_SWITCH
         switch_device_select(devices_id);
-        restart_without_whitelist = false;
-        advertising_restart(BLE_ADV_MODE_FAST, restart_without_whitelist);
 #endif
         break;
     case COMMAND_RESET:
@@ -201,7 +196,7 @@ static bool command_common(uint8_t code)
 #endif
     case KC_R:
         clear_keyboard();
-        advertising_restart(BLE_ADV_MODE_FAST, true);
+        advertising_restart(BLE_ADV_MODE_FAST, false);
         break;
 #ifdef RGBLIGHT_ENABLE //RGB灯控制
     case KC_Z:
