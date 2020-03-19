@@ -69,6 +69,7 @@ static pm_peer_id_t m_peer_id; /**< Device reference handle to the current bonde
 CONFIG_SECTION(switch_device_id, 1);
 /** 当前设备ID Device ID of currently in the eeconfig   */
 #define switch_id (*switch_device_id.data)
+#define switch_device_id_update() storage_write(1 << STORAGE_CONFIG)
 #endif
 
 NRF_BLE_GATT_DEF(m_gatt); /**< GATT module instance. */
@@ -207,15 +208,6 @@ void delete_bonds(void)
 
 #ifdef MULTI_DEVICE_SWITCH
 /**
- * @brief 写入switch id.
- *
- */
-void switch_device_id_update()
-{
-    storage_write(1 << STORAGE_CONFIG);
-}
-
-/**
  * @brief 删除当前设备绑定数据.
  *
  * 查找并删除与当前gap addr绑定的绑定数据
@@ -248,7 +240,7 @@ static void set_gap_addr_by_id(uint8_t id)
     ret_code_t ret = sd_ble_gap_addr_get(&gap_addr);
     APP_ERROR_CHECK(ret);
 
-    gap_addr.addr[0] = gap_addr.addr[0] & 0x1F | ((id & 0x07) << 5);
+    gap_addr.addr[0] = (gap_addr.addr[0] & 0x1F) | ((id & 0x07) << 5);
 
     ret = sd_ble_gap_addr_set(&gap_addr);
     APP_ERROR_CHECK(ret);
@@ -325,7 +317,9 @@ static void switch_device_init()
 static void switch_device_update(pm_peer_id_t peer_id)
 {
     // 数据必须 4Byte 对齐
-    uint32_t err_code = pm_peer_data_app_data_store(m_peer_id, &switch_id, 4, NULL);
+    uint8_t data[4];
+    data[0] = switch_id;
+    uint32_t err_code = pm_peer_data_app_data_store(m_peer_id, data, 4, NULL);
     APP_ERROR_CHECK(err_code);
 }
 #endif
