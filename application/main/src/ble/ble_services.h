@@ -12,10 +12,6 @@ extern uint16_t m_conn_handle;
  */
 void ble_services_init();
 
-/**@brief 写入switch id.
- *
- */
-void switch_device_id_write(uint8_t val);
 /**@brief 切换连接设备.
  *
  * @param[in] id  要切换的设备的ID号

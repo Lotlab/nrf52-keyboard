@@ -64,8 +64,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID; /**< Handle of the current connection. */
 static pm_peer_id_t m_peer_id; /**< Device reference handle to the current bonded central. */
+
 #ifdef MULTI_DEVICE_SWITCH
-uint8_t switch_id = 0; /** 当前设备ID Device ID of currently in the eeconfig   */
+CONFIG_SECTION(switch_device_id, 1);
+/** 当前设备ID Device ID of currently in the eeconfig   */
+#define switch_id (*switch_device_id.data)
 #endif
 
 NRF_BLE_GATT_DEF(m_gatt); /**< GATT module instance. */
@@ -191,41 +194,24 @@ static void set_device_name(void)
  */
 void delete_bonds(void)
 {
-    ret_code_t err_code;
-
     ble_disconnect();
 
-    err_code = pm_peers_delete();
+    ret_code_t err_code = pm_peers_delete();
     APP_ERROR_CHECK(err_code);
 #ifdef MULTI_DEVICE_SWITCH
-    //清空所有绑定后，自动回到首个设备
-    switch_id = 0;
-    switch_device_select(switch_id);
+    // 清空所有绑定后，自动回到首个设备
+    switch_device_select(0);
 #endif
 }
 
 #ifdef MULTI_DEVICE_SWITCH
-//注册switch需要的存储区
-CONFIG_SECTION(switch_device_id, 1);
-
-/**
- * @brief 读取switch id.
- *
- */
-uint8_t switch_device_id_read(void)
-{
-    return switch_device_id.data[0];
-}
 /**
  * @brief 写入switch id.
  *
  */
-void switch_device_id_write(uint8_t val)
+void switch_device_id_update()
 {
-    if (switch_device_id.data[0] != val) {
-        switch_device_id.data[0] = val;
-        storage_write((1 << STORAGE_CONFIG));
-    }
+    storage_write(1 << STORAGE_CONFIG);
 }
 
 /**
@@ -233,22 +219,38 @@ void switch_device_id_write(uint8_t val)
  *
  * 查找并删除与当前gap addr绑定的绑定数据
  */
-static void peer_list_find_and_delete_bond(void)
+static void peer_list_find_and_delete_bond(uint8_t id)
 {
     pm_peer_id_t peer_id = pm_next_peer_id_get(PM_PEER_ID_INVALID);
+    uint16_t length = 4;
 
     while (peer_id != PM_PEER_ID_INVALID) {
-        uint16_t length = 8;
-        uint8_t addr[8];
+        uint8_t bound_id[4];
 
-        if (pm_peer_data_app_data_load(peer_id, addr, &length) == NRF_SUCCESS) {
-            if (addr[3] == switch_id) {
-                pm_peer_delete(peer_id);
-            }
+        if (pm_peer_data_app_data_load(peer_id, &bound_id, &length) == NRF_SUCCESS
+            && bound_id[0] == id) {
+            pm_peer_delete(peer_id);
         }
 
         peer_id = pm_next_peer_id_get(peer_id);
     }
+}
+
+/**
+ * @brief 根据当前的设备ID设置蓝牙地址
+ * 
+ * @param id 
+ */
+static void set_gap_addr_by_id(uint8_t id)
+{
+    ble_gap_addr_t gap_addr;
+    ret_code_t ret = sd_ble_gap_addr_get(&gap_addr);
+    APP_ERROR_CHECK(ret);
+
+    gap_addr.addr[0] = gap_addr.addr[0] & 0x1F | ((id & 0x07) << 5);
+
+    ret = sd_ble_gap_addr_set(&gap_addr);
+    APP_ERROR_CHECK(ret);
 }
 
 /**
@@ -258,26 +260,16 @@ static void peer_list_find_and_delete_bond(void)
  */
 void switch_device_select(uint8_t id)
 {
-    //如果重复切换，则直接退出，不做任何操作
+    // 如果重复切换，则直接退出，不做任何操作
     if (id == switch_id)
         return;
-
-    ret_code_t ret;
-    ble_gap_addr_t gap_addr;
 
     ble_disconnect();
 
     switch_id = id;
+    switch_device_id_update();
 
-    switch_device_id_write(id);
-
-    ret = sd_ble_gap_addr_get(&gap_addr);
-    APP_ERROR_CHECK(ret);
-
-    gap_addr.addr[3] = id;
-
-    ret = sd_ble_gap_addr_set(&gap_addr);
-    APP_ERROR_CHECK(ret);
+    set_gap_addr_by_id(id);
 }
 /**
  * @brief 重新绑定当前设备.
@@ -285,10 +277,8 @@ void switch_device_select(uint8_t id)
  */
 void switch_device_rebond()
 {
-    peer_list_find_and_delete_bond();
-    uint8_t rebond_id = switch_id;
-    switch_id = 10; //将switch_id设置为无效ID
-    switch_device_select(rebond_id);
+    peer_list_find_and_delete_bond(switch_id);
+    ble_disconnect();
 }
 /**
  * @brief 切换连接设备初始化.
@@ -297,17 +287,7 @@ void switch_device_rebond()
  */
 static void switch_device_init()
 {
-    ret_code_t ret;
-    ble_gap_addr_t gap_addr;
-    switch_id = switch_device_id_read();
-
-    ret = sd_ble_gap_addr_get(&gap_addr);
-    APP_ERROR_CHECK(ret);
-
-    gap_addr.addr[3] = switch_id;
-
-    ret = sd_ble_gap_addr_set(&gap_addr);
-    APP_ERROR_CHECK(ret);
+    set_gap_addr_by_id(switch_id);
 }
 /**
  * @brief 更新切换设备数据.
@@ -316,20 +296,8 @@ static void switch_device_init()
  */
 static void switch_device_update(pm_peer_id_t peer_id)
 {
-    uint32_t err_code;
-    ble_gap_addr_t gap_addr;
-    uint16_t length = 8;
-    uint8_t addr[8];
-
-    err_code = pm_id_addr_get(&gap_addr);
-    APP_ERROR_CHECK(err_code);
-
-    for (uint8_t i = 0; i < BLE_GAP_ADDR_LEN; i++)
-        addr[i] = gap_addr.addr[i];
-
-    addr[3] = switch_id;
-
-    err_code = pm_peer_data_app_data_store(m_peer_id, addr, length, NULL);
+    // 数据必须 4Byte 对齐
+    uint32_t err_code = pm_peer_data_app_data_store(m_peer_id, &switch_id, 4, NULL);
     APP_ERROR_CHECK(err_code);
 }
 #endif

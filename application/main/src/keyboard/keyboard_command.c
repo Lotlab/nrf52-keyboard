@@ -85,9 +85,6 @@ static void command_delay_handler(void* p_context)
 #ifdef BOOTMAGIC_ENABLE
         eeconfig_init();
 #endif
-#ifdef MULTI_DEVICE_SWITCH
-        switch_device_id_write(0);
-#endif
 #ifdef RGBLIGHT_ENABLE
         rgblight_init();
 #endif
