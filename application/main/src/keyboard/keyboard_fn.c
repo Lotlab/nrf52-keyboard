@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "eeconfig.h"
 #include "host.h"
 #include "keymap.h"
+#include "ble_services.h"
 
 #ifdef NKRO_ENABLE
 
@@ -70,12 +71,26 @@ __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint
 
         case SWITCH_DEVICE:
             switch (opt) {
-            case SWITCH_DEVICE_USB: // 切换设备
 #ifdef HAS_USB
+            case SWITCH_DEVICE_USB: // 切换设备
                 usb_comm_switch();
-#endif
                 break;
-
+#endif
+#ifdef MULTI_DEVICE_SWITCH
+            case SWITCH_DEVICE_BLE_0: // 蓝牙设备的切换
+                // todo: 切换前清除当前按键
+                switch_device_select(0);
+                break;
+            case SWITCH_DEVICE_BLE_1:
+                switch_device_select(1);
+                break;
+            case SWITCH_DEVICE_BLE_2:
+                switch_device_select(2);
+                break;
+            case SWITCH_DEVICE_BLE_REBOND:
+                switch_device_rebond();
+                break;
+#endif
             default:
                 break;
             }
