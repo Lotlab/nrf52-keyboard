@@ -23,21 +23,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* USB Device descriptor parameter */
 #define VENDOR_ID 0x1209 /* USB VID */
 #define PRODUCT_ID 0x0514 /* USB PID */
-#define CONF_VENDOR_ID 0x0114 /* 配置项目内显示的VendorID */
-#define CONF_PRODUCT_ID 0x0514 /* 配置项目内显示的ProductID */
-#define DEVICE_VER 0x0001 /* 硬件版本 */
+#define CONF_VENDOR_ID 0x0514 /* 配置项目内显示的VendorID */
+#define CONF_PRODUCT_ID 0x0114 /* 配置项目内显示的ProductID */
 #define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
 
 #ifdef HARDWARE_REV_C
 #define PRODUCT "Lot60.C" /* 硬件名称，用于蓝牙显示 */
+#define DEVICE_VER 0x0000 /* 硬件版本 */
 #endif
 
 #ifdef HARDWARE_REV_E
 #define PRODUCT "Lot60.E" /* 硬件名称，用于蓝牙显示 */
+#define DEVICE_VER 0x0001 /* 硬件版本 */
 #endif
 
 #ifdef HARDWARE_REV_F
 #define PRODUCT "Lot60.F" /* 硬件名称，用于蓝牙显示 */
+#define DEVICE_VER 0x0002 /* 硬件版本 */
+#endif
+
+#ifdef HARDWARE_REV_G
+#define PRODUCT "Lot60.G" /* 硬件名称，用于蓝牙显示 */
+#define DEVICE_VER 0x0003 /* 硬件版本 */
 #endif
 
 #define MACADDR_SEPRATOR '_' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
@@ -119,7 +126,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_RGB_B 24
 #endif
 
-#if defined(HARDWARE_REV_E) || defined(HARDWARE_REV_F)
+#if defined(HARDWARE_REV_E) || defined(HARDWARE_REV_F) || defined(HARDWARE_REV_G)
 #define LED_RGB_R 24
 #define LED_RGB_G 23
 #define LED_RGB_B 22
@@ -143,8 +150,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0
 
 // 充电检测配置
+#if defined(HARDWARE_REV_C) || defined(HARDWARE_REV_E) || defined(HARDWARE_REV_F)
 #define PIN_CHARGING !P3_3
 #define PIN_STANDBY !P3_4
+#endif
+
+#if defined(HARDWARE_REV_G)
+#define PIN_CHARGING true
+#endif
 
 // 按键阵列配置
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 25, 28, 29, 30, 26 };
@@ -157,3 +170,13 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 2
 #define LED_POSITIVE // LED上拉驱动
 
 #define FDS_VIRTUAL_PAGES 2 // 缩减FDS的页面数，防止出现问题
+
+// 调试器配置
+#if defined(HARDWARE_REV_G)
+#define SWD_DAT_IO T2
+#define SWD_DAT_MASK bT2
+#define SWD_DAT_PORT P1
+#define SWD_CLK_IO T2EX
+#define SWD_CLK_MASK bT2EX
+#define SWD_CLK_PORT P1
+#endif

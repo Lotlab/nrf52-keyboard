@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* USB和蓝牙的显示参数 */
 #define VENDOR_ID 0x1209 /* USB VID */
 #define PRODUCT_ID 0x0514 /* USB PID */
-#define CONF_VENDOR_ID 0x0114 /* 配置项目内显示的VendorID */
+#define CONF_VENDOR_ID 0x0514 /* 配置项目内显示的VendorID */
 #if defined(ERGOCONN_HAND_RIGHT)
 #define CONF_PRODUCT_ID 0x1918 /* 配置项目内显示的ProductID */
 #elif defined(ERGOCONN_HAND_LEFT)
