@@ -93,6 +93,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 需要输入配对码
 // #define PASSKEY_REQUIRED
 
+// 启用多设备切换
+#define MULTI_DEVICE_SWITCH
+
 // 启用看门狗
 #define ENABLE_WATCHDOG
 
