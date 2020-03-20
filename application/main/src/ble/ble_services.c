@@ -78,6 +78,31 @@ BLE_ADVERTISING_DEF(m_advertising); /**< Advertising module instance. */
 
 static ble_uuid_t m_adv_uuids[] = { { BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE } };
 
+static void advertising_config_get(ble_adv_modes_config_t* p_config);
+
+#ifdef MULTI_DEVICE_SWITCH
+static uint8_t peer_id_filter(pm_peer_id_t* peer_ids, uint8_t peer_id_count)
+{
+    uint8_t bound_id[4];
+    uint16_t length = 4;
+
+    // filter: remove any peer which is not current channel.
+    for (uint8_t i = 0; i < peer_id_count; i++) {
+        ret_code_t err_code = pm_peer_data_app_data_load(peer_ids[i], &bound_id, &length);
+        // check if this peer is on currect channel
+        if (err_code != NRF_SUCCESS || bound_id[0] != switch_id) {
+            peer_ids[peer_id_count - 1] = peer_ids[i];
+            peer_ids[peer_id_count - 1] = PM_PEER_ID_INVALID;
+            i--;
+            peer_id_count--;
+        }
+    }
+    return peer_id_count;
+}
+#else
+#define peer_id_filter(ids, count) (count)
+#endif
+
 /**
  * @brief Function for setting filtered whitelist.
  *
@@ -90,6 +115,8 @@ static void whitelist_set(pm_peer_id_list_skip_t skip)
 
     ret_code_t err_code = pm_peer_id_list(peer_ids, &peer_id_count, PM_PEER_ID_INVALID, skip);
     APP_ERROR_CHECK(err_code);
+
+    peer_id_count = peer_id_filter(peer_ids, peer_id_count);
 
     err_code = pm_whitelist_set(peer_ids, peer_id_count);
     APP_ERROR_CHECK(err_code);
@@ -108,19 +135,42 @@ static void identities_set(pm_peer_id_list_skip_t skip)
     ret_code_t err_code = pm_peer_id_list(peer_ids, &peer_id_count, PM_PEER_ID_INVALID, skip);
     APP_ERROR_CHECK(err_code);
 
+    peer_id_count = peer_id_filter(peer_ids, peer_id_count);
+
     err_code = pm_device_identities_list_set(peer_ids, peer_id_count);
     APP_ERROR_CHECK(err_code);
 }
 
+/**
+ * @brief 断开某个设备的连接
+ * 
+ * @param conn_handle 
+ * @param p_context 
+ */
+static void device_disconnect(uint16_t conn_handle, void* p_context)
+{
+    UNUSED_PARAMETER(p_context);
+    sd_ble_gap_disconnect(conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+}
+
+/**
+ * @brief 断开所有已经连接的设备，并设置不再重新广播
+ * 
+ */
 static void ble_disconnect()
 {
-    sd_ble_gap_adv_stop(m_advertising.adv_handle);
-    if (m_conn_handle != BLE_CONN_HANDLE_INVALID) {
-        ret_code_t err_code = sd_ble_gap_disconnect(m_conn_handle,
-            BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-        if (err_code != NRF_ERROR_INVALID_STATE) {
-            APP_ERROR_CHECK(err_code);
-        }
+    // Prevent device from advertising on disconnect.
+    ble_adv_modes_config_t config;
+    advertising_config_get(&config);
+    config.ble_adv_on_disconnect_disabled = true;
+    ble_advertising_modes_config_set(&m_advertising, &config);
+
+    // Disconnect all other bonded devices that currently are connected.
+    ble_conn_state_for_each_connected(device_disconnect, NULL);
+    
+    // In case of advertising
+    if (m_advertising.adv_mode_current != BLE_ADV_MODE_IDLE) {
+        (void)sd_ble_gap_adv_stop(m_advertising.adv_handle);
     }
 }
 
@@ -230,6 +280,27 @@ static void peer_list_find_and_delete_bond(uint8_t id)
 }
 
 /**
+ * @brief 禁用后重新启用广播
+ * 
+ */
+static void reenable_advertising()
+{
+    // set whitelist
+    whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
+
+    // Enable reconnect
+    ble_adv_modes_config_t config;
+    advertising_config_get(&config);
+    config.ble_adv_on_disconnect_disabled = false;
+    ble_advertising_modes_config_set(&m_advertising, &config);
+
+    if (m_conn_handle == BLE_CONN_HANDLE_INVALID) {
+        ret_code_t ret = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
+        APP_ERROR_CHECK(ret);
+    }
+}
+
+/**
  * @brief 根据当前的设备ID设置蓝牙地址
  * 
  * @param id 
@@ -245,31 +316,6 @@ static void set_gap_addr_by_id(uint8_t id)
     ret = sd_ble_gap_addr_set(&gap_addr);
     APP_ERROR_CHECK(ret);
 }
-
-/**
- * @brief 当前设备ID的绑定信息是否存在
- * 
- * @param id 设备ID
- * @return true 存在
- * @return false 不存在
- */
-static bool is_device_id_bond_info_exist(uint8_t id)
-{
-    pm_peer_id_t peer_id = pm_next_peer_id_get(PM_PEER_ID_INVALID);
-    uint16_t length = 4;
-
-    while (peer_id != PM_PEER_ID_INVALID) {
-        uint8_t bound_id[4];
-
-        if (pm_peer_data_app_data_load(peer_id, &bound_id, &length) == NRF_SUCCESS
-            && bound_id[0] == id)
-            return true;
-
-        peer_id = pm_next_peer_id_get(peer_id);
-    }
-    return false;
-}
-
 /**
  * @brief 切换连接设备.
  *
@@ -288,7 +334,7 @@ void switch_device_select(uint8_t id)
 
     set_gap_addr_by_id(id);
 
-    advertising_restart(BLE_ADV_MODE_FAST, is_device_id_bond_info_exist(id));
+    reenable_advertising();
 }
 /**
  * @brief 重新绑定当前设备.
@@ -298,7 +344,7 @@ void switch_device_rebond()
 {
     ble_disconnect();
     peer_list_find_and_delete_bond(switch_id);
-    advertising_restart(BLE_ADV_MODE_FAST, false);
+    reenable_advertising();
 }
 /**
  * @brief 切换连接设备初始化.
@@ -343,6 +389,7 @@ void advertising_start(bool erase_bonds)
         APP_ERROR_CHECK(ret);
     }
 }
+
 /**
  * @brief 重新开启蓝牙广播.
  * 
@@ -372,21 +419,6 @@ void advertising_slow()
     ret_code_t ret = ble_advertising_start(&m_advertising, BLE_ADV_MODE_SLOW);
     APP_ERROR_CHECK(ret);
 }
-
-#ifndef MULTI_DEVICE_SWITCH
-/**
- * @brief 断开某个设备的连接
- * 
- * @param conn_handle 
- * @param p_context 
- */
-static void disconnect(uint16_t conn_handle, void* p_context)
-{
-    UNUSED_PARAMETER(p_context);
-
-    sd_ble_gap_disconnect(conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-}
-#endif
 
 static void advertising_config_get(ble_adv_modes_config_t* p_config)
 {
@@ -419,16 +451,9 @@ static void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
 {
     switch (event) {
     case BLE_DFU_EVT_BOOTLOADER_ENTER_PREPARE: {
-        // Prevent device from advertising on disconnect.
-        ble_adv_modes_config_t config;
-        advertising_config_get(&config);
-        config.ble_adv_on_disconnect_disabled = true;
-        ble_advertising_modes_config_set(&m_advertising, &config);
-
-        // Disconnect all other bonded devices that currently are connected.
         // This is required to receive a service changed indication
         // on bootup after a successful (or aborted) Device Firmware Update.
-        ble_conn_state_for_each_connected(disconnect, NULL);
+        ble_disconnect();
         break;
     }
 
