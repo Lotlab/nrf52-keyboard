@@ -49,6 +49,7 @@ uint8_t devices_id = 0;
 enum command_delay_hander_event {
     COMMAND_DFU,        //跳转Bootloader
     COMMAND_SLEEP,      //手动休眠
+    COMMAND_SYSTEMOFF,  //手动关机
     COMMAND_RESET,      //重置键盘
     COMMAND_BOND,       //清空绑定
     COMMAND_SWITCH     //切换蓝牙设备
@@ -86,6 +87,9 @@ static void command_delay_handler(void* p_context)
         break;
     case COMMAND_SLEEP:
         sleep(SLEEP_MANUALLY);
+        break;
+    case COMMAND_SYSTEMOFF:
+        systemoff();
         break;
     case COMMAND_DFU:
         bootloader_jump();
@@ -140,11 +144,6 @@ static bool command_common(uint8_t code)
     static host_driver_t* host_driver = 0;
 #endif
     switch (code) {
-    case KC_PAUSE:
-        //跳转到bootloader
-        clear_keyboard();
-        bootloader_jump();
-        break;
 #ifdef NKRO_ENABLE
     case KC_N:
         //切换全键无冲模式
@@ -239,6 +238,14 @@ static bool command_common(uint8_t code)
         rgblight_disable_noeeprom();
 #endif
         app_timer_start(command_run_timer, APP_TIMER_TICKS(1000), (void*)(uint32_t)COMMAND_SLEEP);
+        break;
+    case KC_ESC:
+        //休眠
+        clear_keyboard();
+#ifdef RGBLIGHT_ENABLE
+        rgblight_disable_noeeprom();
+#endif
+        app_timer_start(command_run_timer, APP_TIMER_TICKS(1000), (void*)(uint32_t)COMMAND_SYSTEMOFF);
         break;
     case KC_I:
         //重置键盘
