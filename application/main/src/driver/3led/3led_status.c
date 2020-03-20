@@ -16,19 +16,57 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "3led_status.h"
+#include "app_timer.h"
 #include "config.h"
 
-#include "../keyboard/keyboard_evt.h"
-#include "../keyboard/keyboard_led.h"
-#include "../keyboard/power_save.h"
+#include "keyboard_evt.h"
+#include "keyboard_led.h"
 #include "nrf.h"
+#include "nrf_delay.h"
 #include "nrf_gpio.h"
+#include "power_save.h"
+#include "usb_comm.h"
+
+APP_TIMER_DEF(ble_led_blink_timer);
+uint8_t blink_led_id;
+bool blink_status = true; //当前蓝牙广播LED闪烁状态
+static uint8_t saved_status_led_val; // 暂存的LED的值
 
 enum status_led {
     BIT_LED_BLE,
     BIT_LED_CHARGING,
-    BIT_LED_USB
+    BIT_LED_USB,
+    BIT_LED_USER
 };
+
+/** 
+ * 蓝牙广播状态闪烁LED
+ **/
+void ble_led_blink_timer_handler(void* context)
+{
+    if (!usb_working()) {
+        switch (blink_led_id) {
+        case 0:
+#ifdef LED_BLE_CHANNEL1
+            LED_WRITE(LED_BLE_CHANNEL1, blink_status);
+            break;
+#endif
+        case 1:
+#ifdef LED_BLE_CHANNEL2
+            LED_WRITE(LED_BLE_CHANNEL2, blink_status);
+            break;
+#endif
+        case 2:
+#ifdef LED_BLE_CHANNEL3
+            LED_WRITE(LED_BLE_CHANNEL3, blink_status);
+            break;
+#endif
+        default:
+            break;
+        }
+        blink_status = !blink_status;
+    }
+}
 
 /** 
  * 初始化状态LED
@@ -43,6 +81,30 @@ void status_led_init()
 #endif
 #ifdef LED_STATUS_USB
     nrf_gpio_cfg_output(LED_STATUS_USB);
+#endif
+#ifdef LED_STATUS_USER
+    nrf_gpio_cfg_output(LED_STATUS_USER);
+#endif
+    app_timer_create(&ble_led_blink_timer, APP_TIMER_MODE_REPEATED, ble_led_blink_timer_handler);
+}
+
+/**
+ * 释放LED
+ * 
+ */
+void status_led_deinit(void)
+{
+#ifdef LED_STATUS_BLE
+    nrf_gpio_cfg_default(LED_STATUS_BLE);
+#endif
+#ifdef LED_STATUS_CHARGING
+    nrf_gpio_cfg_default(LED_STATUS_CHARGING);
+#endif
+#ifdef LED_STATUS_USB
+    nrf_gpio_cfg_default(LED_STATUS_USB);
+#endif
+#ifdef LED_STATUS_USER
+    nrf_gpio_cfg_default(LED_STATUS_USER);
 #endif
 }
 
@@ -60,10 +122,10 @@ static void status_led_set_internal(uint8_t val)
 #ifdef LED_STATUS_USB
     LED_WRITE(LED_STATUS_USB, val & (1 << BIT_LED_USB));
 #endif
+#ifdef LED_STATUS_USER
+    LED_WRITE(LED_STATUS_USER, val & (1 << BIT_LED_USER));
+#endif
 }
-
-// 暂存的LED的值
-static uint8_t saved_status_led_val;
 
 /** 
  * 关闭状态LED的灯光
@@ -88,6 +150,36 @@ static void set_led_on()
 {
     status_led_on();
     power_save_reset();
+}
+
+/**
+ *  系统状态LED灯全开
+ * 
+ *  用于关机时闪烁一次
+ */
+static void status_led_all_on(void)
+{
+    status_led_set_internal(0x0F);
+}
+
+/**
+ * @brief 蓝牙广播状态开启闪烁灯
+ * 
+ */
+static void ble_blink_led_on()
+{
+    blink_status = true;
+    ble_led_blink_timer_handler(NULL);  //即刻执行闪烁
+    app_timer_start(ble_led_blink_timer, APP_TIMER_TICKS(500), NULL);
+}
+/**
+ * @brief 蓝牙关闭广播后关闭闪烁灯
+ * 
+ */
+static void ble_blink_led_off()
+{
+    status_led_off();
+    app_timer_stop(ble_led_blink_timer);
 }
 
 /** 
@@ -137,8 +229,11 @@ static void status_led_evt_handler(enum user_event event, void* arg)
         switch (arg2) {
         case KBD_STATE_POST_INIT: // 初始化LED
             status_led_init();
+            status_led_all_on();
+            nrf_delay_ms(10);
             break;
         case KBD_STATE_SLEEP: // 准备休眠
+            status_led_deinit();
             status_led_off();
             break;
         default:
@@ -148,7 +243,7 @@ static void status_led_evt_handler(enum user_event event, void* arg)
     case USER_EVT_POWERSAVE:
         switch (arg2) {
         case PWR_SAVE_ENTER: // 进入省电模式
-            status_led_off(); 
+            status_led_off();
             break;
         case PWR_SAVE_EXIT: // 退出省电模式
             status_led_on();
@@ -163,7 +258,15 @@ static void status_led_evt_handler(enum user_event event, void* arg)
     case USER_EVT_USB: // USB事件
         status_led_usb(arg2 == USB_WORKING);
         break;
-    case USER_EVT_BLE_STATE_CHANGE: // 蓝牙事件
+    case USER_EVT_BLE_DEVICE_SWITCH: // 蓝牙设备通道切换事件
+        blink_led_id = arg2;
+        break;
+    case USER_EVT_BLE_STATE_CHANGE: // 蓝牙状态事件
+        if (arg2 == BLE_STATE_FAST_ADV) {
+            ble_blink_led_on();
+        } else {
+            ble_blink_led_off();
+        }
         status_led_ble(arg2 == BLE_STATE_CONNECTED);
         break;
     default:

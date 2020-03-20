@@ -22,6 +22,11 @@ enum user_event {
      * @ref enum passkey_state
      */
     USER_EVT_BLE_PASSKEY_STATE,
+            /**
+     * @brief 蓝牙连接设备切换
+     * @ref enum ble_device_channel
+     */
+    USER_EVT_BLE_DEVICE_SWITCH,
     /**
      * @brief 睡眠事件
      * @ref enum sleep_evt_type
@@ -78,7 +83,9 @@ enum internal_event {
 enum ble_state {
     BLE_STATE_IDLE, // 蓝牙处于空闲状态（FAST_ADV->SLOW_ADV->IDLE)
     BLE_STATE_DISCONNECT, // 蓝牙连接断开
-    BLE_STATE_CONNECTED // 蓝牙已连接
+    BLE_STATE_CONNECTED,  // 蓝牙已连接
+    BLE_STATE_FAST_ADV,   // 蓝牙快速广播状态
+    BLE_STATE_SLOW_ADV    // 蓝牙慢速广播状态
 };
 
 /**
@@ -88,6 +95,15 @@ enum passkey_state {
     PASSKEY_STATE_REQUIRE, // 请求配对码
     PASSKEY_STATE_INPUT, // 配对码输入
     PASSKEY_STATE_SEND, // 配对码已发送
+};
+
+/**
+ * 蓝牙设备通道
+ */
+enum ble_device_channel {
+    BLE_DEVICE_CHANNEL1, // 蓝牙设备连接通道1
+    BLE_DEVICE_CHANNEL2, // 蓝牙设备连接通道2
+    BLE_DEVICE_CHANNEL3, // 蓝牙设备连接通道3
 };
 
 /**
