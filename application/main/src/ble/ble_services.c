@@ -335,6 +335,8 @@ void switch_device_select(uint8_t id)
     set_gap_addr_by_id(id);
 
     reenable_advertising();
+    // 触发蓝牙设备通道切换事件
+    trig_event_param(USER_EVT_BLE_DEVICE_SWITCH, id);
 }
 /**
  * @brief 重新绑定当前设备.
@@ -685,15 +687,19 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
         break;
 
     case BLE_ADV_EVT_FAST:
+        trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_FAST_ADV);
         break;
 
     case BLE_ADV_EVT_SLOW:
+        trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_SLOW_ADV);
         break;
 
     case BLE_ADV_EVT_FAST_WHITELIST:
+        trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_FAST_ADV);
         break;
 
     case BLE_ADV_EVT_SLOW_WHITELIST:
+        trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_SLOW_ADV);
         break;
 
     case BLE_ADV_EVT_IDLE:
