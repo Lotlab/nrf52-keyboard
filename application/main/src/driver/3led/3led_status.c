@@ -233,6 +233,7 @@ static void status_led_evt_handler(enum user_event event, void* arg)
             nrf_delay_ms(10);
             break;
         case KBD_STATE_SLEEP: // 准备休眠
+        case KBD_STATE_SYSTEMOFF: // 准备关机
             status_led_deinit();
             status_led_off();
             break;
