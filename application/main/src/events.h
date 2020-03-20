@@ -122,6 +122,7 @@ enum keyboard_state {
     KBD_STATE_POST_INIT, // 各项服务初始化之后的事件
     KBD_STATE_INITED, // 初始化完毕的事件
     KBD_STATE_SLEEP, // 准备休眠的事件
+    KBD_STATE_SYSTEMOFF //准备关机的事件
 };
 
 /**
