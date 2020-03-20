@@ -257,7 +257,7 @@ static void sleep_mode_enter(void)
  */
 void systemoff(void)
 {
-    notify_sleep(SLEEP_EVT_AUTO);  //以自动休眠方式关机，以便开机无需bootcheck
+    trig_event_param(USER_EVT_STAGE, KBD_STATE_SYSTEMOFF);
     reset_prepare();
 #ifdef HAS_USB
     usb_comm_sleep_prepare();
