@@ -36,6 +36,8 @@ enum hid_command {
     // 设置所有宏的值
     HID_CMD_SET_ALL_MACRO,
 
+    // 放弃当前设置还未写入存储的数据
+    HID_CMD_READ_CONFIG = 0x3D,
     // 将数据写入存储
     HID_CMD_WRITE_CONFIG = 0x3E,
     // 重置键盘

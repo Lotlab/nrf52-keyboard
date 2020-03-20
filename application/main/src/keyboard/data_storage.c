@@ -277,27 +277,56 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
  */
 void storage_read(uint8_t mask)
 {
-    if (mask & 0x01) {
 #ifdef KEYMAP_STORAGE
+    if (mask & 0x01) {
         storage_read_inner(&keymap_record, &keymap_record_desc);
         check_keymap();
-#endif
     }
-    if (mask & 0x02) {
+#endif
 #if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
+    if (mask & 0x02) {
         storage_read_inner(&fn_record, &fn_record_desc);
-#endif
     }
-    if (mask & 0x04) {
+#endif
 #ifdef MACRO_STORAGE
+    if (mask & 0x04) {
         storage_read_inner(&macro_record, &macro_record_desc);
-#endif
     }
-    if (mask & 0x08) {
+#endif
 #ifdef CONFIG_STORAGE
+    if (mask & 0x08) {
         storage_read_inner(&config_record, &config_record_desc);
-#endif
     }
+#endif
+}
+
+/**
+ * @brief 删除存储记录中的数据
+ * 
+ * @param mask 
+ */
+void storage_delete(uint8_t mask)
+{
+#ifdef KEYMAP_STORAGE
+    if (mask & 0x01) {
+        fds_record_delete(&keymap_record_desc);
+    }
+#endif
+#if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
+    if (mask & 0x02) {
+        fds_record_delete(&fn_record_desc);
+    }
+#endif
+#ifdef MACRO_STORAGE
+    if (mask & 0x04) {
+        fds_record_delete(&macro_record_desc);
+    }
+#endif
+#ifdef CONFIG_STORAGE
+    if (mask & 0x08) {
+        fds_record_delete(&config_record_desc);
+    }
+#endif
 }
 
 /**
@@ -325,26 +354,26 @@ bool storage_write(uint8_t mask)
 {
     bool success = true;
 
-    if (mask & 0x01) {
 #ifdef KEYMAP_STORAGE
+    if (mask & 0x01) {
         storage_update_inner(&keymap_record, &keymap_record_desc);
-#endif
     }
-    if (mask & 0x02) {
+#endif
 #if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
+    if (mask & 0x02) {
         storage_update_inner(&fn_record, &fn_record_desc);
-#endif
     }
-    if (mask & 0x04) {
+#endif
 #ifdef MACRO_STORAGE
+    if (mask & 0x04) {
         storage_update_inner(&macro_record, &macro_record_desc);
-#endif
     }
-    if (mask & 0x08) {
+#endif
 #ifdef CONFIG_STORAGE
+    if (mask & 0x08) {
         storage_update_inner(&config_record, &config_record_desc);
-#endif
     }
+#endif
 
     return success;
 }

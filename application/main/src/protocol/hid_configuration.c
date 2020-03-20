@@ -363,14 +363,25 @@ static void write_data(uint8_t type)
 }
 
 /**
+ * @brief 读取数据（放弃当前更改）
+ * 
+ * @param type 读取类型
+ */
+static void read_data(uint8_t type)
+{
+    storage_read(type);
+    hid_response_generic(HID_RESP_SUCCESS);
+}
+
+/**
  * @brief 重置数据
  * 
  * @param type 重置类型
  */
-static void reset_keyboard(uint8_t type)
+static void reset_data(uint8_t type)
 {
-    storage_read(type);
-    hid_response_generic(HID_RESP_SUCCESS);
+    storage_delete(type);
+    read_data(type);
 }
 
 /**
@@ -449,6 +460,12 @@ void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
     case HID_CMD_SET_ALL_MACRO:
         set_all_macro(data[0], len - 1, &data[1]);
         break;
+    case HID_CMD_READ_CONFIG:
+        if (len != 1)
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+        else
+            read_data(data[0]);
+        break;
     case HID_CMD_WRITE_CONFIG:
         if (len != 1)
             hid_response_generic(HID_RESP_PARAMETER_ERROR);
@@ -459,7 +476,7 @@ void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
         if (len != 1)
             hid_response_generic(HID_RESP_PARAMETER_ERROR);
         else
-            reset_keyboard(data[0]);
+            reset_data(data[0]);
         break;
     default:
         hid_response_generic(HID_RESP_UNDEFINED);
