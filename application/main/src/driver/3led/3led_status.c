@@ -35,9 +35,10 @@ static uint8_t saved_status_led_val; // 暂存的LED的值
 enum status_led {
     BIT_LED_BLE,
     BIT_LED_USB,
-    BIT_LED_CHARGING,
-    BIT_LED_USER
+    BIT_LED_CHARGING
 };
+
+static void status_led_set_internal(uint8_t val);
 
 /** 
  * 蓝牙广播状态闪烁LED
@@ -46,26 +47,26 @@ void ble_led_blink_timer_handler(void* context)
 {
     if (!usb_working()) {
         switch (blink_led_id) {
-        case 0:
 #ifdef LED_BLE_CHANNEL1
-            LED_WRITE(LED_BLE_CHANNEL1, blink_status);
-#endif
+        case 0:
+            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL1) : 0);
             break;
-        case 1:
+#endif
 #ifdef LED_BLE_CHANNEL2
-            LED_WRITE(LED_BLE_CHANNEL2, blink_status);
-#endif
+        case 1:
+            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL2) : 0);
             break;
-        case 2:
+#endif
 #ifdef LED_BLE_CHANNEL3
-            LED_WRITE(LED_BLE_CHANNEL3, blink_status);
-#else
-            LED_WRITE(LED_BLE_CHANNEL1, blink_status);
-            LED_WRITE(LED_BLE_CHANNEL2, blink_status);
+        case 2:
+            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL3) : 0);
+            break
+#elif defined(LED_BLE_CHANNEL1) && defined(LED_BLE_CHANNEL2)
+        case 2:
+            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL1) | (1 << LED_BLE_CHANNEL2) : 0);
+            break;
 #endif
-            break;
-        default:
-            break;
+                default : break;
         }
         blink_status = !blink_status;
     }
@@ -85,9 +86,6 @@ void status_led_init()
 #ifdef LED_STATUS_CHARGING
     nrf_gpio_cfg_output(LED_STATUS_CHARGING);
 #endif
-#ifdef LED_STATUS_USER
-    nrf_gpio_cfg_output(LED_STATUS_USER);
-#endif
     app_timer_create(&ble_led_blink_timer, APP_TIMER_MODE_REPEATED, ble_led_blink_timer_handler);
 }
 
@@ -106,9 +104,6 @@ void status_led_deinit(void)
 #ifdef LED_STATUS_CHARGING
     nrf_gpio_cfg_default(LED_STATUS_CHARGING);
 #endif
-#ifdef LED_STATUS_USER
-    nrf_gpio_cfg_default(LED_STATUS_USER);
-#endif
 }
 
 /** 
@@ -124,9 +119,6 @@ static void status_led_set_internal(uint8_t val)
 #endif
 #ifdef LED_STATUS_CHARGING
     LED_WRITE(LED_STATUS_CHARGING, val & (1 << BIT_LED_CHARGING));
-#endif
-#ifdef LED_STATUS_USER
-    LED_WRITE(LED_STATUS_USER, val & (1 << BIT_LED_USER));
 #endif
 }
 

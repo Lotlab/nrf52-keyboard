@@ -13,13 +13,13 @@ THREE_LED_STATUS = yes
 ```
 #define LED_STATUS_BLE 22
 #define LED_STATUS_USB 23
-#define LED_STATUS_CHARGING 24 //OR #define LED_STATUS_USB 23
-#define LED_BLE_CHANNEL1 22
-#define LED_BLE_CHANNEL2 23
-#define LED_BLE_CHANNEL3 24
+#define LED_STATUS_CHARGING 24 
+#define LED_BLE_CHANNEL1 BIT_LED_BLE # 指定 channel 映射
+#define LED_BLE_CHANNEL2 BIT_LED_USB
+#define LED_BLE_CHANNEL3 BIT_LED_CHARGING
 ```
 ### 配置说明
 ```
-当时配置3个LED指示灯时，一般为蓝牙连接状态、USB工作状态、充电状态（or 用户自定义，当使用用户自定义时，此灯不会显示充电状态，仅用于指示蓝牙设备第三通道的广播状态）。
-也可以仅配置2个指示灯，一般为蓝牙连接状态、USB工作状态，当仅使用2个指示灯时，我们采用同时闪烁2个指示灯来指示蓝牙设备第三通道的广播状态
+当时配置3个LED指示灯时，一般为蓝牙连接状态、USB工作状态、充电状态。
+也可以仅配置2个指示灯，一般为蓝牙连接状态、USB工作状态，当仅使用2个指示灯时，会同时闪烁2个指示灯来指示蓝牙设备第三通道的广播状态
 ```
