@@ -59,12 +59,8 @@ static void button_handler(void)
         if (button_count >= 10) {
             button_count = 0;
             delete_bonds();
-#ifdef BOOTMAGIC_ENABLE
-            eeconfig_init();
-#endif
-#ifdef RGBLIGHT_ENABLE
-            rgblight_init();
-#endif
+            storage_delete(0x0F);
+            storage_read(0x0F);
         }
         //上述判断最大误差0.5秒
     }
