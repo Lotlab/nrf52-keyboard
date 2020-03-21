@@ -91,7 +91,7 @@ static uint8_t peer_id_filter(pm_peer_id_t* peer_ids, uint8_t peer_id_count)
         ret_code_t err_code = pm_peer_data_app_data_load(peer_ids[i], &bound_id, &length);
         // check if this peer is on currect channel
         if (err_code != NRF_SUCCESS || bound_id[0] != switch_id) {
-            peer_ids[peer_id_count - 1] = peer_ids[i];
+            peer_ids[i] = peer_ids[peer_id_count - 1];
             peer_ids[peer_id_count - 1] = PM_PEER_ID_INVALID;
             i--;
             peer_id_count--;
@@ -167,7 +167,7 @@ static void ble_disconnect()
 
     // Disconnect all other bonded devices that currently are connected.
     ble_conn_state_for_each_connected(device_disconnect, NULL);
-    
+
     // In case of advertising
     if (m_advertising.adv_mode_current != BLE_ADV_MODE_IDLE) {
         (void)sd_ble_gap_adv_stop(m_advertising.adv_handle);
@@ -357,6 +357,10 @@ static void switch_device_init()
 {
     set_gap_addr_by_id(switch_id);
 }
+
+// 用于绑定peer与通道。数据必须 4Byte 对齐
+static uint8_t peer_channel_data[4] = {0};
+
 /**
  * @brief 更新切换设备数据.
  *
@@ -364,10 +368,8 @@ static void switch_device_init()
  */
 static void switch_device_update(pm_peer_id_t peer_id)
 {
-    // 数据必须 4Byte 对齐
-    uint8_t data[4];
-    data[0] = switch_id;
-    uint32_t err_code = pm_peer_data_app_data_store(m_peer_id, data, 4, NULL);
+    peer_channel_data[0] = switch_id;
+    uint32_t err_code = pm_peer_data_app_data_store(m_peer_id, peer_channel_data, 4, NULL);
     APP_ERROR_CHECK(err_code);
 }
 #endif
