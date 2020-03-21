@@ -267,6 +267,8 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
         // 记录不存在，尝试新建一个
         ret_code_t code = fds_record_write(record_desc, record);
         APP_ERROR_CHECK(code);
+        // 并删除原有数据
+        memset((uint8_t*)record->data.p_data, 0, record->data.length_words * 4);
     }
 }
 
