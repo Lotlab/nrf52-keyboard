@@ -49,18 +49,18 @@ void ble_led_blink_timer_handler(void* context)
         case 0:
 #ifdef LED_BLE_CHANNEL1
             LED_WRITE(LED_BLE_CHANNEL1, blink_status);
-            break;
 #endif
+            break;
         case 1:
 #ifdef LED_BLE_CHANNEL2
             LED_WRITE(LED_BLE_CHANNEL2, blink_status);
-            break;
 #endif
+            break;
         case 2:
 #ifdef LED_BLE_CHANNEL3
             LED_WRITE(LED_BLE_CHANNEL3, blink_status);
-            break;
 #endif
+            break;
         default:
             break;
         }
@@ -169,7 +169,7 @@ static void status_led_all_on(void)
 static void ble_blink_led_on()
 {
     blink_status = true;
-    ble_led_blink_timer_handler(NULL);  //即刻执行闪烁
+    ble_led_blink_timer_handler(NULL); //即刻执行闪烁
     app_timer_start(ble_led_blink_timer, APP_TIMER_TICKS(500), NULL);
 }
 /**
@@ -234,8 +234,8 @@ static void status_led_evt_handler(enum user_event event, void* arg)
             break;
         case KBD_STATE_SLEEP: // 准备休眠
         case KBD_STATE_SYSTEMOFF: // 准备关机
-            status_led_deinit();
             status_led_off();
+            status_led_deinit();
             break;
         default:
             break;
