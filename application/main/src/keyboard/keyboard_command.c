@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ble_services.h"
 #include "bootloader.h"
 #include "command.h"
+#include "data_storage.h"
 #include "host.h"
 #include "keyboard.h"
 #include "keycode.h"
