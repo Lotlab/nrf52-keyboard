@@ -26,6 +26,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nrf_delay.h"
 #include "simple_rgb/led_rgb.h"
 
+#define COLOR_IDLE 0xFFFFFF // 白色: 空闲状态
+#define COLOR_BLE 0x66FFFF // 青色: 蓝牙连接
+#define COLOR_CHARGING 0xFF8000 // 橙色: 充电中 
+#define COLOR_FULL 0x00FF00 // 绿色: 充电完毕
+#define COLOR_USB 0x0099ff // 蓝色: USB 已连接
+#define COLOR_PASSKEY_REQ 0xFFFF00 // 黄色: 请求输入配对码 
+#define COLOR_PASSKEY_SEND 0xFF0080 // 粉红色: 配对码输入完毕
+#define COLOR_SLEEP 0xFF00FF // 紫红色: 睡眠
+
 enum keyboard_status {
     kbd_ble,
     kbd_charge,
@@ -44,13 +53,13 @@ static void led_status_change()
 {
     switch (status) {
     case kbd_ble:
-        keyboard_led_rgb_set(ble_connected ? 0x66ffff : 0xFFFFFF);
+        keyboard_led_rgb_set(ble_connected ? COLOR_BLE : COLOR_IDLE);
         break;
     case kbd_charge:
-        keyboard_led_rgb_set(charging_full ? 0x00FF00 : 0xFF8000);
+        keyboard_led_rgb_set(charging_full ? COLOR_FULL : COLOR_CHARGING);
         break;
     case kbd_usb:
-        keyboard_led_rgb_set(0x0099ff);
+        keyboard_led_rgb_set(COLOR_USB);
         break;
     default:
         break;
@@ -116,17 +125,17 @@ void rgb_led_event_handler(enum user_event event, void* arg)
     case USER_EVT_BLE_PASSKEY_STATE: // 请求Passkey
         switch (arg2) {
         case PASSKEY_STATE_REQUIRE:
-            keyboard_led_rgb_set(0xFFFF00);
+            keyboard_led_rgb_set(COLOR_PASSKEY_REQ);
             break;
         case PASSKEY_STATE_SEND:
-            keyboard_led_rgb_set(0xFF0080);
+            keyboard_led_rgb_set(COLOR_PASSKEY_SEND);
             break;
         default:
             break;
         }
         break;
     case USER_EVT_SLEEP: // 睡眠指示
-        keyboard_led_rgb_direct(0b00000101);
+        keyboard_led_rgb_direct(COLOR_SLEEP);
         nrf_delay_ms(200);
         break;
     default:

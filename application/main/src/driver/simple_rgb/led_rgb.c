@@ -150,13 +150,13 @@ void keyboard_led_rgb_deinit()
  * 
  * @remark 在关闭timer后，无法使用原有的PWM调色，仅能使用此方法设置LED颜色
  * 
- * @param bit 
+ * @param color 
  */
-void keyboard_led_rgb_direct(uint8_t bit)
+void keyboard_led_rgb_direct(uint32_t color)
 {
-    nrf_gpio_pin_write(LED_RGB_R, !(bit & 0x04));
-    nrf_gpio_pin_write(LED_RGB_G, !(bit & 0x02));
-    nrf_gpio_pin_write(LED_RGB_B, !(bit & 0x01));
+    nrf_gpio_pin_write(LED_RGB_R, !((color >> 16) & 0x80));
+    nrf_gpio_pin_write(LED_RGB_G, !((color >> 8) & 0x80));
+    nrf_gpio_pin_write(LED_RGB_B, !((color >> 0) & 0x80));
 }
 
 /**
