@@ -47,12 +47,12 @@ uint8_t devices_id = 0;
  * COMMAND延迟处理事件
  */
 enum command_delay_hander_event {
-    COMMAND_DFU,        //跳转Bootloader
-    COMMAND_SLEEP,      //手动休眠
-    COMMAND_SYSTEMOFF,  //手动关机
-    COMMAND_RESET,      //重置键盘
-    COMMAND_BOND,       //清空绑定
-    COMMAND_SWITCH     //切换蓝牙设备
+    COMMAND_DFU,         //跳转Bootloader
+    COMMAND_SLEEP,       //手动休眠
+    COMMAND_SYSTEMOFF,   //手动关机
+    COMMAND_DEL_STORAGE, //清空配置存储
+    COMMAND_BOND,        //清空绑定
+    COMMAND_SWITCH       //切换蓝牙设备
 };
 
 /**
@@ -76,14 +76,9 @@ static void command_delay_handler(void* p_context)
         switch_device_select(devices_id);
 #endif
         break;
-    case COMMAND_RESET:
-        delete_bonds();
-#ifdef BOOTMAGIC_ENABLE
-        eeconfig_init();
-#endif
-#ifdef RGBLIGHT_ENABLE
-        rgblight_init();
-#endif
+    case COMMAND_DEL_STORAGE:
+        storage_delete(0x0F);
+        storage_read(0x0F);
         break;
     case COMMAND_SLEEP:
         sleep(SLEEP_MANUALLY);
@@ -250,7 +245,7 @@ static bool command_common(uint8_t code)
     case KC_I:
         //重置键盘
         clear_keyboard();
-        app_timer_start(command_run_timer, APP_TIMER_TICKS(200), (void*)(uint32_t)COMMAND_RESET);
+        app_timer_start(command_run_timer, APP_TIMER_TICKS(200), (void*)(uint32_t)COMMAND_DEL_STORAGE);
         break;
     default:
         return false;
