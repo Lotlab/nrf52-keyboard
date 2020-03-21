@@ -34,8 +34,8 @@ static uint8_t saved_status_led_val; // 暂存的LED的值
 
 enum status_led {
     BIT_LED_BLE,
-    BIT_LED_CHARGING,
     BIT_LED_USB,
+    BIT_LED_CHARGING,
     BIT_LED_USER
 };
 
@@ -59,6 +59,9 @@ void ble_led_blink_timer_handler(void* context)
         case 2:
 #ifdef LED_BLE_CHANNEL3
             LED_WRITE(LED_BLE_CHANNEL3, blink_status);
+#else
+            LED_WRITE(LED_BLE_CHANNEL1, blink_status);
+            LED_WRITE(LED_BLE_CHANNEL2, blink_status);
 #endif
             break;
         default:
@@ -76,11 +79,11 @@ void status_led_init()
 #ifdef LED_STATUS_BLE
     nrf_gpio_cfg_output(LED_STATUS_BLE);
 #endif
-#ifdef LED_STATUS_CHARGING
-    nrf_gpio_cfg_output(LED_STATUS_CHARGING);
-#endif
 #ifdef LED_STATUS_USB
     nrf_gpio_cfg_output(LED_STATUS_USB);
+#endif
+#ifdef LED_STATUS_CHARGING
+    nrf_gpio_cfg_output(LED_STATUS_CHARGING);
 #endif
 #ifdef LED_STATUS_USER
     nrf_gpio_cfg_output(LED_STATUS_USER);
@@ -97,11 +100,11 @@ void status_led_deinit(void)
 #ifdef LED_STATUS_BLE
     nrf_gpio_cfg_default(LED_STATUS_BLE);
 #endif
-#ifdef LED_STATUS_CHARGING
-    nrf_gpio_cfg_default(LED_STATUS_CHARGING);
-#endif
 #ifdef LED_STATUS_USB
     nrf_gpio_cfg_default(LED_STATUS_USB);
+#endif
+#ifdef LED_STATUS_CHARGING
+    nrf_gpio_cfg_default(LED_STATUS_CHARGING);
 #endif
 #ifdef LED_STATUS_USER
     nrf_gpio_cfg_default(LED_STATUS_USER);
@@ -116,11 +119,11 @@ static void status_led_set_internal(uint8_t val)
 #ifdef LED_STATUS_BLE
     LED_WRITE(LED_STATUS_BLE, val & (1 << BIT_LED_BLE));
 #endif
-#ifdef LED_STATUS_CHARGING
-    LED_WRITE(LED_STATUS_CHARGING, val & (1 << BIT_LED_CHARGING));
-#endif
 #ifdef LED_STATUS_USB
     LED_WRITE(LED_STATUS_USB, val & (1 << BIT_LED_USB));
+#endif
+#ifdef LED_STATUS_CHARGING
+    LED_WRITE(LED_STATUS_CHARGING, val & (1 << BIT_LED_CHARGING));
 #endif
 #ifdef LED_STATUS_USER
     LED_WRITE(LED_STATUS_USER, val & (1 << BIT_LED_USER));
@@ -155,7 +158,7 @@ static void set_led_on()
 /**
  *  系统状态LED灯全开
  * 
- *  用于关机时闪烁一次
+ *  用于开关机时闪烁一次
  */
 static void status_led_all_on(void)
 {
