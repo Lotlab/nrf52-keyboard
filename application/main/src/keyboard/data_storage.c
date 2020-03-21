@@ -171,9 +171,15 @@ static void config_storage_init()
 }
 #endif
 
+enum fds_op_type {
+    FDS_OP_UPDATE,
+    FDS_OP_WRITE,
+};
+
 struct fds_update_op {
     fds_record_t const* record;
     fds_record_desc_t* record_desc;
+    enum fds_op_type type;
 };
 
 QUEUE(struct fds_update_op, gc_queue, 5);
@@ -187,9 +193,22 @@ static void storage_callback(fds_evt_t const* p_evt)
 {
     // GC完毕事件
     if (p_evt->id == FDS_EVT_GC && p_evt->result == FDS_SUCCESS) {
+        ret_code_t err_code;
+
         while (!gc_queue_empty()) {
             struct fds_update_op* item = gc_queue_peek();
-            ret_code_t err_code = fds_record_update(item->record_desc, item->record);
+            switch (item->type) {
+            case FDS_OP_UPDATE:
+                err_code = fds_record_update(item->record_desc, item->record);
+                break;
+            case FDS_OP_WRITE:
+                err_code = fds_record_write(item->record_desc, item->record);
+                break;
+            default:
+                // 操作未定义，直接跳过
+                err_code = FDS_SUCCESS;
+                break;
+            }
             if (err_code == FDS_SUCCESS) {
                 gc_queue_pop();
             } else {
@@ -233,6 +252,7 @@ static void storage_update_inner(fds_record_t const* record, fds_record_desc_t* 
         struct fds_update_op item = {
             .record = record,
             .record_desc = record_desc,
+            .type = FDS_OP_UPDATE
         };
         // 将操作入队列，等待下一次执行
         gc_queue_push(item);
@@ -266,7 +286,17 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
     } else {
         // 记录不存在，尝试新建一个
         ret_code_t code = fds_record_write(record_desc, record);
-        APP_ERROR_CHECK(code);
+        if (code == FDS_ERR_NO_SPACE_IN_FLASH) {
+            // 没有空间则GC
+            code = fds_gc();
+            struct fds_update_op item = {
+                .record = record,
+                .record_desc = record_desc,
+                .type = FDS_OP_WRITE
+            };
+            // 将操作入队列，等待下一次执行
+            gc_queue_push(item);
+        }
         // 并删除原有数据
         memset((uint8_t*)record->data.p_data, 0, record->data.length_words * 4);
     }
