@@ -28,10 +28,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define COLOR_IDLE 0xFFFFFF // 白色: 空闲状态
 #define COLOR_BLE 0x66FFFF // 青色: 蓝牙连接
-#define COLOR_CHARGING 0xFF8000 // 橙色: 充电中 
+#define COLOR_CHARGING 0xFF8000 // 橙色: 充电中
 #define COLOR_FULL 0x00FF00 // 绿色: 充电完毕
 #define COLOR_USB 0x0099ff // 蓝色: USB 已连接
-#define COLOR_PASSKEY_REQ 0xFFFF00 // 黄色: 请求输入配对码 
+#define COLOR_PASSKEY_REQ 0xFFFF00 // 黄色: 请求输入配对码
 #define COLOR_PASSKEY_SEND 0xFF0080 // 粉红色: 配对码输入完毕
 #define COLOR_SLEEP 0xFF00FF // 紫红色: 睡眠
 
@@ -119,8 +119,18 @@ void rgb_led_event_handler(enum user_event event, void* arg)
         led_status_change();
         break;
     case USER_EVT_BLE_STATE_CHANGE: // 蓝牙事件
-        ble_connected = (arg2 == BLE_STATE_CONNECTED);
-        led_status_change();
+        switch (arg2) {
+        case BLE_STATE_CONNECTED:
+            ble_connected = true;
+            led_status_change();
+            break;
+        case BLE_STATE_DISCONNECT:
+            ble_connected = false;
+            led_status_change();
+            break;
+        default:
+            break;
+        }
         break;
     case USER_EVT_BLE_PASSKEY_STATE: // 请求Passkey
         switch (arg2) {
