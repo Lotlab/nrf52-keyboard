@@ -101,9 +101,9 @@ enum passkey_state {
  * 蓝牙设备通道
  */
 enum ble_device_channel {
+    BLE_DEVICE_CHANNEL0, // 蓝牙设备连接通道0
     BLE_DEVICE_CHANNEL1, // 蓝牙设备连接通道1
     BLE_DEVICE_CHANNEL2, // 蓝牙设备连接通道2
-    BLE_DEVICE_CHANNEL3, // 蓝牙设备连接通道3
 };
 
 /**
