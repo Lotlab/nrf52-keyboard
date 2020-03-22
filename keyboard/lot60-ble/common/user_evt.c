@@ -132,6 +132,9 @@ void rgb_led_event_handler(enum user_event event, void* arg)
             break;
         }
         break;
+    case USER_EVT_BLE_DEVICE_SWITCH: // 设备切换事件
+        led_status_change(); // 暂时先把灯亮起来
+        break;
     case USER_EVT_BLE_PASSKEY_STATE: // 请求Passkey
         switch (arg2) {
         case PASSKEY_STATE_REQUIRE:
