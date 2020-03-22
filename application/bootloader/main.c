@@ -48,12 +48,14 @@
 
 #include "app_error.h"
 #include "app_error_weak.h"
+#include "nrf.h"
 #include "nrf_bootloader.h"
 #include "nrf_bootloader_app_start.h"
 #include "nrf_bootloader_dfu_timers.h"
 #include "nrf_bootloader_info.h"
 #include "nrf_delay.h"
 #include "nrf_dfu.h"
+#include "nrf_fstorage_sd.h"
 #include "nrf_gpio.h"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -115,6 +117,35 @@ static void dfu_observer(nrf_dfu_evt_type_t evt_type)
     }
 }
 
+#ifdef NRF_BL_DFU_MULTI_ROLE_BTN
+
+NRF_FSTORAGE_DEF(nrf_fstorage_t m_fs);
+
+/**
+ * @brief Clear the internal stroage
+ * 
+ */
+static void storage_clear()
+{
+    uint32_t const bootloader_addr = BOOTLOADER_ADDRESS;
+    uint32_t const page_sz = NRF_FICR->CODEPAGESIZE;
+
+#if defined(NRF52810_XXAA) || defined(NRF52811_XXAA)
+    // Hardcode the number of flash pages, necessary for SoC emulation.
+    // nRF52810 on nRF52832 and
+    // nRF52811 on nRF52840
+    uint32_t const code_sz = 48;
+#else
+    uint32_t const code_sz = NRF_FICR->CODESIZE;
+#endif
+
+    m_fs.end_addr = (bootloader_addr != 0xFFFFFFFF) ? bootloader_addr : (code_sz * page_sz);
+    m_fs.start_addr = m_fs.end_addr - NRF_DFU_APP_DATA_AREA_SIZE;
+
+    nrf_fstorage_init(&m_fs, &nrf_fstorage_sd, NULL);
+    nrf_fstorage_erase(&m_fs, m_fs.start_addr, (NRF_DFU_APP_DATA_AREA_SIZE / 4096), NULL);
+}
+
 /**
  * @brief Force enter the DFU mode
  * 
@@ -126,26 +157,27 @@ static void dfu_set_enter()
 
 static void dfu_multi_role_btn()
 {
-#define BTN_PIN 1
-    nrf_gpio_cfg_sense_input(BTN_PIN,
-        NRF_GPIO_PIN_PULLUP,
-        NRF_GPIO_PIN_SENSE_LOW);
+    nrf_gpio_cfg_input(NRF_BL_DFU_MULTI_ROLE_BTN,
+        NRF_GPIO_PIN_PULLUP);
 
     uint32_t press_count = 0;
 
-    while (!nrf_gpio_pin_read(BTN_PIN)) {
-        nrf_delay_ms(1);
+    while (!nrf_gpio_pin_read(NRF_BL_DFU_MULTI_ROLE_BTN)) {
+        nrf_delay_ms(10);
         press_count++;
     }
 
-    if (press_count > 4000) {
-        if (press_count > 10000) {
-            // todo: clear storage
-        } else if (press_count > 4000) {
+    if (press_count > 400) {
+        if (press_count > 1000) {
+            // 10秒以上，清除所有存储的数据
+            storage_clear();
+        } else (press_count > 400) {
+            // 4秒以上，进入DFU
             dfu_set_enter();
         }
     }
 }
+#endif
 
 /**@brief Function for application main entry. */
 int main(void)
@@ -163,7 +195,9 @@ int main(void)
 
     NRF_LOG_INFO("Inside main");
 
+#ifdef NRF_BL_DFU_MULTI_ROLE_BTN
     dfu_multi_role_btn();
+#endif
 
     ret_val = nrf_bootloader_init(dfu_observer);
     APP_ERROR_CHECK(ret_val);
