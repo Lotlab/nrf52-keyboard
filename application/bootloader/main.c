@@ -61,7 +61,17 @@
 #include "nrf_power.h"
 #include <stdint.h>
 #ifdef CONFIG_H_FILE
-    #include CONFIG_H_FILE
+#include CONFIG_H_FILE
+#endif
+
+#ifdef LED_DFU_POSITIVE
+#define LED_SET(x) nrf_gpio_pin_set(x)
+#define LED_CLEAR(x) nrf_gpio_pin_clear(x)
+#define LED_WRITE(x, b) nrf_gpio_pin_write(x, b)
+#else
+#define LED_SET(x) nrf_gpio_pin_clear(x)
+#define LED_CLEAR(x) nrf_gpio_pin_set(x)
+#define LED_WRITE(x, b) nrf_gpio_pin_write(x, !(b))
 #endif
 
 static void on_error(void)
@@ -87,21 +97,36 @@ void app_error_handler_bare(uint32_t error_code)
     on_error();
 }
 
+static bool data_flag = false;
+
 /**
  * @brief Function notifies certain events in DFU process.
  */
 static void dfu_observer(nrf_dfu_evt_type_t evt_type)
 {
     switch (evt_type) {
-    case NRF_DFU_EVT_DFU_FAILED:
-    case NRF_DFU_EVT_DFU_ABORTED:
     case NRF_DFU_EVT_DFU_INITIALIZED:
-        // todo: LED init.
-        break;
-    case NRF_DFU_EVT_TRANSPORT_ACTIVATED:
-        // todo: set LED
+#ifdef LED_DFU_INIT
+        LED_SET(LED_DFU_INIT);
+#endif
         break;
     case NRF_DFU_EVT_DFU_STARTED:
+#ifdef LED_DFU_START
+        LED_SET(LED_DFU_START);
+#endif
+        break;
+    case NRF_DFU_EVT_OBJECT_RECEIVED:
+#ifdef LED_DFU_START
+        LED_WRITE(LED_DFU_START, data_flag);
+#endif
+        data_flag = !data_flag;
+        break;
+    case NRF_DFU_EVT_DFU_FAILED:
+    case NRF_DFU_EVT_DFU_ABORTED:
+    case NRF_DFU_EVT_DFU_COMPLETED:
+#ifdef LED_DFU_FINISH
+        LED_SET(LED_DFU_FINISH);
+#endif
         break;
     default:
         break;
@@ -170,6 +195,19 @@ static void dfu_multi_role_btn()
 }
 #endif
 
+static void leds_init()
+{
+#ifdef LED_DFU_INIT
+    nrf_gpio_cfg_output(LED_DFU_INIT);
+#endif
+#ifdef LED_DFU_START
+    nrf_gpio_cfg_output(LED_DFU_START);
+#endif
+#ifdef LED_DFU_FINISH
+    nrf_gpio_cfg_output(LED_DFU_FINISH);
+#endif
+}
+
 /**@brief Function for application main entry. */
 int main(void)
 {
@@ -181,10 +219,11 @@ int main(void)
     ret_val = nrf_bootloader_flash_protect(BOOTLOADER_START_ADDR, BOOTLOADER_SIZE, false);
     APP_ERROR_CHECK(ret_val);
 
-
 #ifdef NRF_BL_DFU_MULTI_ROLE_BTN
     dfu_multi_role_btn();
 #endif
+
+    leds_init();
 
     ret_val = nrf_bootloader_init(dfu_observer);
     APP_ERROR_CHECK(ret_val);

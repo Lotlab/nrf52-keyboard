@@ -82,6 +82,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_SCLK 23
 #define LED_POSITIVE // LED上拉驱动
 
+// Bootloader 指示灯
+#define LED_DFU_INIT 22
+#define LED_DFU_START 23
+#define LED_DFU_FINISH 24
+#define LED_DFU_POSITIVE // LED上拉驱动
+
+// 多用途 Bootloader 按钮
+#define NRF_BL_DFU_MULTI_ROLE_BTN 21 
+
 // USB UART 传输配置
 #define HAS_USB // 启用与CH554的通信支持
 #define UART_RXD 17 // UART_RX口IO

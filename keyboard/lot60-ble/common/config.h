@@ -187,3 +187,9 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 2
 
 // 多用途Bootloader按钮
 #define NRF_BL_DFU_MULTI_ROLE_BTN 21
+
+// Bootloader指示灯
+#define LED_DFU_INIT 22
+#define LED_DFU_START 23
+#define LED_DFU_FINISH 24
+// #define LED_DFU_POSITIVE
