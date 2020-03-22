@@ -217,8 +217,12 @@ static void uart_to_idle()
     nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
 #endif
     is_connected = false;
+    has_host = false;
+    is_full = false;
+
     send_event(USER_EVT_USB, USB_NOT_CONNECT);
     send_event(USER_EVT_CHARGE, BATT_NOT_CHARGING);
+    // 蓝牙下默认使用BootProtocol（即不启用NKRO）
     send_event(USER_EVT_PROTOCOL, HID_BOOT_PROTOCOL);
 }
 
@@ -261,8 +265,8 @@ static void uart_init_hardware()
     APP_ERROR_CHECK(err_code);
 
     is_connected = true;
-    send_event(USER_EVT_USB, USB_NO_HOST);
-    send_event(USER_EVT_CHARGE, BATT_CHARGING);
+    // send_event(USER_EVT_USB, USB_NO_HOST);
+    // send_event(USER_EVT_CHARGE, BATT_CHARGING);
 }
 
 static void uart_task(void* context)
