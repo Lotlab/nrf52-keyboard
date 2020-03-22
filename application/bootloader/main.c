@@ -57,21 +57,12 @@
 #include "nrf_dfu.h"
 #include "nrf_fstorage_sd.h"
 #include "nrf_gpio.h"
-#include "nrf_log.h"
-#include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
 #include "nrf_mbr.h"
 #include "nrf_power.h"
 #include <stdint.h>
 
 static void on_error(void)
 {
-    NRF_LOG_FINAL_FLUSH();
-
-#if NRF_MODULE_ENABLED(NRF_LOG_BACKEND_RTT)
-    // To allow the buffer to be flushed by the host.
-    nrf_delay_ms(100);
-#endif
 #ifdef NRF_DFU_DEBUG_VERSION
     NRF_BREAKPOINT_COND;
 #endif
@@ -80,19 +71,16 @@ static void on_error(void)
 
 void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t* p_file_name)
 {
-    NRF_LOG_ERROR("%s:%d", p_file_name, line_num);
     on_error();
 }
 
 void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)
 {
-    NRF_LOG_ERROR("Received a fault! id: 0x%08x, pc: 0x%08x, info: 0x%08x", id, pc, info);
     on_error();
 }
 
 void app_error_handler_bare(uint32_t error_code)
 {
-    NRF_LOG_ERROR("Received an error: 0x%08x!", error_code);
     on_error();
 }
 
@@ -190,10 +178,6 @@ int main(void)
     ret_val = nrf_bootloader_flash_protect(BOOTLOADER_START_ADDR, BOOTLOADER_SIZE, false);
     APP_ERROR_CHECK(ret_val);
 
-    (void)NRF_LOG_INIT(nrf_bootloader_dfu_timer_counter_get);
-    NRF_LOG_DEFAULT_BACKENDS_INIT();
-
-    NRF_LOG_INFO("Inside main");
 
 #ifdef NRF_BL_DFU_MULTI_ROLE_BTN
     dfu_multi_role_btn();
@@ -206,9 +190,6 @@ int main(void)
     // no ongoing DFU operation and found a valid main application.
     // Boot the main application.
     nrf_bootloader_app_start();
-
-    // Should never be reached.
-    NRF_LOG_INFO("After main");
 }
 
 /**
