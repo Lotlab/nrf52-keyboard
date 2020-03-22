@@ -60,6 +60,9 @@
 #include "nrf_mbr.h"
 #include "nrf_power.h"
 #include <stdint.h>
+#ifdef CONFIG_H_FILE
+    #include CONFIG_H_FILE
+#endif
 
 static void on_error(void)
 {

@@ -8,6 +8,7 @@ APP_PROJ_DIR := $(APP_MAIN_DIR)/project
 APP_SRC_DIR := $(APP_MAIN_DIR)/src
 
 CONFIG_H = config.h
+CONFIG_H_DIR = .
 
 include ./rules.mk
 

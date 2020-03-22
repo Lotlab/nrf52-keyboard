@@ -11,6 +11,7 @@ NRF_CHIP := nrf52832
 
 # 配置文件文件名
 CONFIG_H = config.h
+CONFIG_H_DIR = .
 SRC_FILES += keymap_plain.c
 
 # 配置项：功能选项

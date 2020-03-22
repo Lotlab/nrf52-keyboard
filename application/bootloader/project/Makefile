@@ -154,6 +154,10 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/queue \
 	$(SDK_ROOT)/components/libraries/ringbuf \
 
+ifdef CONFIG_H_DIR
+	INC_FOLDERS += $(CONFIG_H_DIR)
+endif
+
 # Libraries common to all targets
 LIB_FILES += \
 	$(SDK_ROOT)/external/nrf_oberon/lib/cortex-m4/soft-float/liboberon_2.0.7.a \
@@ -183,9 +187,14 @@ CFLAGS += -DuECC_VLI_NATIVE_LITTLE_ENDIAN=1
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mthumb -mabi=aapcs
 CFLAGS += -Wall -Werror
+CFLAGS += -DUSE_CUSTOM_CONFIG
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
+
+ifdef CONFIG_H
+	 CFLAGS += -DCONFIG_H_FILE=\"$(CONFIG_H)\"
+endif
 
 # C++ flags common to all targets
 CXXFLAGS += $(OPT)

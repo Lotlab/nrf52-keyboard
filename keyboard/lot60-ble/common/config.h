@@ -184,3 +184,6 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 2
 #define SWD_CLK_MASK bT2EX
 #define SWD_CLK_PORT P1
 #endif
+
+// 多用途Bootloader按钮
+#define NRF_BL_DFU_MULTI_ROLE_BTN 21
