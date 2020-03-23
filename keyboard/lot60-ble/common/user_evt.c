@@ -35,15 +35,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define COLOR_PASSKEY_SEND 0xFF0080 // 粉红色: 配对码输入完毕
 #define COLOR_SLEEP 0xFF00FF // 紫红色: 睡眠
 
-enum keyboard_status {
-    kbd_ble,
-    kbd_charge,
-    kbd_usb
-};
-
-static enum keyboard_status status = 0;
 static bool charging_full = false;
 static bool ble_connected = false;
+static bool is_charging = false;
+static bool usb_working = false;
 
 /**
  * @brief 按状态更改 LED 样式
@@ -51,18 +46,12 @@ static bool ble_connected = false;
  */
 static void led_status_change()
 {
-    switch (status) {
-    case kbd_ble:
-        keyboard_led_rgb_set(ble_connected ? COLOR_BLE : COLOR_IDLE);
-        break;
-    case kbd_charge:
-        keyboard_led_rgb_set(charging_full ? COLOR_FULL : COLOR_CHARGING);
-        break;
-    case kbd_usb:
+    if (usb_working) {
         keyboard_led_rgb_set(COLOR_USB);
-        break;
-    default:
-        break;
+    } else if (is_charging) {
+        keyboard_led_rgb_set(charging_full ? COLOR_FULL : COLOR_CHARGING);
+    } else {
+        keyboard_led_rgb_set(ble_connected ? COLOR_BLE : COLOR_IDLE);
     }
 }
 
@@ -98,22 +87,29 @@ void rgb_led_event_handler(enum user_event event, void* arg)
         }
         break;
     case USER_EVT_CHARGE: // 充电事件
-        charging_full = (arg2 != BATT_CHARGING);
+        switch (arg2) {
+        case BATT_NOT_CHARGING:
+            is_charging = false;
+            break;
+        case BATT_CHARGING:
+            is_charging = true;
+            charging_full = false;
+            break;
+        case BATT_CHARGED:
+            is_charging = true;
+            charging_full = true;
+        default:
+            break;
+        }
         led_status_change();
         break;
     case USER_EVT_USB: // USB事件
         switch (arg2) {
         case USB_WORKING:
-            status = kbd_usb;
-            break;
-        case USB_NOT_WORKING:
-        case USB_NO_HOST: // no_host状态也能说明正在充电
-            status = kbd_charge;
-            break;
-        case USB_NOT_CONNECT:
-            status = kbd_ble;
+            usb_working = true;
             break;
         default:
+            usb_working = false;
             break;
         }
         led_status_change();
