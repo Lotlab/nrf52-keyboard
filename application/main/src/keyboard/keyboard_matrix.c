@@ -40,8 +40,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef DEBOUNCE
 #define DEBOUNCE 1
 #endif
+// 实际的消抖次数
+#define DEBOUNCE_RELOAD ((DEBOUNCE + KEYBOARD_SCAN_INTERVAL - 1) / KEYBOARD_SCAN_INTERVAL)
 
-static uint8_t debouncing = DEBOUNCE;
+static uint8_t debouncing = DEBOUNCE_RELOAD;
 
 /* matrix state(1:on, 0:off) */
 static matrix_row_t matrix[MATRIX_ROWS];
@@ -152,7 +154,7 @@ uint8_t matrix_scan(void)
                 debug_hex(debouncing);
                 dprint("\n");
             }
-            debouncing = DEBOUNCE;
+            debouncing = DEBOUNCE_RELOAD;
         }
         unselect_rows();
     }
