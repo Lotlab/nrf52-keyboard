@@ -43,20 +43,21 @@ uint8_t keyboard_led_val_usb;
 
 static uint8_t recv_buf[64];
 static uint8_t recv_index;
+static uint8_t recv_len;
 
 enum uart_usb_state {
-    UART_STATE_IDLE,
-    UART_STATE_INITED,
-    UART_STATE_WORKING
+    UART_STATE_IDLE, // 当前 UART 没有正常工作
+    UART_STATE_INITED, // 当前 UART 已经初始化，但还未接收到数据
+    UART_STATE_WORKING // 当前 UART 正常工作中
 };
 
 struct usb_status {
-    bool charging_full;
-    bool host_connected;
-    bool usb_disable;
-    bool uart_checked;
-    bool usb_protocol;
-    enum uart_usb_state state;
+    bool charging_full; // 当前充电状态已满
+    bool host_connected; // 当前已连接到主机
+    bool usb_disable; // 临时禁用 USB 通信功能
+    bool uart_checked; // UART 通信检测标志
+    bool usb_protocol; // USB 报告类型
+    enum uart_usb_state state; // 当前 UART 所属状态
 };
 
 static struct usb_status status;
@@ -142,8 +143,6 @@ static void uart_send(uint8_t* data, uint8_t len)
     }
 }
 
-uint8_t recv_len;
-
 /**
  * @brief 接收消息
  * 
@@ -211,14 +210,13 @@ static void uart_to_idle()
     nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
 #endif
 
+    // 做一些状态清理
     status.state = UART_STATE_IDLE;
     status.usb_disable = false;
     status.host_connected = false;
-
     send_event(USER_EVT_USB, USB_NOT_CONNECT);
     send_event(USER_EVT_CHARGE, BATT_NOT_CHARGING);
-    // 蓝牙下默认使用BootProtocol（即不启用NKRO）
-    send_event(USER_EVT_PROTOCOL, HID_BOOT_PROTOCOL);
+    send_event(USER_EVT_PROTOCOL, HID_BOOT_PROTOCOL); // 蓝牙下默认使用BootProtocol（即不启用NKRO）
 }
 
 static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
@@ -307,7 +305,6 @@ void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
         return;
 
     uint8_t data[64];
-    // 入队
     data[0] = 0x40 + len;
     data[1] = index;
 
