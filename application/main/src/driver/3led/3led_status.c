@@ -60,13 +60,14 @@ void ble_led_blink_timer_handler(void* context)
 #ifdef LED_BLE_CHANNEL3
         case 2:
             status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL3) : 0);
-            break
+            break;
 #elif defined(LED_BLE_CHANNEL1) && defined(LED_BLE_CHANNEL2)
         case 2:
             status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL1) | (1 << LED_BLE_CHANNEL2) : 0);
             break;
 #endif
-                default : break;
+        default:
+            break;
         }
         blink_status = !blink_status;
     }
