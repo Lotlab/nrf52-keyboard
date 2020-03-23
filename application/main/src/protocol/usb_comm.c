@@ -47,9 +47,22 @@ static uint8_t send_index;
 static uint8_t send_len;
 static uint8_t recv_index;
 
-static bool has_host;
-static bool is_full, is_connected, is_checked, is_disable;
-static bool usb_protocol;
+enum uart_usb_state {
+    UART_STATE_IDLE,
+    UART_STATE_INITED,
+    UART_STATE_WORKING
+};
+
+struct usb_status {
+    bool charging_full;
+    bool host_connected;
+    bool usb_disable;
+    bool uart_checked;
+    bool usb_protocol;
+    enum uart_usb_state state;
+};
+
+static struct usb_status status;
 
 MIXED_QUEUE(uint8_t, uart_queue, QUEUE_SIZE);
 
@@ -69,12 +82,6 @@ static uint8_t checksum(uint8_t* data, uint8_t len)
     return (uint8_t)checksum;
 }
 
-enum uart_ack_state {
-    UART_CHECK_FAIL,
-    UART_SUCCESS,
-    UART_END
-};
-
 /**
  * @brief 发送事件
  * 
@@ -88,7 +95,7 @@ static void send_event(enum user_event event, uint8_t arg)
         if (arg != USB_WORKING)
             trig_event_param(USER_EVT_PROTOCOL, HID_BOOT_PROTOCOL);
         else
-            trig_event_param(USER_EVT_PROTOCOL, usb_protocol);
+            trig_event_param(USER_EVT_PROTOCOL, status.usb_protocol);
         break;
     default:
         break;
@@ -106,17 +113,20 @@ static void send_event(enum user_event event, uint8_t arg)
  */
 static void set_state(bool host, bool charge_full, bool protocol)
 {
-    if (host != has_host) {
-        has_host = host;
-        send_event(USER_EVT_USB, host ? (is_disable ? USB_NOT_WORKING : USB_WORKING) : USB_NO_HOST);
+    if ((status.state == UART_STATE_INITED) || host != status.host_connected) {
+        status.host_connected = host;
+        send_event(USER_EVT_USB, host ? (status.usb_disable ? USB_NOT_WORKING : USB_WORKING) : USB_NO_HOST);
     }
-    if (charge_full != is_full) {
-        is_full = charge_full;
-        send_event(USER_EVT_CHARGE, is_full ? BATT_CHARGED : BATT_CHARGING);
+    if ((status.state == UART_STATE_INITED) || charge_full != status.charging_full) {
+        status.charging_full = charge_full;
+        send_event(USER_EVT_CHARGE, status.charging_full ? BATT_CHARGED : BATT_CHARGING);
     }
-    if (usb_protocol != protocol) {
-        usb_protocol = protocol;
+    if ((status.state == UART_STATE_INITED) || status.usb_protocol != protocol) {
+        status.usb_protocol = protocol;
         send_event(USER_EVT_PROTOCOL, protocol && usb_working() ? HID_REPORT_PROTOCOL : HID_BOOT_PROTOCOL);
+    }
+    if (status.state == UART_STATE_INITED) {
+        status.state = UART_STATE_WORKING;
     }
 }
 
@@ -187,7 +197,7 @@ static void uart_on_recv()
                     uint8_t len = uart_queue_peek(data);
                     uart_send(data, len);
                 }
-                is_checked = true;
+                status.uart_checked = true;
             }
         } else {
             recv_index++;
@@ -216,9 +226,10 @@ static void uart_to_idle()
 #ifndef UART_DET
     nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
 #endif
-    is_connected = false;
-    has_host = false;
-    is_full = false;
+
+    status.state = UART_STATE_IDLE;
+    status.usb_disable = false;
+    status.host_connected = false;
 
     send_event(USER_EVT_USB, USB_NOT_CONNECT);
     send_event(USER_EVT_CHARGE, BATT_NOT_CHARGING);
@@ -264,20 +275,18 @@ static void uart_init_hardware()
     APP_UART_FIFO_INIT(&config, 32, 32, uart_evt_handler, APP_IRQ_PRIORITY_LOW, err_code);
     APP_ERROR_CHECK(err_code);
 
-    is_connected = true;
-    // send_event(USER_EVT_USB, USB_NO_HOST);
-    // send_event(USER_EVT_CHARGE, BATT_CHARGING);
+    status.state = UART_STATE_INITED;
 }
 
 static void uart_task(void* context)
 {
     UNUSED_PARAMETER(context);
-    if (is_connected) {
+    if (status.state != UART_STATE_IDLE) {
         // 已经连接状态，检查是否断开
-        if (!is_checked) {
+        if (!status.uart_checked) {
             uart_to_idle();
         } else {
-            is_checked = false;
+            status.uart_checked = false;
         }
     } else {
         // 未连接状态，检查是否连接
@@ -299,7 +308,7 @@ static void uart_task(void* context)
  */
 bool usb_working(void)
 {
-    return has_host && is_connected && !is_disable;
+    return (status.state == UART_STATE_WORKING) && (status.host_connected) && !(status.usb_disable);
 }
 
 /**
@@ -398,22 +407,10 @@ void usb_comm_sleep_prepare()
  */
 void usb_comm_switch()
 {
-    if (is_connected && has_host) {
-        is_disable = !is_disable;
-        if (is_disable) {
-            send_event(USER_EVT_USB, USB_NOT_WORKING);
-        } else {
-            send_event(USER_EVT_USB, USB_WORKING);
-        }
+    if ((status.state == UART_STATE_WORKING) && status.host_connected) {
+        status.usb_disable = !status.usb_disable;
+        send_event(USER_EVT_USB, status.usb_disable ? USB_NOT_WORKING : USB_WORKING);
     }
-}
-
-/**
- * usb待发送数据是否为空
- */
-bool usb_queue_empty()
-{
-    return uart_queue_empty();
 }
 
 /**

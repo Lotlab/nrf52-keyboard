@@ -51,11 +51,6 @@ void usb_comm_switch(void);
 extern uint8_t keyboard_led_val_usb;
 
 /**
- * @brief USB队列是否为空
- */
-bool usb_queue_empty(void);
-
-/**
  * @brief UART发送裸数据包
  */
 void uart_send_conf(uint8_t len, uint8_t* data);
