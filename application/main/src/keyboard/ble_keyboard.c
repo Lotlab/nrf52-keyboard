@@ -34,13 +34,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nrf_drv_wdt.h"
 
 APP_TIMER_DEF(m_keyboard_scan_timer); /**< keyboard scan timer. */
+APP_TIMER_DEF(m_keyboard_debounce_timer); /**< keyboard debounce timer. */
 APP_TIMER_DEF(m_keyboard_sleep_timer); /**< keyboard sleep timer. */
 
-#define SCAN_INTERVAL APP_TIMER_TICKS(KEYBOARD_SCAN_INTERVAL)
+#define FAST_SCAN_INTERVAL APP_TIMER_TICKS(KEYBOARD_FAST_SCAN_INTERVAL)
+#define SLOW_SCAN_INTERVAL APP_TIMER_TICKS(KEYBOARD_SLOW_SCAN_INTERVAL)
+#define DEBOUNCE_INTERVAL APP_TIMER_TICKS(KEYBOARD_SCAN_INTERVAL)
 #define TICK_INTERVAL APP_TIMER_TICKS(1000) /**< 键盘Tick计时器 */
 
 static uint32_t sleep_counter;
-static int16_t scan_counter, scan_reload = KEYBOARD_FAST_SCAN_INTERVAL;
 static bool powersave = true;
 
 /**
@@ -50,7 +52,11 @@ static bool powersave = true;
  */
 static void keyboard_switch_scan_mode(bool slow)
 {
-    scan_reload = slow ? KEYBOARD_SLOW_SCAN_INTERVAL : KEYBOARD_FAST_SCAN_INTERVAL;
+    ret_code_t err_code = app_timer_stop(m_keyboard_scan_timer);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_start(m_keyboard_scan_timer, slow ? SLOW_SCAN_INTERVAL : FAST_SCAN_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
 /**
@@ -62,16 +68,12 @@ static void keyboard_scan_handler(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
     // 处理按键扫描
-    scan_counter += KEYBOARD_SCAN_INTERVAL;
-    if (scan_counter >= scan_reload) {
-        scan_counter = 0;
 #ifdef MACRO_BLOCKING_MODE
-        // 仅在没有更多宏的情况下继续处理按键
-        if (macro_queue_empty())
+    // 仅在没有更多宏的情况下继续处理按键
+    if (macro_queue_empty())
 #endif
-        {
-            keyboard_task();
-        }
+    {
+        keyboard_task();
     }
     // 处理宏播放
     action_macro_replay();
@@ -138,6 +140,12 @@ static void keyboard_timer_init(void)
         keyboard_scan_handler);
     APP_ERROR_CHECK(err_code);
 
+    // debounce timer
+    err_code = app_timer_create(&m_keyboard_debounce_timer,
+        APP_TIMER_MODE_SINGLE_SHOT,
+        keyboard_scan_handler);
+    APP_ERROR_CHECK(err_code);
+
     // init keyboard sleep counter timer
     err_code = app_timer_create(&m_keyboard_sleep_timer,
         APP_TIMER_MODE_REPEATED,
@@ -167,8 +175,9 @@ static void keyboard_wdt_init(void)
 
 void keyboard_debounce(void)
 {
-    // 下一个计时期间立即扫描用于消抖
-    scan_counter = scan_reload;
+    // 启用消抖定时器，使用快速扫描间隔扫描
+    ret_code_t err_code = app_timer_start(m_keyboard_debounce_timer, DEBOUNCE_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
 /**
@@ -177,7 +186,7 @@ void keyboard_debounce(void)
  */
 void ble_keyboard_timer_start(void)
 {
-    ret_code_t err_code = app_timer_start(m_keyboard_scan_timer, SCAN_INTERVAL, NULL);
+    ret_code_t err_code = app_timer_start(m_keyboard_scan_timer, FAST_SCAN_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_start(m_keyboard_sleep_timer, TICK_INTERVAL, NULL);
