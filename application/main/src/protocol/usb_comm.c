@@ -42,9 +42,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 uint8_t keyboard_led_val_usb;
 
 static uint8_t recv_buf[64];
-static uint8_t send_buf[64];
-static uint8_t send_index;
-static uint8_t send_len;
 static uint8_t recv_index;
 
 enum uart_usb_state {
@@ -131,31 +128,18 @@ static void set_state(bool host, bool charge_full, bool protocol)
 }
 
 /**
- * @brief 加载 UART 发送缓冲区的数据
- * 
- */
-static void uart_on_tx_empty()
-{
-    while (send_index < send_len) {
-        uint32_t ret_code = app_uart_put(send_buf[send_index]);
-        if (ret_code != NRF_SUCCESS)
-            break;
-        send_index++;
-    }
-}
-
-/**
- * @brief 向 UART 发送缓冲区写入数据并启动发送
+ * @brief 发送 UART 数据
  * 
  * @param data 
  * @param len 
  */
 static void uart_send(uint8_t* data, uint8_t len)
 {
-    memcpy(send_buf, data, len);
-    send_len = len;
-    send_index = 0;
-    uart_on_tx_empty();
+    for (uint8_t i = 0; i < len; i++) {
+        uint32_t ret_code = app_uart_put(data[i]);
+        if (ret_code != NRF_SUCCESS)
+            break;
+    }
 }
 
 uint8_t recv_len;
@@ -246,7 +230,6 @@ static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
         break;
 
     case APP_UART_TX_EMPTY:
-        uart_on_tx_empty();
         break;
 
     case APP_UART_FIFO_ERROR:
@@ -272,7 +255,7 @@ static void uart_init_hardware()
         .use_parity = false
     };
 
-    APP_UART_FIFO_INIT(&config, 32, 32, uart_evt_handler, APP_IRQ_PRIORITY_LOW, err_code);
+    APP_UART_FIFO_INIT(&config, 64, 64, uart_evt_handler, APP_IRQ_PRIORITY_LOW, err_code);
     APP_ERROR_CHECK(err_code);
 
     status.state = UART_STATE_INITED;
