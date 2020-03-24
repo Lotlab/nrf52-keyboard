@@ -5,6 +5,75 @@
 
 This is a TMK based keyboard firmware for nRF52 series, now support both nRF52810 and nRF52832. Firmware for nRF51822 see [here](https://github.com/Lotlab/nrf51822-keyboard).
 
+## Directory Structure
+
+- application: contians the bootloader and application for nrf52
+  - main: main program for nrf52
+    - src: source
+      - ble: bluetooth related code 
+      - config: sdk config
+      - driver: driver for peripheral device
+      - keyboard: keyboard logic 
+      - protocol: communication protocol
+      - tmk: tmk adaptor
+    - project
+  - bootloader: bootloader for nrf52
+    - project
+- doc: documents
+- keyboard: keyboard config 
+- SDK: directory for placing nrf SDK
+- template: nrf SDK makefile template
+- tmk: tmk source code
+- usb: code for ch554
+
+## Code Branch
+
+- Master: is not stable, may contains some critical bug.
+- Develop: is not stable, including some unfinished feature, may not pass compile.
+
+If you want to use this project in your major keyboard, please see the Release page.
+
+## Highlights
+
+- BLE/USB dual mode
+- USB NKRO
+- Macro support
+- Dynamic keymap/macro configuration
+- Battery level upload
+- Mousekey and media key support
+- Low power comsumption. (~200ua when all LED off in Lot60-BLE)
+- Support rotary encoder and other peripheral device (see driver directory)
+- Highly customable event system
+
+## Hardware supporting
+
+Currently we support both nRF52810 and nRF52832. See keyboard directory for more information.
+
+## Compile
+
+Firstly, you should download [nRF5 SDK 15.3](https://www.nordicsemi.com/Software-and-Tools/Software/nRF5-SDK/Download#infotabs), decompress it and put it into the SDK folder. The structure of SDK folder will be `SDK/components`, ...
+
+And then, install `gcc-arm-none-eabi-7-2018-q2-update`. Copy the `Makefile.posix.template` or `Makefile.windows.template` to `Makefile.posix` or `Makefile.windows` (depending your OS), then modify the toolchain path in the file to your gcc installed path.
+
+Install [SDCC](http://sdcc.sourceforge.net/) to compile code for CH554.
+
+If you want to compile the bootloader, you should firstly complie the uECC library. See this [article](https://devzone.nordicsemi.com/b/blog/posts/getting-started-with-nordics-secure-dfu-bootloader).
+
+Then, 
+```bash
+cd keyboard/lot60-ble
+make # Compile main program and the USB program
+make bootloader # Compile bootloader
+```
+
+## Flashing
+
+It's recommend to use DAP-Link to flashing nrf52 chip. If you want to do so, please install [pyocd](https://github.com/mbedmicro/pyOCD)；若使用蓝牙DFU进行升级，则需要安装[nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil/).
+
+For ch554, you could use the official [flasing utility](http://www.wch.cn/downloads/WCHISPTool_Setup_exe.html) in windows, or third-party [usbisp](https://github.com/rgwan/librech551) in linux.
+
+Type `make help` for all flashing command.
+
 ## 概述
 
 这是一个基于nrf52蓝牙键盘的固件，使用了nRF SDK 15.3作为底层硬件驱动，并使用TMK键盘库作为键盘功能的上部实现。
@@ -27,6 +96,13 @@ This is a TMK based keyboard firmware for nRF52 series, now support both nRF5281
 - tmk/ tmk core 相关
 - usb/ USB部分代码
 
+## 分支说明
+
+- Master 分支是不稳定的分支，可能存在一些BUG
+- Develop 分支是更不稳定的分支，可能会出现无法编译通过的问题
+
+若想要日常使用，建议使用Release版本
+
 ## 功能亮点
 
 - 蓝牙/USB双模切换
@@ -35,8 +111,9 @@ This is a TMK based keyboard firmware for nRF52 series, now support both nRF5281
 - 电量上传
 - 支持多媒体按键和鼠标键
 - 支持按键宏
-- 耗电量低至400ua（使用lot60-ble硬件在关闭所有灯光条件下测得，不代表所有条件下的状态）
+- 耗电量低至200ua（使用lot60-ble硬件在关闭所有灯光条件下测得，不代表所有条件下的状态）
 - 高度自定义的事件系统
+- 支持旋钮、WS2812等外设（详见drivers目录）
 
 ## 硬件支持
 
