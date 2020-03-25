@@ -102,7 +102,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0 // 电量检测引脚
 
 // 充电检测配置
-#define PIN_CHARGING !UCC1 // CH554的充电检测。当UCC1拉低时表示正在充电
+#define PIN_CHARGING !UCC1 // CH554的充电检测。当UCC1拉低时表示正在充电。若不配置则禁用USB下发充电事件
 #define PIN_STANDBY !UCC2 // CH554的充电检测。当UCC2拉低时表示充电完成。若不配置则只使用PIN_CHARGING作为是否充电的检测标志
 
 // 按键阵列配置

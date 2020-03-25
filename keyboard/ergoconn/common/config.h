@@ -122,7 +122,7 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 2
 // 旋钮负向按钮映射
 #define ROTARY_ENCODER_NEG 5,5
 #else
-#error "请指定左手还是右手"
+// #error "请指定左手还是右手"
 #endif
 
 // 调试器配置
@@ -136,3 +136,5 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 2
 #define SWD_CLK_MASK bUCC2
 #define SWD_CLK_PORT P1
 #endif
+
+#define NRF_BL_DFU_ENTER_METHOD_PINRESET 1

@@ -115,10 +115,12 @@ static void set_state(bool host, bool charge_full, bool protocol)
         status.host_connected = host;
         send_event(USER_EVT_USB, host ? (status.usb_disable ? USB_NOT_WORKING : USB_WORKING) : USB_NO_HOST);
     }
+#ifdef PIN_CHARGING
     if ((status.state == UART_STATE_INITED) || charge_full != status.charging_full) {
         status.charging_full = charge_full;
         send_event(USER_EVT_CHARGE, status.charging_full ? BATT_CHARGED : BATT_CHARGING);
     }
+#endif
     if ((status.state == UART_STATE_INITED) || status.usb_protocol != protocol) {
         status.usb_protocol = protocol;
         send_event(USER_EVT_PROTOCOL, protocol && usb_working() ? HID_REPORT_PROTOCOL : HID_BOOT_PROTOCOL);
@@ -215,7 +217,9 @@ static void uart_to_idle()
     status.usb_disable = false;
     status.host_connected = false;
     send_event(USER_EVT_USB, USB_NOT_CONNECT);
+#ifdef PIN_CHARGING
     send_event(USER_EVT_CHARGE, BATT_NOT_CHARGING);
+#endif
     send_event(USER_EVT_PROTOCOL, HID_BOOT_PROTOCOL); // 蓝牙下默认使用BootProtocol（即不启用NKRO）
 }
 

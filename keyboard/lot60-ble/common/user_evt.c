@@ -35,9 +35,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define COLOR_PASSKEY_SEND 0xFF0080 // 粉红色: 配对码输入完毕
 #define COLOR_SLEEP 0xFF00FF // 紫红色: 睡眠
 
-static bool charging_full = false;
-static bool ble_connected = false;
+#ifdef PIN_CHARGING
 static bool is_charging = false;
+static bool charging_full = false;
+#endif
+static bool ble_connected = false;
 static bool usb_working = false;
 
 /**
@@ -48,8 +50,10 @@ static void led_status_change()
 {
     if (usb_working) {
         keyboard_led_rgb_set(COLOR_USB);
+#ifdef PIN_CHARGING
     } else if (is_charging) {
         keyboard_led_rgb_set(charging_full ? COLOR_FULL : COLOR_CHARGING);
+#endif
     } else {
         keyboard_led_rgb_set(ble_connected ? COLOR_BLE : COLOR_IDLE);
     }
@@ -86,6 +90,7 @@ void rgb_led_event_handler(enum user_event event, void* arg)
             break;
         }
         break;
+#ifdef PIN_CHARGING
     case USER_EVT_CHARGE: // 充电事件
         switch (arg2) {
         case BATT_NOT_CHARGING:
@@ -103,6 +108,7 @@ void rgb_led_event_handler(enum user_event event, void* arg)
         }
         led_status_change();
         break;
+#endif
     case USER_EVT_USB: // USB事件
         switch (arg2) {
         case USB_WORKING:

@@ -119,7 +119,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_CAPS 21
 #endif
 
-#if defined(HARDWARE_REV_E) || defined(HARDWARE_REV_F)
+#if defined(HARDWARE_REV_E) || defined(HARDWARE_REV_F) || defined(HARDWARE_REV_G)
 #define LED_CAPS 19
 #endif
 
@@ -157,10 +157,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #if defined(HARDWARE_REV_C) || defined(HARDWARE_REV_E) || defined(HARDWARE_REV_F)
 #define PIN_CHARGING !P3_3
 #define PIN_STANDBY !P3_4
-#endif
-
-#if defined(HARDWARE_REV_G)
-#define PIN_CHARGING true
 #endif
 
 // 按键阵列配置

@@ -130,8 +130,10 @@ static void uart_data_parser(void)
 static void uart_send_status()
 {
     uint8_t data = 0x10;
+#ifdef PIN_CHARGING
     if (!IS_CHARGING) // 是否充满
         data |= 0x02;
+#endif
     if (usb_state.is_ready) // 是否连接主机
         data |= 0x04;
     if (usb_state.protocol)
