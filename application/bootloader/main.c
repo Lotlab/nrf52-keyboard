@@ -202,12 +202,15 @@ static void leds_init()
 {
 #ifdef LED_DFU_INIT
     nrf_gpio_cfg_output(LED_DFU_INIT);
+    LED_CLEAR(LED_DFU_INIT);
 #endif
 #ifdef LED_DFU_START
     nrf_gpio_cfg_output(LED_DFU_START);
+    LED_CLEAR(LED_DFU_START);
 #endif
 #ifdef LED_DFU_FINISH
     nrf_gpio_cfg_output(LED_DFU_FINISH);
+    LED_CLEAR(LED_DFU_FINISH);
 #endif
 }
 
