@@ -174,7 +174,7 @@ static void ble_disconnect()
     }
 }
 
-#ifndef MULTI_DEVICE_SWITCH
+#ifdef BUTTONLESS_DFU
 static void buttonless_dfu_sdh_state_observer(nrf_sdh_state_evt_t state, void* p_context)
 {
     if (state == NRF_SDH_EVT_STATE_DISABLED) {
@@ -445,7 +445,7 @@ static void advertising_config_get(ble_adv_modes_config_t* p_config)
     p_config->ble_adv_on_disconnect_disabled = false;
 }
 
-#ifndef MULTI_DEVICE_SWITCH
+#ifdef BUTTONLESS_DFU
 /**
  * @brief Function for handling dfu events from the Buttonless Secure DFU service
  *
@@ -620,7 +620,7 @@ static void dis_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-#ifndef MULTI_DEVICE_SWITCH
+#ifdef BUTTONLESS_DFU
 /**
  * @brief 初始化 Buttonless DFU 服务
  * 
@@ -984,7 +984,7 @@ void ble_services_init()
     // services
     qwr_init();
     dis_init();
-#ifndef MULTI_DEVICE_SWITCH
+#ifdef BUTTONLESS_DFU
     dfu_init();
 #endif
     conn_params_init();

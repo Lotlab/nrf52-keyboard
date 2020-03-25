@@ -75,6 +75,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 启用keymap存储
 #define KEYMAP_STORAGE
 
+#define BUTTONLESS_DFU /* 启用免按钮DFU */
+
 // 直接开机而跳过开机条件检测，用于调试
 // #define DEBUG_SKIP_PWRON_CHECK
 

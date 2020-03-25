@@ -54,6 +54,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // #define MACRO_BLOCKING_MODE /* 在宏播放时禁用其他按键输入 */
 #define MACRO_STORAGE /* 启用宏存储功能 */
 #define CONFIG_STORAGE /* 启用配置存储功能 */
+#define BUTTONLESS_DFU /* 启用免按钮DFU */
 
 // #define DEBUG_SKIP_PWRON_CHECK /*  直接开机而跳过开机条件检测，用于调试 */
 
