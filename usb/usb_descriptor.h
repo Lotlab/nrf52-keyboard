@@ -280,11 +280,12 @@ const uint8_t InterfaceStringDesc[] = {
     'p',0x00,'p',0x00,'o',0x00,'r',0x00,'t',0x00,
 
     // String index7, Interface String
-    32,        // Length of this string descriptor
+    40,        // Length of this string descriptor
     3,        // bDescriptorType
-    'K',0x00,'e',0x00,'y',0x00,'b',0x00,'o',0x00,'a',0x00,
-    'r',0x00,'d',0x00,' ',0x00,'K',0x00,'e',0x00,'y',0x00,
-    'm',0x00,'a',0x00,'p',0x00,
+    'L',0x00,'o',0x00,'t',0x00,'l',0x00,'a',0x00,'b',0x00,
+    ' ',0x00,'C',0x00,'o',0x00,'n',0x00,'f',0x00,'i',0x00,
+    'g',0x00,'u',0x00,'r',0x00,'a',0x00,'t',0x00,'o',0x00,
+    'r',0x00,
 #ifdef ONBOARD_CMSIS_DAP
     // String index 7, Interface String
     20,     // Length of this string descriptor
@@ -378,6 +379,7 @@ uint8_t const report_desc_HID1[]=
     0x95, 0x01,                      //   REPORT_COUNT (1)
     0x81, 0x00,                      //   INPUT (Data,Array,Abs)
     0xc0,                            // END_COLLECTION
+#ifdef NKRO_ENABLE
     /* nkro */
     0x05, 0x01,                      // Usage Page (Generic Desktop),
     0x09, 0x06,                      // Usage (Keyboard),
@@ -402,6 +404,8 @@ uint8_t const report_desc_HID1[]=
     0x29, (NKRO_REPORT_KEYS * 8 - 1) & 0xFF,  //   Usage Maximum (),
     0x81, 0x02,                      //   Input (Data, Variable, Absolute),
     0xc0,                            // End Collection
+#endif
+#ifdef MOUSE_ENABLE
     /* mouse */
     0x05, 0x01, // USAGE_PAGE (Generic Desktop)
     0x09, 0x02, // USAGE (Mouse)
@@ -449,6 +453,7 @@ uint8_t const report_desc_HID1[]=
     0x81, 0x06, //     INPUT (Data,Var,Rel)
     0xc0, //   END_COLLECTION
     0xc0, // END_COLLECTION
+#endif
 };
 
 uint8_t const report_desc_HID2[]=

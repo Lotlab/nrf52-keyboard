@@ -14,7 +14,7 @@ USB_SOURCE_DIR := ./
 endif
 
 SDCC := sdcc
-SDCC_CFLAGS += -mmcs51 --model-small --stack-auto --std-c11 -o $(OBJ_DIR)/ --opt-code-size -I .
+SDCC_CFLAGS += -mmcs51 --model-small --stack-auto --std-c11 -o $(OBJ_DIR)/ --opt-code-size -I . $(OPT_DEFS)
 SDCC_LDFLAGS := --xram-size 1024 --iram-size 256 --code-size 14336 --out-fmt-ihx --xram-loc 0
 
 USB_SOURCES := $(USB_SOURCE_DIR)/main.c \

@@ -114,8 +114,8 @@ static void uart_data_parser(void)
             // 通常键盘数据包
             KeyboardGenericUpload(&recv_buff[2], kplen);
             last_success = true;
-        } else if (index == 1 || index == 2 || index == 3 || index == 0x80) {
-            // system, consumer, mouse数据包
+        } else {
+            // 附加数据包
             // 发过来的包的id和reportID一致，不用处理
             KeyboardExtraUpload(&recv_buff[1], kplen + 1);
             last_success = true;
