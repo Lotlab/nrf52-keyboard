@@ -55,9 +55,9 @@
 #include "nrf_bootloader_info.h"
 #include "nrf_delay.h"
 #include "nrf_dfu.h"
-#include "nrf_fstorage_sd.h"
 #include "nrf_gpio.h"
 #include "nrf_mbr.h"
+#include "nrf_nvmc.h"
 #include "nrf_power.h"
 #include <stdint.h>
 #ifdef CONFIG_H_FILE
@@ -133,15 +133,7 @@ static void dfu_observer(nrf_dfu_evt_type_t evt_type)
     }
 }
 
-#ifdef NRF_BL_DFU_MULTI_ROLE_BTN
-
-NRF_FSTORAGE_DEF(nrf_fstorage_t clr_fs);
-
-/**
- * @brief Clear the internal stroage
- * 
- */
-static void storage_clear()
+static uint32_t get_storage_end_addr()
 {
     uint32_t const bootloader_addr = BOOTLOADER_ADDRESS;
     uint32_t const page_sz = NRF_FICR->CODEPAGESIZE;
@@ -155,13 +147,24 @@ static void storage_clear()
     uint32_t const code_sz = NRF_FICR->CODESIZE;
 #endif
 
-    clr_fs.end_addr = (bootloader_addr != 0xFFFFFFFF) ? bootloader_addr : (code_sz * page_sz);
-    clr_fs.start_addr = clr_fs.end_addr - NRF_DFU_APP_DATA_AREA_SIZE;
-
-    nrf_fstorage_init(&clr_fs, &nrf_fstorage_sd, NULL);
-    nrf_fstorage_erase(&clr_fs, clr_fs.start_addr, (NRF_DFU_APP_DATA_AREA_SIZE / 4096), NULL);
+    return (bootloader_addr != 0xFFFFFFFF) ? bootloader_addr : (code_sz * page_sz);
 }
 
+/**
+ * @brief Clear the internal stroage
+ * 
+ */
+void storage_clear()
+{
+    uint32_t end_addr = get_storage_end_addr();
+    uint32_t start_addr = end_addr - NRF_DFU_APP_DATA_AREA_SIZE;
+
+    for (uint32_t i = start_addr; i < end_addr; i += 4096) {
+        nrf_nvmc_page_erase(i);
+    }
+}
+
+#ifdef NRF_BL_DFU_MULTI_ROLE_BTN
 /**
  * @brief Force enter the DFU mode
  * 
@@ -208,6 +211,15 @@ static void leds_init()
 #endif
 }
 
+static void erase_check()
+{
+#ifdef NRF_BL_ERASE_ON_PIN_RESET
+    if (NRF_BL_DFU_ENTER_METHOD_PINRESET && (NRF_POWER->RESETREAS & POWER_RESETREAS_RESETPIN_Msk)) {
+        storage_clear();
+    }
+#endif
+}
+
 /**@brief Function for application main entry. */
 int main(void)
 {
@@ -222,7 +234,7 @@ int main(void)
 #ifdef NRF_BL_DFU_MULTI_ROLE_BTN
     dfu_multi_role_btn();
 #endif
-
+    erase_check();
     leds_init();
 
     ret_val = nrf_bootloader_init(dfu_observer);
