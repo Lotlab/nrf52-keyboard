@@ -156,6 +156,11 @@ static void keyboard_timer_init(void)
 #ifdef ENABLE_WATCHDOG
 nrf_drv_wdt_channel_id m_channel_id;
 
+static void wdt_event_handler(void)
+{
+    APP_ERROR_HANDLER(0xFEED0514);
+}
+
 /**
  * @brief 初始化看门狗
  * 
@@ -165,7 +170,7 @@ static void keyboard_wdt_init(void)
     ret_code_t err_code;
 
     nrf_drv_wdt_config_t config = NRF_DRV_WDT_DEAFULT_CONFIG;
-    err_code = nrf_drv_wdt_init(&config, NULL);
+    err_code = nrf_drv_wdt_init(&config, wdt_event_handler);
     APP_ERROR_CHECK(err_code);
     err_code = nrf_drv_wdt_channel_alloc(&m_channel_id);
     APP_ERROR_CHECK(err_code);
