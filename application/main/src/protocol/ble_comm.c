@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "../ble/ble_hid_service.h"
+#include "../ble/ble_services.h"
 #include "keyboard_host_driver.h"
 #include "passkey.h"
 
@@ -26,7 +27,7 @@ static uint8_t ble_get_keyboard_leds()
 
 static bool ble_host_working()
 {
-    return true;
+    return m_conn_handle != BLE_CONN_HANDLE_INVALID;
 }
 
 static void ble_send_packet(enum packet_type type, uint8_t len, uint8_t* data)
