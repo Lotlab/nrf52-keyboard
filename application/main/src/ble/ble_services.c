@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ble_services.h"
 
 #include "app_error.h"
+#include "app_scheduler.h"
 #include "app_timer.h"
 #include "ble.h"
 #include "ble_advdata.h"
@@ -153,11 +154,13 @@ static void device_disconnect(uint16_t conn_handle, void* p_context)
     sd_ble_gap_disconnect(conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
 }
 
+static app_sched_event_handler_t on_disconnect_handler = NULL;
+
 /**
  * @brief 断开所有已经连接的设备，并设置不再重新广播
  * 
  */
-static void ble_disconnect()
+static void ble_disconnect(app_sched_event_handler_t on_disconnect)
 {
     // Prevent device from advertising on disconnect.
     ble_adv_modes_config_t config;
@@ -171,6 +174,12 @@ static void ble_disconnect()
     // In case of advertising
     if (m_advertising.adv_mode_current != BLE_ADV_MODE_IDLE) {
         (void)sd_ble_gap_adv_stop(m_advertising.adv_handle);
+    }
+
+    if (m_conn_handle != BLE_CONN_HANDLE_INVALID) {
+        on_disconnect_handler = on_disconnect;
+    } else if (on_disconnect != NULL) {
+        app_sched_event_put(NULL, 0, on_disconnect);
     }
 }
 
@@ -245,7 +254,7 @@ static void set_device_name(void)
  */
 void delete_bonds(void)
 {
-    ble_disconnect();
+    ble_disconnect(NULL);
 
     ret_code_t err_code = pm_peers_delete();
     APP_ERROR_CHECK(err_code);
@@ -316,6 +325,16 @@ static void set_gap_addr_by_id(uint8_t id)
     ret = sd_ble_gap_addr_set(&gap_addr);
     APP_ERROR_CHECK(ret);
 }
+
+static void switch_device_select_after(void* p_data, uint16_t len)
+{
+    set_gap_addr_by_id(switch_id);
+
+    reenable_advertising();
+    // 触发蓝牙设备通道切换事件
+    trig_event_param(USER_EVT_BLE_DEVICE_SWITCH, switch_id);
+}
+
 /**
  * @brief 切换连接设备.
  *
@@ -327,26 +346,25 @@ void switch_device_select(uint8_t id)
     if (id == switch_id)
         return;
 
-    ble_disconnect();
-
     switch_id = id;
     switch_device_id_update();
 
-    set_gap_addr_by_id(id);
-
-    reenable_advertising();
-    // 触发蓝牙设备通道切换事件
-    trig_event_param(USER_EVT_BLE_DEVICE_SWITCH, id);
+    ble_disconnect(switch_device_select_after);
 }
+
+static void switch_device_rebond_after(void* p_data, uint16_t size)
+{
+    peer_list_find_and_delete_bond(switch_id);
+    reenable_advertising();
+}
+
 /**
  * @brief 重新绑定当前设备.
  *
  */
 void switch_device_rebond()
 {
-    ble_disconnect();
-    peer_list_find_and_delete_bond(switch_id);
-    reenable_advertising();
+    ble_disconnect(switch_device_rebond_after);
 }
 /**
  * @brief 切换连接设备初始化.
@@ -359,7 +377,7 @@ static void switch_device_init()
 }
 
 // 用于绑定peer与通道。数据必须 4Byte 对齐
-static uint8_t peer_channel_data[4] = {0};
+static uint8_t peer_channel_data[4] = { 0 };
 
 /**
  * @brief 更新切换设备数据.
@@ -457,7 +475,7 @@ static void ble_dfu_evt_handler(ble_dfu_buttonless_evt_type_t event)
     case BLE_DFU_EVT_BOOTLOADER_ENTER_PREPARE: {
         // This is required to receive a service changed indication
         // on bootup after a successful (or aborted) Device Firmware Update.
-        ble_disconnect();
+        ble_disconnect(NULL);
         break;
     }
 
@@ -816,6 +834,12 @@ static void ble_evt_handler(ble_evt_t const* p_ble_evt, void* p_context)
     case BLE_GAP_EVT_DISCONNECTED:
         ble_conn_handle_change(m_conn_handle, BLE_CONN_HANDLE_INVALID);
         m_conn_handle = BLE_CONN_HANDLE_INVALID;
+
+        if (on_disconnect_handler != NULL) {
+            app_sched_event_put(NULL, 0, on_disconnect_handler);
+            on_disconnect_handler = NULL;
+        }
+
         trig_event_param(USER_EVT_BLE_STATE_CHANGE, BLE_STATE_DISCONNECT);
         break; // BLE_GAP_EVT_DISCONNECTED
 
