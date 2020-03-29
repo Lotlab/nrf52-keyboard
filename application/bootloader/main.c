@@ -221,6 +221,25 @@ static void erase_check()
         storage_clear();
     }
 #endif
+#ifdef NRF_BL_ERASE_PIN
+    if (NRF_BL_DFU_ENTER_METHOD_PINRESET && (NRF_POWER->RESETREAS & POWER_RESETREAS_RESETPIN_Msk)) {
+
+        nrf_gpio_cfg_input(NRF_BL_ERASE_PIN, NRF_GPIO_PIN_PULLDOWN);
+        int8_t length = 10;
+
+        while (length) {
+            nrf_delay_ms(10);
+            if (nrf_gpio_pin_read(NRF_BL_ERASE_PIN)) {
+                length = -1;
+                break;
+            }
+            length--;
+        }
+
+        if (length < 0)
+            storage_clear();
+    }
+#endif
 }
 
 /**@brief Function for application main entry. */
