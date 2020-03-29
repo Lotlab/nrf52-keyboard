@@ -108,7 +108,11 @@ static void internal_event_handler(enum user_event event, void* arg)
         // 休眠时，设置休眠原因便于下次免按键启动
         sleep_reason_set(subEvent);
         break;
+#ifdef PIN_CHARGING
     case USER_EVT_CHARGE:
+#else
+    case USER_EVT_USB:
+#endif
         // 接入和断开电源后，禁用和启用省电模式
         power_attached = subEvent > 0;
         power_save_set_mode(!power_attached);
