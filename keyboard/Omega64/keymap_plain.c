@@ -132,14 +132,6 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS)
 };
 
-const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt) {
-
-	switch (id) {
-
-	}
-	return MACRO_NONE;
-}
-
 const action_t fn_actions[] = {
     ACTION_LAYER_TAP(1, KC_RALT),ACTION_LAYER_TAP(2, KC_RCTL),ACTION_FUNCTION(7),
 };

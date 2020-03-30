@@ -1,4 +1,4 @@
-ROOT_DIR := ../..
+ROOT_DIR := ../../..
 USER_SRC_DIR := ./user_src
 APP_MAIN_DIR := $(ROOT_DIR)/application/main
 TMK_CORE_DIR := $(ROOT_DIR)/tmk/tmk_core

@@ -1,24 +1,34 @@
-ROOT_DIR := ../..
-USER_SRC_DIR := ./user_src
-APP_MAIN_DIR := $(ROOT_DIR)/application/main
-TMK_CORE_DIR := $(ROOT_DIR)/tmk/tmk_core
-USB_SOURCE_DIR := $(ROOT_DIR)/usb
+OUTPUT_DIR = _build
+SUBDIRS=$(filter-out _build common,$(shell ls -l | grep ^d | awk '{print $$9}'))
+export VERSION=$(shell git describe --always --dirty || echo 'unknown')
+export BUILDTIME=$(shell date +"%Y_%m_%d")
+export FILE_VERSION = $(BUILDTIME)-$(VERSION)
 
-APP_PROJ_DIR := $(APP_MAIN_DIR)/project
-APP_SRC_DIR := $(APP_MAIN_DIR)/src
+ifdef OUTPUT_DIRECTORY
+OUTPUT_DIR = $(OUTPUT_DIRECTORY)
+endif
+ifndef RELEASE_DIR
+RELEASE_DIR = $(OUTPUT_DIR)
+endif
 
-CONFIG_H = config.h
-CONFIG_H_DIR = .
+.PHONY: clean all package usb dist_clean
 
-include ./rules.mk
+package: all
+usb: 
+	@echo use make all to build your release firmware.
 
-INC_FOLDERS += \
-    . \
+all: $(SUBDIRS)
 
-SRC_FILES += \
-	keymap_plain.c \
+$(SUBDIRS): $(OUTPUT_DIR)
+	@-mkdir -p $(OUTPUT_DIR)/$@
+	@make -C $@ package OUTPUT_DIRECTORY=../$(OUTPUT_DIR)/$@ NRF_PACKAGE_NAME=../$(RELEASE_DIR)/$(BUILD_PREFIX)-$@-nrf52-$(FILE_VERSION).zip BUILD_PREFIX=$(BUILD_PREFIX)-$@
+	@make -C $@ usb OUTPUT_DIRECTORY=../$(OUTPUT_DIR)/$@ OUTPUT_HEX=../$(RELEASE_DIR)/$(BUILD_PREFIX)-$@-ch554-$(FILE_VERSION).hex BUILD_PREFIX=$(BUILD_PREFIX)-$@
 
-all: default ch554
+$(OUTPUT_DIR):
+	@-mkdir -p $(OUTPUT_DIR)
 
-include $(APP_PROJ_DIR)/kbd.mk
-include $(USB_SOURCE_DIR)/usb.mk
+dist_clean: 
+	-rm -r $(OUTPUT_DIR)/*/
+
+clean:
+	-rm -r $(OUTPUT_DIR)
