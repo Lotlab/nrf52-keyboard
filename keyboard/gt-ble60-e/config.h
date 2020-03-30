@@ -68,11 +68,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define NO_ACTION_FUNCTION
 
 // LED 配置
-#define LED_CAPS 4 // 21
+#define LED_CAPS 4
 
 // ws2812 RGB 配置
-#define RGBLED_NUM 8 // 8
-#define RGB_DI_PIN 10 // 10
+#define RGB_DI_PIN 10
+#define RGBLED_NUM 8
 #define RGBLIGHT_ANIMATIONS
 #define RGB_PWR_PIN 12 // P-mos
 //#define RGB_PWR_PIN_REVERSE 20 // N-mos
@@ -85,8 +85,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_BLE_CHANNEL2 BIT_LED_USB
 #define LED_BLE_CHANNEL3 BIT_LED_CHARGING
 #define LED_POSITIVE // LED上拉驱动
+
 // 独立硬件按钮
-#define POWER_BUTTON 3 // 3
+#define POWER_BUTTON 3
 
 // USB UART 传输配置
 #define HAS_USB // 启用与CH554的通信支持
@@ -99,7 +100,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0 // 电量检测引脚 Pin 2
 
 // 充电检测配置
-#define PIN_CHARGING !UCC1
+//#define PIN_CHARGING !UCC1
 //#define PIN_STANDBY !UCC2
 
 // 按键阵列配置
