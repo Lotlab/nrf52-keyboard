@@ -21,6 +21,7 @@ script:
   - cp -r /tmp/sdk/nRF5_SDK_15.3.0_59ac345/* SDK/
   - cd keyboard
   - make -j
+  - cd ../
 deploy:
   provider: releases
   api_key:
