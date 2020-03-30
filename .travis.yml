@@ -21,3 +21,15 @@ script:
   - cp -r /tmp/sdk/nRF5_SDK_15.3.0_59ac345/* SDK/
   - cd keyboard
   - make -j
+deploy:
+  provider: releases
+  api_key:
+    secure: YLjJb7by7nBhddRk1Or7Nf4NUVfTkWM/+zzgzjj26fwQ3qVn0KxAMeQgiKf0/FJ7JNh5JlXIfpY4aNCOtIx923qg/afcghcg0smUJUrTccdN6tr+NH4RYDEq7+KFQNNVkV6Ls9d7ObThjpu0VWINss/bOG1jmD9ueTyjO3oShg4Ql39NgzICWqhvGt+EK5tggY/u8zYnB49MCWbmh5DWBCzwW/xErTKn75hpKlmPaHEYLIOV4LKFxWOiXAQIFuDJ9qdgmmhYQNoUpLZbP2qGGCCvf6MsJEOttY+0nx8Pog9oRHtStCXy9fjiUhXxw0BZaGPi1qhEExeNvuWx9DawjyA34wEs25pzZ4ZzhFGYgB6uC/CB9m3PHifswGzOU4xj1DCFPmkVXqbTrtYCkaSX8SeQd1r0ind54DC6CSkGJfbo7JMwHcctMHN25CR/7U96eKl7NiHjou7e8JoFvAfbS3qfhoTtTHqneuan3kQuFdlg9FGe+JzIwaczvvGM5H0MCqh3Pz5TpU5PmS591Fp6mPYuPNHaZpDw6yuysOFYibchC58yx4uNjMYPCa/aK6JGukQUtlf0F8+nRcyZl+r84SDOvmpqv+R/rafDJQiTdDPfvHAKE6MrVgLKfHtL+iTeNm56o6cQ3zaMZlVUsNY+eun3H9hyup4aNImELTP2EAc=
+  file_glob: true
+  file: 
+    - keyboard/_build/*.zip
+    - keyboard/_build/*.hex
+  skip_cleanup: true
+  on:
+    tags: true
+
