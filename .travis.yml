@@ -6,9 +6,9 @@ before_install:
   - sudo apt-get -y install python3-pip python3-setuptools
   - sudo pip3 install --upgrade pip
   - sudo pip3 install nrfutil
-  - wget https://sourceforge.net/projects/sdcc/files/sdcc-linux-amd64/3.9.0/sdcc-3.9.0-amd64-unknown-linux2.5.tar.bz2 -O /tmp/sdcc-3.9.0-amd64-unknown-linux2.5.tar.bz2
-  - tar xf /tmp/sdcc-3.9.0-amd64-unknown-linux2.5.tar.bz2 -C /tmp
-  - sudo cp -r /tmp/sdcc-3.9.0/* /usr/local
+  - wget https://sourceforge.net/projects/sdcc/files/sdcc-linux-amd64/4.0.0/sdcc-4.0.0-amd64-unknown-linux2.5.tar.bz2 -O /tmp/sdcc-4.0.0-amd64-unknown-linux2.5.tar.bz2
+  - tar xf /tmp/sdcc-4.0.0-amd64-unknown-linux2.5.tar.bz2 -C /tmp
+  - sudo cp -r /tmp/sdcc-4.0.0/* /usr/local
 install:
   - wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2 -O /tmp/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
   - tar xf /tmp/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2 -C /tmp
