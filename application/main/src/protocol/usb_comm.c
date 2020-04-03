@@ -195,6 +195,7 @@ static void uart_on_recv()
                 } else {
                     hid_response_generic(HID_RESP_UART_CHECKSUM_ERROR);
                 }
+                recv_len = 0;
             }
         }
     }
@@ -223,6 +224,7 @@ static void uart_to_idle()
     send_event(USER_EVT_PROTOCOL, HID_BOOT_PROTOCOL); // 蓝牙下默认使用BootProtocol（即不启用NKRO）
 }
 
+static void uart_init_hardware();
 static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
 {
     switch (p_app_uart_event->evt_type) {
@@ -234,6 +236,10 @@ static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
     case APP_UART_TX_EMPTY:
         break;
 
+    case APP_UART_COMMUNICATION_ERROR:
+        app_uart_close();
+        uart_init_hardware();
+        break;
     case APP_UART_FIFO_ERROR:
         app_uart_flush();
         break;
@@ -334,7 +340,7 @@ void uart_send_conf(uint8_t len, uint8_t* data)
 }
 
 APP_TIMER_DEF(uart_check_timer);
-#define UART_CHECK_INTERVAL APP_TIMER_TICKS(500)
+#define UART_CHECK_INTERVAL APP_TIMER_TICKS(250)
 
 /**
  * @brief 初始化USB通信
