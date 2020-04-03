@@ -30,9 +30,6 @@ SRC_FILES += \
 	$(SDK_ROOT)/components/libraries/util/app_error_handler_gcc.c \
 	$(SDK_ROOT)/components/libraries/util/app_error_weak.c \
 	$(SDK_ROOT)/components/libraries/scheduler/app_scheduler.c \
-	$(SDK_ROOT)/components/libraries/timer/experimental/app_timer2.c \
-	$(SDK_ROOT)/components/libraries/timer/experimental/drv_rtc.c \
-	$(SDK_ROOT)/components/libraries/sortlist/nrf_sortlist.c \
 	$(SDK_ROOT)/components/libraries/util/app_util_platform.c \
 	$(SDK_ROOT)/components/libraries/crc16/crc16.c \
 	$(SDK_ROOT)/components/libraries/fds/fds.c \
@@ -179,6 +176,19 @@ INC_FOLDERS += \
 # Libraries common to all targets
 LIB_FILES += \
 
+# APP_TIMER_V2
+ifdef USE_APP_TIMER_V2
+	SRC_FILES += $(SDK_ROOT)/components/libraries/timer/experimental/app_timer2.c \
+				 $(SDK_ROOT)/components/libraries/timer/experimental/drv_rtc.c \
+				 $(SDK_ROOT)/components/libraries/sortlist/nrf_sortlist.c 
+	CFLAGS += -DAPP_TIMER_V2
+	CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
+	ASMFLAGS += -DAPP_TIMER_V2
+	ASMFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
+else
+	SRC_FILES += $(SDK_ROOT)/components/libraries/timer/app_timer.c 
+endif
+
 # Optimization flags
 OPT = -Os -g3
 # Uncomment the line below to enable link time optimization
@@ -189,8 +199,6 @@ OPT += $(OPT_DEFS)
 CFLAGS += $(OPT)
 CFLAGS += -DNRF52_PAN_74
 CFLAGS += -DNRFX_COREDEP_DELAY_US_LOOP_CYCLES=3
-CFLAGS += -DAPP_TIMER_V2
-CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
 CFLAGS += -DNRF_DFU_SVCI_ENABLED
 CFLAGS += -DNRF_DFU_TRANSPORT_BLE=1
 CFLAGS += -DNRF_SD_BLE_API_VERSION=6
@@ -217,8 +225,6 @@ ASMFLAGS += -mcpu=cortex-m4
 ASMFLAGS += -mthumb -mabi=aapcs
 ASMFLAGS += -DNRF52_PAN_74
 ASMFLAGS += -DNRFX_COREDEP_DELAY_US_LOOP_CYCLES=3
-ASMFLAGS += -DAPP_TIMER_V2
-ASMFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
 ASMFLAGS += -DNRF_DFU_SVCI_ENABLED
 ASMFLAGS += -DNRF_DFU_TRANSPORT_BLE=1
 ASMFLAGS += -DNRF_SD_BLE_API_VERSION=6
