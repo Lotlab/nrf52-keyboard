@@ -541,7 +541,6 @@ static void pm_evt_handler(pm_evt_t const* p_evt)
         // allow pairing request from an already bonded peer.
         pm_conn_sec_config_t conn_sec_config = { .allow_repairing = true };
         pm_conn_sec_config_reply(p_evt->conn_handle, &conn_sec_config);
-
         break;
     }
 
@@ -829,6 +828,11 @@ static void ble_evt_handler(ble_evt_t const* p_ble_evt, void* p_context)
         err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
         APP_ERROR_CHECK(err_code);
         ble_conn_handle_change(m_conn_handle, p_ble_evt->evt.gap_evt.conn_handle);
+#ifdef HIGH_TX_POWER
+        //更改发射功率到+4dBm
+        err_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, m_conn_handle, 4);
+        APP_ERROR_CHECK(err_code);
+#endif
         break;
 
     case BLE_GAP_EVT_DISCONNECTED:
@@ -987,6 +991,11 @@ static void advertising_init(void)
     APP_ERROR_CHECK(err_code);
 
     ble_advertising_conn_cfg_tag_set(&m_advertising, APP_BLE_CONN_CFG_TAG);
+#ifdef HIGH_TX_POWER
+    //更改发射功率到+4dBm
+    err_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, m_advertising.adv_handle, 4);
+    APP_ERROR_CHECK(err_code);
+#endif
 }
 
 void ble_passkey_send(uint8_t const* p_key)
