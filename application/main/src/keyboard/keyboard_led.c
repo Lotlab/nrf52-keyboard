@@ -69,7 +69,15 @@ static void led_off(void)
  */
 void keyboard_led_deinit(void)
 {
-    led_off();
+#ifdef LED_NUM
+    nrf_gpio_cfg_default(LED_NUM);
+#endif
+#ifdef LED_CAPS
+    nrf_gpio_cfg_default(LED_CAPS);
+#endif
+#ifdef LED_SCLK
+    nrf_gpio_cfg_default(LED_SCLK);
+#endif
 }
 
 /**

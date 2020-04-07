@@ -140,9 +140,9 @@ void keyboard_led_rgb_deinit()
     low_power_pwm_stop(&led_g);
     low_power_pwm_stop(&led_b);
 
-    nrf_gpio_pin_set(LED_RGB_R);
-    nrf_gpio_pin_set(LED_RGB_G);
-    nrf_gpio_pin_set(LED_RGB_B);
+    nrf_gpio_cfg_default(LED_RGB_R);
+    nrf_gpio_cfg_default(LED_RGB_G);
+    nrf_gpio_cfg_default(LED_RGB_B);
 }
 
 /**
