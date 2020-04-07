@@ -59,6 +59,8 @@ static void led_status_change()
     }
 }
 
+static bool leds_inited = false;
+
 void rgb_led_event_handler(enum user_event event, void* arg)
 {
     uint8_t arg2 = (uint32_t)arg;
@@ -67,12 +69,16 @@ void rgb_led_event_handler(enum user_event event, void* arg)
         switch (arg2) {
         case KBD_STATE_POST_INIT: // 初始化LED
             keyboard_led_rgb_init();
+            leds_inited = true;
             break;
         case KBD_STATE_INITED: // 初始化完毕
             led_status_change();
             break;
         case KBD_STATE_SLEEP: // 准备休眠
-            keyboard_led_rgb_deinit();
+            if (leds_inited) {
+                nrf_delay_ms(20); // 等待睡眠指示灯显示完毕
+                keyboard_led_rgb_deinit();
+            }
             break;
         default:
             break;
@@ -151,7 +157,6 @@ void rgb_led_event_handler(enum user_event event, void* arg)
         break;
     case USER_EVT_SLEEP: // 睡眠指示
         keyboard_led_rgb_direct(COLOR_SLEEP);
-        nrf_delay_ms(200);
         break;
     default:
         break;

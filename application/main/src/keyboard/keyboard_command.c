@@ -85,7 +85,7 @@ static void command_delay_handler(void* p_context)
         sleep(SLEEP_MANUALLY);
         break;
     case COMMAND_SYSTEMOFF:
-        systemoff();
+        sleep(SLEEP_MANUALLY_NO_MATRIX_WAKEUP);
         break;
     case COMMAND_DFU:
         bootloader_jump();

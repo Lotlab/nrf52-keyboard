@@ -229,7 +229,7 @@ inline matrix_row_t matrix_get_row(uint8_t row)
     if (matrix_oneshot_send[row]) {
         val |= matrix_forign_oneshot[row];
         matrix_forign_oneshot[row] = 0; // 清空单个按键
-    } 
+    }
     matrix_oneshot_send[row] = !matrix_oneshot_send[row];
     return val;
 }
@@ -250,27 +250,41 @@ uint8_t matrix_key_count(void)
 }
 
 /**
+ * @brief 禁用所有阵列针脚
+ * 
+ */
+void matrix_deinit(void)
+{
+    for (uint8_t i = 0; i < MATRIX_COLS; i++) {
+        nrf_gpio_cfg_default(column_pin_array[i]);
+    }
+    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
+        nrf_gpio_cfg_default(row_pin_array[i]);
+    }
+}
+
+/**
  * @brief 阵列准备睡眠
  * 
  */
-void matrix_sleep_prepare(void)
+void matrix_wakeup_prepare(void)
 {
 // 这里监听所有按键作为唤醒按键，所以真正的唤醒判断应该在main的初始化过程中
 #ifdef ROW_IN
     for (uint8_t i = 0; i < MATRIX_COLS; i++) {
-        nrf_gpio_cfg_output((uint32_t)column_pin_array[i]);
-        nrf_gpio_pin_set((uint32_t)column_pin_array[i]);
+        nrf_gpio_cfg_output(column_pin_array[i]);
+        nrf_gpio_pin_set(column_pin_array[i]);
     }
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-        nrf_gpio_cfg_sense_input((uint32_t)row_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+        nrf_gpio_cfg_sense_input(row_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     }
 #else
     for (uint8_t i = 0; i < MATRIX_COLS; i++) {
-        nrf_gpio_cfg_sense_input((uint32_t)column_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+        nrf_gpio_cfg_sense_input(column_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     }
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-        nrf_gpio_cfg_output((uint32_t)row_pin_array[i]);
-        nrf_gpio_pin_set((uint32_t)row_pin_array[i]);
+        nrf_gpio_cfg_output(row_pin_array[i]);
+        nrf_gpio_pin_set(row_pin_array[i]);
     }
 #endif
 }

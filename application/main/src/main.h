@@ -15,6 +15,8 @@ enum SLEEP_REASON {
     SLEEP_TIMEOUT,
     // 手动关机休眠
     SLEEP_MANUALLY,
+    // 手动关机休眠，并禁用按键唤醒
+    SLEEP_MANUALLY_NO_MATRIX_WAKEUP,
     // 非开机唤醒后休眠
     SLEEP_NOT_PWRON
 };
@@ -39,10 +41,6 @@ void trig_event_param(enum user_event event, uint8_t arg);
  * @param reason: 睡眠原因
  */
 void sleep(enum SLEEP_REASON reason);
-/**
- * @brief 使键盘进入关机状态
- */
-void systemoff(void);
 /**
  * 触发睡眠事件
  * 

@@ -106,7 +106,7 @@ static void internal_event_handler(enum user_event event, void* arg)
     switch (event) {
     case USER_EVT_SLEEP:
         // 休眠时，设置休眠原因便于下次免按键启动
-        sleep_reason_set(subEvent);
+        sleep_reason_set(subEvent == SLEEP_EVT_AUTO);
         break;
 #ifdef PIN_CHARGING
     case USER_EVT_CHARGE:

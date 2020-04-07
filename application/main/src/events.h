@@ -112,6 +112,7 @@ enum ble_device_channel {
 enum sleep_evt_type {
     SLEEP_EVT_MANUAL, // 手工休眠
     SLEEP_EVT_AUTO, // 自动睡眠
+    SLEEP_EVT_MANUAL_NO_MATRIX_WAKEUP, // 手工休眠并禁用按键唤醒
 };
 
 /**
@@ -121,8 +122,14 @@ enum keyboard_state {
     KBD_STATE_PRE_INIT, // 各项服务初始化之前的事件
     KBD_STATE_POST_INIT, // 各项服务初始化之后的事件
     KBD_STATE_INITED, // 初始化完毕的事件
-    KBD_STATE_SLEEP, // 准备休眠的事件
-    KBD_STATE_SYSTEMOFF //准备关机的事件
+    /**
+     * @brief 准备休眠的事件
+     * 
+     * 此事件触发时，所有的定时器都已经关闭了，所以无法使用任何定时任务，只能使用delay做延时。
+     * 此事件还会在每次不需要开机的时候触发，故需要做额外的判断。
+     * 
+     */
+    KBD_STATE_SLEEP, 
 };
 
 /**

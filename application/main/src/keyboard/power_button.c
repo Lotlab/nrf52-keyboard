@@ -18,11 +18,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ble_services.h"
 #include "bootloader.h"
 #include "config.h"
+#include "data_storage.h"
 #include "eeconfig.h"
 #include "keyboard_evt.h"
 #include "main.h"
 #include "nrf_gpio.h"
-#include "data_storage.h"
 #ifdef RGBLIGHT_ENABLE
 #include "rgblight.h"
 #endif
@@ -48,7 +48,7 @@ static void button_handler(void)
         //1~3秒关机
         if (button_count > 1 && button_count <= 4) {
             button_count = 0;
-            systemoff();
+            sleep(SLEEP_MANUALLY_NO_MATRIX_WAKEUP);
         }
         //4~9秒启动DFU
         if (button_count >= 4 && button_count <= 9) {

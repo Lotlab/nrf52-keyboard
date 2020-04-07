@@ -80,8 +80,8 @@
 
 #include "app_scheduler.h"
 #include "app_timer.h"
-#include "nrf_pwr_mgmt.h"
 #include "nrf_delay.h"
+#include "nrf_pwr_mgmt.h"
 
 #include "ble/ble_bas_service.h"
 #include "ble/ble_hid_service.h"
@@ -233,35 +233,23 @@ void notify_sleep(enum sleep_evt_type mode)
     trig_event_param(USER_EVT_SLEEP, mode);
 }
 
-/**@brief Function for putting the chip into sleep mode.
- *
- * @note This function will not return.
- */
-static void sleep_mode_enter(void)
-{
-    reset_prepare();
-    matrix_sleep_prepare(); // 准备按键阵列用于唤醒
-#ifdef HAS_USB
-    usb_comm_sleep_prepare();
-#endif
-
-    // waiting for some bus
-    nrf_delay_ms(10);
-    // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    ret_code_t err_code = sd_power_system_off();
-    APP_ERROR_CHECK(err_code);
-}
-
 /**
- * @brief 使键盘进入关机状态
+ * @brief 使键盘进入睡眠状态
+ * 
+ * @param keyboard_wakeup 启用按键唤醒功能
  */
-void systemoff(void)
+static void sleep_mode_enter(bool keyboard_wakeup)
 {
-    trig_event_param(USER_EVT_STAGE, KBD_STATE_SYSTEMOFF);
     reset_prepare();
+    if (keyboard_wakeup) {
+        matrix_wakeup_prepare(); // 准备按键阵列用于唤醒
+    } else {
+        matrix_deinit(); // 关闭按键阵列所有
+    }
 #ifdef HAS_USB
     usb_comm_sleep_prepare();
 #endif
+
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
     ret_code_t err_code = sd_power_system_off();
     APP_ERROR_CHECK(err_code);
@@ -278,14 +266,18 @@ void sleep(enum SLEEP_REASON reason)
     case SLEEP_NO_CONNECTION:
     case SLEEP_TIMEOUT:
         notify_sleep(SLEEP_EVT_AUTO);
-        sleep_mode_enter();
+        sleep_mode_enter(true);
         break;
     case SLEEP_MANUALLY:
         notify_sleep(SLEEP_EVT_MANUAL);
-        sleep_mode_enter();
+        sleep_mode_enter(true);
+        break;
+    case SLEEP_MANUALLY_NO_MATRIX_WAKEUP:
+        notify_sleep(SLEEP_EVT_MANUAL_NO_MATRIX_WAKEUP);
+        sleep_mode_enter(false);
         break;
     case SLEEP_NOT_PWRON:
-        sleep_mode_enter();
+        sleep_mode_enter(true);
         break;
     default:
         break;

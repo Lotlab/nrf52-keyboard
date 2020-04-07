@@ -20,14 +20,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "app_error.h"
+#include "nrf_delay.h"
 #include "nrfx_twi.h"
 
 #include "../../ble/ble_bas_service.h"
 #include "events.h"
 #include "keyboard_evt.h"
 #include "passkey.h"
-#include "queue.h"
 #include "power_save.h"
+#include "queue.h"
 
 #include "oled_graph.h"
 
@@ -337,7 +338,7 @@ void ssd1306_show_dirty_block()
 static void update_status_bar()
 {
     power_save_reset();
-    
+
     if (usb_conn)
         conn_type = CONN_TYPE_USB;
     else if (ble_conn)
@@ -349,6 +350,8 @@ static void update_status_bar()
     ssd1306_show_dirty_block();
 }
 
+static bool ssd1306_inited = false;
+
 static void ssd1306_event_handler(enum user_event event, void* arg)
 {
     uint8_t param = (uint32_t)arg;
@@ -358,10 +361,17 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
         case KBD_STATE_POST_INIT: // 初始化
             ssd1306_twi_init();
             ssd1306_oled_init();
+            ssd1306_inited = true;
             break;
         case KBD_STATE_INITED: // 显示Buff
             update_status_bar();
             ssd1306_show_all();
+            break;
+        case KBD_STATE_SLEEP: // 睡眠
+            if (ssd1306_inited) {
+                ssd1306_sleep();
+                nrf_delay_ms(10);
+            }
             break;
         default:
             break;
@@ -378,10 +388,6 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
         default:
             break;
         }
-        break;
-    case USER_EVT_SLEEP: // 处理睡眠事件
-        // ssd1306_clr();
-        ssd1306_sleep();
         break;
     case USER_EVT_CHARGE: // 充电状态
         pwr_attach = (param != BATT_NOT_CHARGING);
