@@ -42,7 +42,7 @@ INC_FOLDERS += $(APP_SRC_DIR)/keyboard \
     $(APP_SRC_DIR)/ble
 
 # Version string
-VERSION := $(shell ((git describe --always --long --abbrev=8 || echo '00000000') | sed "s/.*-g//g" ) 2> /dev/null)
+VERSION := $(shell ((cd $(ROOT_DIR) && git describe --always --long --abbrev=8 || echo '00000000') | sed "s/.*-g//g" ) 2> /dev/null)
 OPT_DEFS += -DVERSION=$(VERSION)
 OPT_DEFS += -DBUILD_TIME=$(shell date +%s)
 
