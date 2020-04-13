@@ -19,6 +19,9 @@ script:
   - cp template/Makefile.posix.template template/Makefile.posix
   - sed -i "s/\/usr\/local/\/tmp/g" template/Makefile.posix
   - cp -r /tmp/sdk/nRF5_SDK_15.3.0_59ac345/* SDK/
+  - rm -r tmk/tmk_core/protocol/usb_hid/USB_Host_Shield_2.0-tmk/
+  - cd tmk/ && git reset --hard
+  - cd ../
   - git status
   - cd keyboard
   - make -j
