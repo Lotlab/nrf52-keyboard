@@ -94,7 +94,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // #define PASSKEY_REQUIRED
 
 // 启用多设备切换
-#define MULTI_DEVICE_SWITCH
+// #define MULTI_DEVICE_SWITCH
 
 #define BUTTONLESS_DFU /* 启用免按钮DFU */
 
