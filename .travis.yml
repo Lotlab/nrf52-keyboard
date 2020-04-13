@@ -19,6 +19,7 @@ script:
   - cp template/Makefile.posix.template template/Makefile.posix
   - sed -i "s/\/usr\/local/\/tmp/g" template/Makefile.posix
   - cp -r /tmp/sdk/nRF5_SDK_15.3.0_59ac345/* SDK/
+  - git status
   - cd keyboard
   - make -j
   - cd ../
@@ -29,7 +30,7 @@ deploy:
   file_glob: true
   file: 
     - keyboard/_build/*.zip
-    - keyboard/_build/*.hex
+    - keyboard/_build/*.bin
   skip_cleanup: true
   on:
     tags: true
