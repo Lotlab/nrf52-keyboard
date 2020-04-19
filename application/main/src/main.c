@@ -336,6 +336,9 @@ int main(void)
 
     // Start execution.
     timers_start();
+#ifdef MULTI_DEVICE_SWITCH
+    switch_device_init();
+#endif
     advertising_start(erase_bonds);
 
     set_stage(KBD_STATE_INITED);

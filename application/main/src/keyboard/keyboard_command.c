@@ -68,6 +68,7 @@ static void command_delay_handler(void* p_context)
     case COMMAND_BOND:
 #ifdef MULTI_DEVICE_SWITCH
         switch_device_rebond();
+        advertising_restart(BLE_ADV_MODE_FAST, true);
 #else
         delete_bonds();
 #endif
@@ -75,6 +76,7 @@ static void command_delay_handler(void* p_context)
     case COMMAND_SWITCH:
 #ifdef MULTI_DEVICE_SWITCH
         switch_device_select(devices_id);
+        advertising_restart(BLE_ADV_MODE_FAST, false);
 #endif
         break;
     case COMMAND_DEL_STORAGE:
@@ -191,7 +193,7 @@ static bool command_common(uint8_t code)
 #endif
     case KC_R:
         clear_keyboard();
-        advertising_restart(BLE_ADV_MODE_FAST, false);
+        advertising_restart(BLE_ADV_MODE_FAST, true);
         break;
 #ifdef RGBLIGHT_ENABLE //RGB灯控制
     case KC_Z:
