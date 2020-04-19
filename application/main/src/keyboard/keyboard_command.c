@@ -236,6 +236,7 @@ static bool command_common(uint8_t code)
         app_timer_start(command_run_timer, APP_TIMER_TICKS(1000), (void*)(uint32_t)COMMAND_SLEEP);
         break;
     case KC_ESC:
+    case KC_GRV:
         //休眠
         clear_keyboard();
 #ifdef RGBLIGHT_ENABLE
