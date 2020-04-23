@@ -80,6 +80,7 @@
 
 #include "app_scheduler.h"
 #include "app_timer.h"
+#include "fds.h"
 #include "nrf_delay.h"
 #include "nrf_pwr_mgmt.h"
 
@@ -91,6 +92,7 @@
 
 #include "keyboard/adc_convert.h"
 #include "keyboard/ble_keyboard.h"
+#include "keyboard/data_storage.h"
 #include "keyboard/keyboard_bootcheck.h"
 #include "keyboard/keyboard_command.h"
 #include "keyboard/keyboard_evt.h"
@@ -202,10 +204,23 @@ static void timers_init(void)
 #endif
 }
 
+/**
+ * @brief 尝试初始化存储，若无法初始化则尝试清空存储区。
+ * 
+ */
+static void storage_check(void)
+{
+    ret_code_t err_code = fds_init();
+    if (err_code == FDS_ERR_NO_PAGES) {
+        fstorage_clear();
+    }
+}
+
 /**@brief Function for initializing services that will be used by the application.
  */
 static void services_init(void)
 {
+    storage_check();
     ble_services_init();
     battery_service_init();
     hid_service_init(service_error_handler);
