@@ -28,6 +28,17 @@
             "targetId": "nrf52",
         },
         {
+            "cwd": "${workspaceRoot}/keyboard/lkb-core/_build/",
+            "executable": "nrf52_kbd.out",
+            "name": "LKB-Core",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "pyocd",
+            "armToolchainPath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin",
+            "device": "nrf52_kbd",
+            "targetId": "nrf52",
+        },
+        {
             "name": "Debug Application",
             "type": "gdb",
             "request": "attach",

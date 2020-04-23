@@ -330,7 +330,7 @@ int main(void)
     services_init();
     ble_keyboard_init();
 
-#ifndef BOOTMAGIC_ENABLE
+#if !defined(BOOTMAGIC_ENABLE) && defined(BOOTCHECK_ENABLE)
     // use internal function to check if should boot.
     boot_check();
 #endif

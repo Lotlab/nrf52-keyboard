@@ -74,6 +74,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // 启用keymap存储
 #define KEYMAP_STORAGE
+#define MACRO_STORAGE /* 启用宏存储功能 */
+#define CONFIG_STORAGE /* 启用配置存储功能 */
 
 #define BUTTONLESS_DFU /* 启用免按钮DFU */
 
