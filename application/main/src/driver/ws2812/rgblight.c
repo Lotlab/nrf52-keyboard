@@ -383,6 +383,12 @@ void rgblight_disable(void)
 #ifdef RGBLIGHT_ANIMATIONS
     rgblight_timer_disable();
 #endif
+#if !defined(RGB_PWR_PIN) && !defined(RGB_PWR_PIN_REVERSE) //如果无电源控制则关机前逐步降低亮度
+    rgblight_set_val(120);
+    wait_ms(1);
+    rgblight_set_val(60);
+    wait_ms(1);
+#endif
     rgblight_config.enable = 0;
     eeconfig_update_rgblight(rgblight_config.raw);
     rgblight_set();
@@ -394,6 +400,12 @@ void rgblight_disable_noeeprom(void)
 {
 #ifdef RGBLIGHT_ANIMATIONS
     rgblight_timer_disable();
+#endif
+#if !defined(RGB_PWR_PIN) && !defined(RGB_PWR_PIN_REVERSE) //如果无电源控制则关机前逐步降低亮度
+    rgblight_set_val(120);
+    wait_ms(1);
+    rgblight_set_val(60);
+    wait_ms(1);
 #endif
     rgblight_config.enable = 0;
     rgblight_set();
