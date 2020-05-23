@@ -67,9 +67,18 @@ uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID; /**< Handle of the current con
 static pm_peer_id_t m_peer_id; /**< Device reference handle to the current bonded central. */
 
 #ifdef MULTI_DEVICE_SWITCH
-CONFIG_SECTION(switch_device_id, 1);
-/** 当前设备ID Device ID of currently in the eeconfig   */
-#define switch_id (*switch_device_id.data)
+
+#define MAX_HOST_COUNT 3
+#define SWITCH_ID_MAGIC 0x55
+CONFIG_SECTION(switch_device_data, (MAX_HOST_COUNT + 1) * sizeof(pm_peer_id_t));
+
+struct switch_device {
+    uint8_t id;
+    uint8_t magic;
+    uint16_t peers_id[MAX_HOST_COUNT];
+};
+
+#define switch_storage ((struct switch_device*)switch_device_data.data)
 #define switch_device_id_update() storage_write(1 << STORAGE_CONFIG)
 #endif
 
@@ -84,22 +93,32 @@ static void advertising_config_get(ble_adv_modes_config_t* p_config);
 #ifdef MULTI_DEVICE_SWITCH
 static uint8_t peer_id_filter(pm_peer_id_t* peer_ids, uint8_t peer_id_count)
 {
-    uint8_t bound_id[4];
-    uint16_t length = 4;
+    uint8_t real_count = 0;
 
     // filter: remove any peer which is not current channel.
     for (uint8_t i = 0; i < peer_id_count; i++) {
-        ret_code_t err_code = pm_peer_data_app_data_load(peer_ids[i], &bound_id, &length);
         // check if this peer is on currect channel
-        if (err_code != NRF_SUCCESS || bound_id[0] != switch_id) {
-            peer_ids[i] = peer_ids[peer_id_count - 1];
-            peer_ids[peer_id_count - 1] = PM_PEER_ID_INVALID;
-            i--;
-            peer_id_count--;
+        if (peer_ids[i] != switch_storage->peers_id[switch_storage->id]) {
+            peer_ids[i] = PM_PEER_ID_INVALID;
+        } else {
+            peer_ids[real_count++] = peer_ids[i];
+            break; // Only 1 peer id per channel.
         }
     }
-    return peer_id_count;
+    return real_count;
 }
+
+static void switch_device_reset() 
+{
+    // 清空所有绑定后，自动回到首个设备
+    switch_storage->id = 0;
+    switch_storage->magic = SWITCH_ID_MAGIC;
+    for (int8_t i = 0; i < MAX_HOST_COUNT; i++)
+        switch_storage->peers_id[i] = PM_PEER_ID_INVALID;
+    
+    switch_device_id_update();
+}
+
 #else
 #define peer_id_filter(ids, count) (count)
 #endif
@@ -249,6 +268,7 @@ static void set_device_name(void)
 #endif
     APP_ERROR_CHECK(err_code);
 }
+
 /**
  * @brief 清空所有绑定数据.
  */
@@ -259,35 +279,11 @@ void delete_bonds(void)
     ret_code_t err_code = pm_peers_delete();
     APP_ERROR_CHECK(err_code);
 #ifdef MULTI_DEVICE_SWITCH
-    // 清空所有绑定后，自动回到首个设备
-    switch_id = 0;
-    switch_device_id_update();
+    switch_device_reset();
 #endif
 }
 
 #ifdef MULTI_DEVICE_SWITCH
-/**
- * @brief 删除当前设备绑定数据.
- *
- * 查找并删除与当前gap addr绑定的绑定数据
- */
-static void peer_list_find_and_delete_bond(uint8_t id)
-{
-    pm_peer_id_t peer_id = pm_next_peer_id_get(PM_PEER_ID_INVALID);
-    uint16_t length = 4;
-
-    while (peer_id != PM_PEER_ID_INVALID) {
-        uint8_t bound_id[4];
-
-        if (pm_peer_data_app_data_load(peer_id, &bound_id, &length) == NRF_SUCCESS
-            && bound_id[0] == id) {
-            pm_peer_delete(peer_id);
-        }
-
-        peer_id = pm_next_peer_id_get(peer_id);
-    }
-}
-
 /**
  * @brief 禁用后重新启用广播
  * 
@@ -328,11 +324,11 @@ static void set_gap_addr_by_id(uint8_t id)
 
 static void switch_device_select_after(void* p_data, uint16_t len)
 {
-    set_gap_addr_by_id(switch_id);
+    set_gap_addr_by_id(switch_storage->id);
 
     reenable_advertising();
     // 触发蓝牙设备通道切换事件
-    trig_event_param(USER_EVT_BLE_DEVICE_SWITCH, switch_id);
+    trig_event_param(USER_EVT_BLE_DEVICE_SWITCH, switch_storage->id);
 }
 
 /**
@@ -343,10 +339,10 @@ static void switch_device_select_after(void* p_data, uint16_t len)
 void switch_device_select(uint8_t id)
 {
     // 如果重复切换，则直接退出，不做任何操作
-    if (id == switch_id)
+    if (id == switch_storage->id)
         return;
 
-    switch_id = id;
+    switch_storage->id = id;
     switch_device_id_update();
 
     ble_disconnect(switch_device_select_after);
@@ -354,7 +350,9 @@ void switch_device_select(uint8_t id)
 
 static void switch_device_rebond_after(void* p_data, uint16_t size)
 {
-    peer_list_find_and_delete_bond(switch_id);
+    pm_peer_delete(switch_storage->peers_id[switch_storage->id]);
+    switch_storage->peers_id[switch_storage->id] = PM_PEER_ID_INVALID;
+    switch_device_id_update();
     reenable_advertising();
 }
 
@@ -373,11 +371,11 @@ void switch_device_rebond()
  */
 static void switch_device_init()
 {
-    set_gap_addr_by_id(switch_id);
+    if (switch_storage->magic != SWITCH_ID_MAGIC) {
+        switch_device_reset();
+    }
+    set_gap_addr_by_id(switch_storage->id);
 }
-
-// 用于绑定peer与通道。数据必须 4Byte 对齐
-static uint8_t peer_channel_data[4] = { 0 };
 
 /**
  * @brief 更新切换设备数据.
@@ -386,9 +384,8 @@ static uint8_t peer_channel_data[4] = { 0 };
  */
 static void switch_device_update(pm_peer_id_t peer_id)
 {
-    peer_channel_data[0] = switch_id;
-    uint32_t err_code = pm_peer_data_app_data_store(m_peer_id, peer_channel_data, 4, NULL);
-    APP_ERROR_CHECK(err_code);
+    switch_storage->peers_id[switch_storage->id] = peer_id;
+    switch_device_id_update();
 }
 #endif
 
@@ -399,14 +396,15 @@ static void switch_device_update(pm_peer_id_t peer_id)
  */
 void advertising_start(bool erase_bonds)
 {
-    if (erase_bonds == true) {
+    if (erase_bonds) {
         delete_bonds();
         // Advertising is started by PM_EVT_PEERS_DELETE_SUCCEEDED event.
     } else {
-        whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
 #ifdef MULTI_DEVICE_SWITCH
         switch_device_init();
 #endif
+        whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
+
         ret_code_t ret = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
         APP_ERROR_CHECK(ret);
     }
