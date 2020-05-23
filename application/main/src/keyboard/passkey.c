@@ -30,15 +30,12 @@ void passkey_input_handler(uint8_t len, uint8_t* keys)
             uint8_t keycode = keys[i];
             if (keycode >= KC_1 && keycode <= KC_0) {
                 passkey[inputed_len++] = (keycode + 1 - KC_1) % 10 + '0';
-                passkey[inputed_len] = 0;
                 break;
             } else if (keycode >= KC_KP_1 && keycode <= KC_KP_0) {
                 passkey[inputed_len++] = (keycode + 1 - KC_KP_1) % 10 + '0';
-                passkey[inputed_len] = 0;
                 break;
             } else if (keycode == KC_BSPACE && inputed_len > 0) {
                 inputed_len--;
-                passkey[inputed_len] = 0;
                 break;
             }
         }
@@ -46,6 +43,7 @@ void passkey_input_handler(uint8_t len, uint8_t* keys)
         trig_event_param(USER_EVT_BLE_PASSKEY_STATE, PASSKEY_STATE_INPUT);
         // 发送Passkey
         if (inputed_len == 6) {
+            passkey[inputed_len] = 0;
             ble_passkey_send(passkey);
             inputed_len = 0xFF;
         }
