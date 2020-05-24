@@ -55,6 +55,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MACRO_STORAGE /* 启用宏存储功能 */
 #define CONFIG_STORAGE /* 启用配置存储功能 */
 #define BUTTONLESS_DFU /* 启用免按钮DFU */
+#define BOOTCHECK_ENABLE // 启用Bootchek
 
 // #define DEBUG_SKIP_PWRON_CHECK /*  直接开机而跳过开机条件检测，用于调试 */
 
@@ -83,6 +84,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // #define LED_STATUS_CHARGING 23
 #define LED_STATUS_USB 23
 // #define LED_POSITIVE // LED下拉驱动
+#define LED_DFU_INIT 25
+#define LED_DFU_START 24
+#define LED_DFU_FINISH 23
+// #define LED_DFU_POSITIVE
+#define LED_NO_DEINIT // 不要deinit端口，可以避免部分IO弱下拉导致灯光无法关闭的问题
 
 // USB UART 传输配置
 #define HAS_USB // 启用与CH554的通信支持
@@ -102,7 +108,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MATRIX_ROWS 8 /* 硬件阵列行数 */
 #define MATRIX_COLS 14 /* 硬件阵列列数 */
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 9, 8, 7, 6, 5, 4, 3, 11 };
-static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 17, 18, 19, 20, 30, 29, 28, 22, 21, 15, 14, 13, 12 };
+static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 17, 18, 19, 20, 21, 22, 28, 29, 30, 15, 14, 13, 12 };
 #define ROW_IN // 键盘阵列的二极管方向是从COL->ROW
 
 /* define if matrix has ghost */
