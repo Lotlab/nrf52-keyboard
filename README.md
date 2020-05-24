@@ -68,7 +68,7 @@ make bootloader # Compile bootloader
 
 ## Flashing
 
-It's recommend to use DAP-Link to flashing nrf52 chip. If you want to do so, please install [pyocd](https://github.com/mbedmicro/pyOCD)；若使用蓝牙DFU进行升级，则需要安装[nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil/).
+It's recommend to use DAP-Link to flashing nrf52 chip. If you want to do so, please install [pyocd](https://github.com/mbedmicro/pyOCD). If you want to generate DFU package, you should install [nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil/).
 
 For ch554, you could use the official [flasing utility](http://www.wch.cn/downloads/WCHISPTool_Setup_exe.html) in windows, or third-party [usbisp](https://github.com/rgwan/librech551) in linux.
 
@@ -164,4 +164,4 @@ make bootloader # 编译bootloader
 
 如果你觉得这个工程有帮助到你，为何不请我喝一杯奶茶呢？
 
-![支付宝二维码 QRCode](https://raw.githubusercontent.com/Lotlab/mcsgyz/gh-pages/pic/alipay.jpg)
+![支付宝二维码 donate@lotlab.org](https://raw.githubusercontent.com/Lotlab/mcsgyz/gh-pages/pic/alipay.jpg)

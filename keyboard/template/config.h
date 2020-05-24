@@ -21,20 +21,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 
 /* USB和蓝牙的显示参数 */
-#define VENDOR_ID 0x1209 /* USB VID */
-#define PRODUCT_ID 0x0514 /* USB PID */
-#define CONF_VENDOR_ID 0x0114 /* 配置项目内显示的VendorID */
-#define CONF_PRODUCT_ID 0x0514 /* 配置项目内显示的ProductID */
-#define DEVICE_VER 0x0001 /* 硬件版本 */
-#define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
-#define PRODUCT "BLE Keyboard" /* 硬件名称，用于USB和蓝牙显示 */
+// USB的VID和PID，自行修改
+#define VENDOR_ID 0x0000 /* USB VID */
+#define PRODUCT_ID 0x0000 /* USB PID */
+// 配置协议使用的VID和PID，自行修改。ID组合不得重复。
+#define CONF_VENDOR_ID 0x0000 /* 配置协议使用的VendorID */
+#define CONF_PRODUCT_ID 0x0000 /* 配置协议使用的ProductID */
+#define DEVICE_VER 0x0000 /* 硬件版本 */
+#define MANUFACTURER "Lotlab" /* 硬件制造商，用于USB和蓝牙显示 */
+#define PRODUCT "Keyboard Template" /* 硬件名称，用于USB和蓝牙显示 */
 #define MACADDR_SEPRATOR '_' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
 
 /* USB HID report parameter */
 #define KEYBOARD_EPSIZE 8 /* 键盘上传端点大小，请不要修改 */
 #define NKRO_EPSIZE 28 /* 键盘NKRO端点大小，请不要修改 */
 
-// 定义Bootmagic按键
+// 定义Bootmagic/Bootcheck按键
 #define BOOTMAGIC_KEY_BOOT KC_U /* 开机 */
 #define BOOTMAGIC_KEY_ERASE_BOND KC_E /* 删除所有绑定 */
 
@@ -57,6 +59,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MACRO_STORAGE /* 启用宏存储功能 */
 #define CONFIG_STORAGE /* 启用配置存储功能 */
 #define BUTTONLESS_DFU /* 启用免按钮DFU */
+#define BOOTCHECK_ENABLE /* 启用开机按钮 */
 
 // #define DEBUG_SKIP_PWRON_CHECK /*  直接开机而跳过开机条件检测，用于调试 */
 
