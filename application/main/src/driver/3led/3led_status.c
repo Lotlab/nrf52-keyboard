@@ -38,8 +38,6 @@ enum status_led {
     BIT_LED_CHARGING
 };
 
-static void status_led_set_internal(uint8_t val);
-
 /** 
  * 蓝牙广播状态闪烁LED
  **/
@@ -47,25 +45,24 @@ void ble_led_blink_timer_handler(void* context)
 {
     if (!usb_working()) {
         switch (blink_led_id) {
-#ifdef LED_BLE_CHANNEL1
         case 0:
-            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL1) : 0);
-            break;
+#ifdef LED_BLE_CHANNEL1
+            LED_WRITE(LED_BLE_CHANNEL1, blink_status);
 #endif
-#ifdef LED_BLE_CHANNEL2
+            break;
         case 1:
-            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL2) : 0);
-            break;
+#ifdef LED_BLE_CHANNEL2
+            LED_WRITE(LED_BLE_CHANNEL2, blink_status);
 #endif
+            break;
+        case 2:
 #ifdef LED_BLE_CHANNEL3
-        case 2:
-            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL3) : 0);
-            break;
+            LED_WRITE(LED_BLE_CHANNEL3, blink_status);
 #elif defined(LED_BLE_CHANNEL1) && defined(LED_BLE_CHANNEL2)
-        case 2:
-            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL1) | (1 << LED_BLE_CHANNEL2) : 0);
-            break;
+            LED_WRITE(LED_BLE_CHANNEL1, blink_status);
+            LED_WRITE(LED_BLE_CHANNEL2, blink_status);
 #endif
+            break;
         default:
             break;
         }
@@ -178,7 +175,8 @@ static void ble_blink_led_on()
  */
 static void ble_blink_led_off()
 {
-    status_led_off();
+    blink_status = false;
+    ble_led_blink_timer_handler(NULL); //即刻执行闪烁
     app_timer_stop(ble_led_blink_timer);
 }
 
@@ -230,9 +228,12 @@ static void status_led_evt_handler(enum user_event event, void* arg)
         case KBD_STATE_POST_INIT: // 初始化LED
             status_led_init();
             status_led_all_on();
-            nrf_delay_ms(10);
+            nrf_delay_ms(20);
             break;
         case KBD_STATE_SLEEP: // 准备休眠
+            status_led_all_on();
+            nrf_delay_ms(20);
+            status_led_off();
             status_led_deinit();
             break;
         default:
