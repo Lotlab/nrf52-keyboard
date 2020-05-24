@@ -82,6 +82,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_CAPS 21
 #define LED_SCLK 23
 #define LED_POSITIVE // LED上拉驱动
+// #define LED_NO_DEINIT // 不要deinit端口，可以避免部分IO灯光无法关闭的问题
 
 // Bootloader 指示灯
 #define LED_DFU_INIT 22

@@ -96,6 +96,9 @@ void status_led_init()
  */
 void status_led_deinit(void)
 {
+#ifdef LED_NO_DEINIT
+    status_led_off();
+#else
 #ifdef LED_STATUS_BLE
     nrf_gpio_cfg_default(LED_STATUS_BLE);
 #endif
@@ -104,6 +107,7 @@ void status_led_deinit(void)
 #endif
 #ifdef LED_STATUS_CHARGING
     nrf_gpio_cfg_default(LED_STATUS_CHARGING);
+#endif
 #endif
 }
 
@@ -229,7 +233,6 @@ static void status_led_evt_handler(enum user_event event, void* arg)
             nrf_delay_ms(10);
             break;
         case KBD_STATE_SLEEP: // 准备休眠
-            status_led_off();
             status_led_deinit();
             break;
         default:
