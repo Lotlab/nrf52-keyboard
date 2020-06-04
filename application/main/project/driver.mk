@@ -11,6 +11,7 @@ ifeq (yes,$(strip $(ONE_RGB_LED)))
 endif
 
 ifeq (yes,$(strip $(SSD1306_OLED)))
+    SHARED_I2C_DRIVER := yes
     SRC_FILES += $(DRIVER_DIR)/ssd1306/ssd1306_oled.c \
                  $(DRIVER_DIR)/ssd1306/oled_graph.c \
                  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_twi.c
@@ -33,4 +34,9 @@ ifeq (yes,$(strip $(RGBLIGHT_ENABLE)))
 	            $(DRIVER_DIR)/ws2812/led_tables.c \
 	            $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_pwm.c
     OPT_DEFS += -DNRFX_PWM_ENABLED=1 -DNRFX_PWM0_ENABLED=1 -DPWM_ENABLED=1 -DPWM0_ENABLED=1
+endif
+
+ifeq (yes,$(strip $(SHARED_I2C_DRIVER)))
+    INC_FOLDERS += $(DRIVER_DIR)/i2c
+    SRC_FILES += $(DRIVER_DIR)/i2c/shared_i2c.c
 endif

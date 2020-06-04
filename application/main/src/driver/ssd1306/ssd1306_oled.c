@@ -22,7 +22,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_error.h"
 #include "app_scheduler.h"
 #include "nrf_delay.h"
-#include "nrfx_twi.h"
 
 #include "../../ble/ble_bas_service.h"
 #include "events.h"
@@ -31,9 +30,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "power_save.h"
 #include "queue.h"
 
+#include "i2c/shared_i2c.h"
+
 #include "oled_graph.h"
 
 #define SSD1306_ADDR 0x3C
+static nrfx_twi_t* twi_channel;
 
 /**
  * @brief SSD1306的显示屏初始化命令
@@ -83,60 +85,6 @@ const uint8_t ssd1306_init_commands[] = {
 
 uint8_t ssd1306_display_buffer[128 * 4] = SSD1306_INIT_BUFF;
 
-// #define BLOCKING_MODE
-#ifndef BLOCKING_MODE
-
-struct tx_item_flag {
-    bool is_pointer : 1;
-    bool is_command : 1;
-    bool data_send : 1;
-};
-
-struct tx_item {
-    uint16_t len;
-    uint16_t index;
-    struct tx_item_flag flag;
-    union ssd1306_oled {
-        const uint8_t* data_pointer;
-        uint8_t data[4];
-    } data;
-};
-
-QUEUE(struct tx_item, twi_tx_buff, 20);
-#endif
-
-static const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(0);
-
-#ifndef BLOCKING_MODE
-/**
- * @brief twi 公共发送buff
- * 
- */
-static uint8_t twi_common_buff[2] = { 0 };
-/**
- * @brief 调用TWI发送函数发送一个项目
- * 
- * @param item 要发送的项目
- */
-static void ssd1306_tx_item_send(struct tx_item* item)
-{
-    twi_common_buff[0] = item->flag.is_command ? 0x00 : 0x40;
-
-    if (item->flag.is_pointer) {
-        twi_common_buff[1] = item->data.data_pointer[item->index];
-    } else {
-        twi_common_buff[1] = item->data.data[item->index];
-    }
-
-    nrfx_twi_tx(&m_twi, SSD1306_ADDR, twi_common_buff, 2, false);
-    item->index++;
-
-    // 数据长度一致，标志为已发送
-    if (item->index >= item->len)
-        item->flag.data_send = true;
-}
-#endif
-
 /**
  * @brief 发送命令或数据
  * 
@@ -146,75 +94,8 @@ static void ssd1306_tx_item_send(struct tx_item* item)
  */
 static void ssd1306_write(bool is_cmd, uint8_t len, const uint8_t* data)
 {
-#ifndef BLOCKING_MODE
-    struct tx_item item;
-    item.len = len;
-    item.index = 0;
-
-    item.flag.is_command = is_cmd;
-    item.flag.data_send = false;
-
-    // 数据较短，尝试直接复制
-    if (len <= 4) {
-        item.flag.is_pointer = false;
-        memcpy(item.data.data, data, len);
-    } else {
-        item.flag.is_pointer = true;
-        item.data.data_pointer = data;
-    }
-
-    twi_tx_buff_push(item);
-
-    if (!nrfx_twi_is_busy(&m_twi)) {
-        // 如果当前等待队列为空，则尝试发送
-        ssd1306_tx_item_send(twi_tx_buff_peek());
-    }
-#else
-    uint8_t buff[2] = { is_cmd ? 0x00 : 0x40 };
-    for (uint8_t i = 0; i < len; i++) {
-        buff[1] = data[i];
-        nrf_drv_twi_tx(&m_twi, SSD1306_ADDR, buff, 2, false);
-    }
-#endif
+    shared_i2c_write(twi_channel, SSD1306_ADDR, len, data, is_cmd ? 0x00 : 0x40, false);
 }
-
-#ifndef BLOCKING_MODE
-/**
- * @brief TWI事件处理器
- * 
- * @param p_event 
- * @param p_context 
- */
-void ssd1306_handler(nrfx_twi_evt_t const* p_event, void* p_context)
-{
-    switch (p_event->type) {
-    case NRFX_TWI_EVT_ADDRESS_NACK:
-    case NRFX_TWI_EVT_DATA_NACK:
-    case NRFX_TWI_EVT_DONE:
-        if (p_event->xfer_desc.type == NRFX_TWI_XFER_TX) {
-            // 当前队列不空
-            if (!twi_tx_buff_empty()) {
-                struct tx_item* item = twi_tx_buff_peek();
-                // 如果这个是已经发送过的
-                if (item->flag.data_send) {
-                    // 就出队列
-                    twi_tx_buff_pop();
-                    // 然后尝试发送下一个
-                    if (!twi_tx_buff_empty()) {
-                        ssd1306_tx_item_send(twi_tx_buff_peek());
-                    }
-                } else {
-                    // 不然就尝试发送
-                    ssd1306_tx_item_send(item);
-                }
-            }
-        }
-        break;
-    default:
-        break;
-    }
-}
-#endif
 
 /**
  * @brief 初始化OLED屏幕
@@ -231,21 +112,9 @@ static void ssd1306_oled_init()
  */
 static void ssd1306_twi_init()
 {
-    const nrfx_twi_config_t ssd1306_config = {
-        .scl = SSD1306_SCL,
-        .sda = SSD1306_SDA,
-        .frequency = NRF_TWI_FREQ_400K,
-        .interrupt_priority = APP_IRQ_PRIORITY_HIGH
-    };
-
-#ifndef BLOCKING_MODE
-    uint32_t err_code = nrfx_twi_init(&m_twi, &ssd1306_config, ssd1306_handler, NULL);
-#else
-    uint32_t err_code = nrfx_twi_init(&m_twi, &ssd1306_config, NULL, NULL);
-#endif
-    APP_ERROR_CHECK(err_code);
-
-    nrfx_twi_enable(&m_twi);
+    twi_channel = shared_i2c_init(SSD1306_SDA, SSD1306_SCL);
+    if (twi_channel == NULL)
+        APP_ERROR_HANDLER(1);
 }
 
 /**
