@@ -96,8 +96,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 按键阵列配置
 #define MATRIX_ROWS 6 /* 硬件阵列行数 */
 #define MATRIX_COLS 7 /* 硬件阵列列数 */
+#ifdef HARDWARE_REV_0
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 17, 16, 15, 14, 13, 18 };
 static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 22 };
+#endif
+#ifdef HARDWARE_REV_1
+static const uint8_t row_pin_array[MATRIX_ROWS] = { 11, 12, 13, 14, 17, 18 };
+static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 22 };
+#endif
 // #define ROW_IN // 键盘阵列的二极管方向是从COL->ROW
 
 /* define if matrix has ghost */
@@ -106,8 +112,14 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 2
 #define DEBOUNCE 5 /* 硬件消抖次数，设置为0则不消抖 */
 
 // OLED 屏幕配置
+#ifdef HARDWARE_REV_0
 #define SSD1306_SDA 9
 #define SSD1306_SCL 10
+#endif
+#ifdef HARDWARE_REV_1
+#define SSD1306_SDA 15
+#define SSD1306_SCL 16
+#endif
 // 旋钮配置
 #define ROTARY_ENCODER_A 19
 #define ROTARY_ENCODER_B 20
@@ -125,18 +137,6 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 30, 29, 28, 25, 24, 23, 2
 #define ROTARY_ENCODER_NEG 5,5
 #else
 // #error "请指定左手还是右手"
-#endif
-
-// 调试器配置
-#ifndef SWD_DAT_IO
-#define SWD_DAT_IO UCC1
-#define SWD_DAT_MASK bUCC1
-#define SWD_DAT_PORT P1
-#endif
-#ifndef SWD_CLK_IO
-#define SWD_CLK_IO UCC2
-#define SWD_CLK_MASK bUCC2
-#define SWD_CLK_PORT P1
 #endif
 
 #define NRF_BL_DFU_ENTER_METHOD_PINRESET 1

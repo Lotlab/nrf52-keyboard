@@ -31,6 +31,16 @@ NRF52_DISABLE_FPU = yes # 禁用FPU
 SSD1306_OLED = yes # 启用OLED
 ROTARY_ENCODER = yes # 启用编码器
 ONBOARD_CMSIS_DAP = yes # 启用板载调试器
+# DEBUG = yes # 启用调试构建
+
+ifeq (REV_0,$(strip $(HARDWARE_VERSION)))
+	OPT_DEFS += -DHARDWARE_REV_0
+	SDCC_CFLAGS += -DHARDWARE_REV_0
+endif
+ifeq (REV_1,$(strip $(HARDWARE_VERSION)))
+	OPT_DEFS += -DHARDWARE_REV_1
+	SDCC_CFLAGS += -DHARDWARE_REV_1
+endif 
 
 ########## STOP HERE ##########
 # 除非你知道下面这些配置项是干什么的，否则不要去动它
