@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "app_error.h"
+#include "app_scheduler.h"
 #include "nrf_delay.h"
 #include "nrfx_twi.h"
 
@@ -316,6 +317,7 @@ static enum connection_type conn_type = 0;
 static bool pwr_attach = false, usb_conn = false, ble_conn = false;
 static bool passkey_req = false;
 static uint8_t keyboard_led = 0;
+static bool status_dirty = false;
 
 /**
  * @brief 更新标记为脏的Block
@@ -348,6 +350,21 @@ static void update_status_bar()
 
     oled_draw_icons(0, battery_info.percentage, pwr_attach, conn_type, passkey_req, keyboard_led);
     ssd1306_show_dirty_block();
+
+    status_dirty = false;
+}
+
+static void status_bar_handler(void* p_event_data, uint16_t event_size)
+{
+    update_status_bar();
+}
+
+static void status_mark_dirty()
+{
+    if (!status_dirty) {
+        status_dirty = true;
+        app_sched_event_put(NULL, 0, status_bar_handler);
+    }
 }
 
 static bool ssd1306_inited = false;
@@ -391,11 +408,11 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
         break;
     case USER_EVT_CHARGE: // 充电状态
         pwr_attach = (param != BATT_NOT_CHARGING);
-        update_status_bar();
+        status_mark_dirty();
         break;
     case USER_EVT_USB: // USB状态
         usb_conn = (param == USB_WORKING);
-        update_status_bar();
+        status_mark_dirty();
         break;
     case USER_EVT_BLE_PASSKEY_STATE: // 配对码状态
         passkey_req = (param != PASSKEY_STATE_SEND);
@@ -407,15 +424,15 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
             oled_clear_row(2);
             oled_clear_row(3);
         }
-        update_status_bar();
+        status_mark_dirty();
         break;
     case USER_EVT_BLE_STATE_CHANGE: // 蓝牙状态
         ble_conn = (param == BLE_STATE_CONNECTED);
-        update_status_bar();
+        status_mark_dirty();
         break;
     case USER_EVT_LED: // 键盘灯状态
         keyboard_led = param;
-        update_status_bar();
+        status_mark_dirty();
         break;
     default:
         break;
