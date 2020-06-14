@@ -45,13 +45,13 @@ static void button_handler(void)
         button_count++;
         return;
     } else {
-        //1~3秒关机
+        //1~4秒关机
         if (button_count > 1 && button_count <= 4) {
             button_count = 0;
             sleep(SLEEP_MANUALLY_NO_MATRIX_WAKEUP);
         }
-        //4~9秒启动DFU
-        if (button_count >= 4 && button_count <= 9) {
+        //5~9秒启动DFU
+        if (button_count > 4 && button_count <= 9) {
             button_count = 0;
             bootloader_jump();
         }
@@ -62,7 +62,7 @@ static void button_handler(void)
             storage_delete(0x0F);
             storage_read(0x0F);
         }
-        //上述判断最大误差0.5秒
+        //上述判断最大误差1秒
     }
 }
 
