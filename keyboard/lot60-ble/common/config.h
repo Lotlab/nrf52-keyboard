@@ -101,9 +101,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 启用看门狗
 #define ENABLE_WATCHDOG
 
-// 启用Bootchek
-#define BOOTCHECK_ENABLE
-
 // 启用keymap存储
 #define KEYMAP_STORAGE
 #define MACRO_STORAGE /* 启用宏存储功能 */
