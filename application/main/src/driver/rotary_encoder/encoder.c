@@ -113,8 +113,14 @@ static void encoder_init()
 static void encoder_event_handler(enum user_event event, void* arg)
 {
     uint8_t param = (uint32_t)arg;
-    if (event == USER_EVT_STAGE && param == KBD_STATE_INITED)
-        encoder_init();
+    if (event == USER_EVT_STAGE) {
+        if (param == KBD_STATE_INITED) {
+            encoder_init();
+        } else if (param == KBD_STATE_SLEEP) {
+            nrf_gpio_cfg_sense_input(ROTARY_ENCODER_A, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+            nrf_gpio_cfg_sense_input(ROTARY_ENCODER_B, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+        }
+    }
 }
 
 EVENT_HANDLER(encoder_event_handler);
