@@ -6,6 +6,10 @@ ifeq (yes,$(strip $(THREE_LED_STATUS)))
     SRC_FILES += $(DRIVER_DIR)/3led/3led_status.c
 endif
 
+ifeq (yes,$(strip $(LEDMAP)))
+    SRC_FILES += $(DRIVER_DIR)/ledmap/ledmap.c
+endif
+
 ifeq (yes,$(strip $(ONE_RGB_LED)))
     SRC_FILES += $(DRIVER_DIR)/simple_rgb/led_rgb.c
 endif

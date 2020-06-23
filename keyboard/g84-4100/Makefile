@@ -17,12 +17,12 @@ SRC_FILES += keymap_plain.c
 # 配置项：功能选项
 # 关于更多的可配置项目，请参考doc目录下的相应文档
 BOOTMAGIC_ENABLE = no	# 禁用Bootmagic
-# BOOTCHECK_ENABLE = yes  # 启用Bootchek
+BOOTCHECK_ENABLE = yes  # 启用Bootchek
 EXTRAKEY_ENABLE = yes	# 启用媒体键功能
 NKRO_ENABLE = yes	# 启用USB的全键无冲功能
 USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
 NRF52_DISABLE_FPU = yes # 禁用FPU
-THREE_LED_STATUS = yes # 启用状态灯
+LEDMAP = yes # 启用状态灯
 MOUSE_KEY_ENABLE = yes # 启用鼠标键
 
 ########## STOP HERE ##########

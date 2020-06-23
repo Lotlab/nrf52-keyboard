@@ -55,7 +55,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MACRO_STORAGE /* 启用宏存储功能 */
 #define CONFIG_STORAGE /* 启用配置存储功能 */
 #define BUTTONLESS_DFU /* 启用免按钮DFU */
-#define BOOTCHECK_ENABLE // 启用Bootchek
 
 // #define DEBUG_SKIP_PWRON_CHECK /*  直接开机而跳过开机条件检测，用于调试 */
 
@@ -80,15 +79,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // #define LED_NUM 25
 #define LED_CAPS 24
 // #define LED_SCLK 23
-#define LED_STATUS_BLE 25
-// #define LED_STATUS_CHARGING 23
-#define LED_STATUS_USB 23
 // #define LED_POSITIVE // LED下拉驱动
 #define LED_DFU_INIT 25
 #define LED_DFU_START 24
 #define LED_DFU_FINISH 23
 // #define LED_DFU_POSITIVE
-#define LED_NO_DEINIT // 不要deinit端口，可以避免部分IO弱下拉导致灯光无法关闭的问题
+// 定义两个LED灯
+#define LEDMAP_LEDS {{ .dir = 0, .pin = 25 },{ .dir = 0, .pin = 23 }}
 
 // USB UART 传输配置
 #define HAS_USB // 启用与CH554的通信支持
@@ -116,3 +113,47 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 17, 18, 19, 20, 21, 2
 
 #define DEBOUNCE 5 /* 硬件消抖次数，设置为0则不消抖 */
 #define MATRIX_SCAN_DELAY_CYCLE 36 /* 按键扫描等待IO稳定的延时时长 */
+
+// LED事件
+#define LEDMAP_EVENTS { \
+    { \
+        /* 启动后亮起所有灯 */ \
+        .event = USER_EVT_STAGE, \
+        .param = KBD_STATE_POST_INIT, \
+        .led_mask = 0xFF, \
+        .action = TRIG_LED_ONESHOT(2), \
+    }, { \
+        /* 蓝牙连接后亮起灯1 */ \
+        .event = USER_EVT_BLE_STATE_CHANGE, \
+        .param = BLE_STATE_CONNECTED, \
+        .led_mask = 0x01, \
+        .action = TRIG_LED_ON, \
+    }, { \
+        /* 蓝牙断开后关闭灯1 */ \
+        .event = USER_EVT_BLE_STATE_CHANGE, \
+        .param = BLE_STATE_IDLE, \
+        .led_mask = 0x01, \
+        .action = TRIG_LED_OFF, \
+    }, { \
+        /* USB连接后亮起灯2 */ \
+        .event = USER_EVT_USB, \
+        .param = USB_WORKING, \
+        .led_mask = 0x02, \
+        .action = TRIG_LED_ON, \
+    }, { \
+        .event = USER_EVT_USB, \
+        .param = USB_NOT_CONNECT, \
+        .led_mask = 0x02, \
+        .action = TRIG_LED_OFF, \
+    }, { \
+        .event = USER_EVT_USB, \
+        .param = USB_NO_HOST, \
+        .led_mask = 0x02, \
+        .action = TRIG_LED_OFF, \
+    }, { \
+        .event = USER_EVT_USB, \
+        .param = USB_NOT_WORKING, \
+        .led_mask = 0x02, \
+        .action = TRIG_LED_OFF, \
+    }, \
+}
