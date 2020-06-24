@@ -112,19 +112,33 @@ static void led_reverse(uint8_t led)
     led_set(led, !(led_val & (1 << led)));
 }
 
+/**
+ * @brief 获取指定的LED当前的动作
+ * 
+ * @param led 
+ * @return struct ledmap_evt_action* 
+ */
+static struct ledmap_evt_action* led_get_action(uint8_t led)
+{
+    uint8_t j = 4;
+    while (j--) {
+        if (led_saved_evt[j][led].action != TRIG_NO_ACTION) {
+            return &led_saved_evt[j][led];
+        }
+    }
+    return &led_saved_evt[0][led];
+}
+
+/**
+ * @brief 处理一些可以立即设置的灯光
+ * 
+ */
 static void led_actions_handler()
 {
     for (uint8_t i = 0; i < ARRAY_SIZE(ledmap_leds); i++) {
-        struct ledmap_evt_action action = led_saved_evt[0][i];
-        uint8_t j = 4;
-        while (j--) {
-            if (led_saved_evt[j][i].action != TRIG_NO_ACTION) {
-                action = led_saved_evt[j][i];
-                break;
-            }
-        }
+        struct ledmap_evt_action* action = led_get_action(i);
 
-        switch (action.action) {
+        switch (action->action) {
         case TRIG_NO_ACTION:
         case TRIG_LED_OFF:
             led_set(i, false);
@@ -141,6 +155,12 @@ static void led_actions_handler()
     }
 }
 
+/**
+ * @brief LEDMAP 事件处理
+ * 
+ * @param evt 
+ * @param param 
+ */
 static void ledmap_handler(enum user_event evt, uint8_t param)
 {
     bool led_changed = false;
@@ -158,6 +178,7 @@ static void ledmap_handler(enum user_event evt, uint8_t param)
         }
     }
 
+    // 更新灯光并推出省电模式
     if (led_changed) {
         led_actions_handler();
         leds_update();
@@ -167,30 +188,21 @@ static void ledmap_handler(enum user_event evt, uint8_t param)
 
 static void led_blink_timer_handler(void* context)
 {
+    bool state_change = false;
     for (uint8_t i = 0; i < ARRAY_SIZE(ledmap_leds); i++) {
-        struct ledmap_evt_action action = led_saved_evt[0][i];
-        uint8_t j = 4;
-        while (j--) {
-            if (led_saved_evt[j][i].action != TRIG_NO_ACTION) {
-                action = led_saved_evt[j][i];
-                break;
-            }
-        }
+        struct ledmap_evt_action* action = led_get_action(i);
 
-        if (action.act_code == LED_TRIG_BLINK) {
-            uint8_t times = action.param & 0x03;
-            uint8_t duration = (action.param >> 2) & 0x03;
+        if (action->act_code == LED_TRIG_BLINK) {
+            uint8_t times = action->param & 0x03;
+            uint8_t duration = (action->param >> 2) & 0x03;
 
             // 判断是否达到次数。如果达到则重置计数器并关闭灯光
             if (times && (led_blink_counter[i] >> 4) >= times) {
-                led_saved_evt[j][i].action = TRIG_NO_ACTION;
+                action->action = TRIG_NO_ACTION;
                 led_blink_counter[i] = 0;
                 // 更新灯光
                 led_actions_handler();
-                // 显示当前状态
-                if (!power_save) {
-                    leds_update();
-                }
+                state_change = true;
                 continue;
             }
 
@@ -204,14 +216,13 @@ static void led_blink_timer_handler(void* context)
                     led_blink_counter[i] += 0x10;
                 }
                 led_reverse(i);
-
-                // 显示当前状态
-                if (!power_save) {
-                    leds_update();
-                }
+                state_change = true;
             }
             led_blink_counter[i]--;
         }
+    }
+    if (state_change && !power_save) {
+        leds_update();
     }
 }
 
