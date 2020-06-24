@@ -33,14 +33,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 APP_TIMER_DEF(led_blink_timer);
 
-static struct led_define leds[] = LEDMAP_LEDS;
-static struct events_led events[] = LEDMAP_EVENTS;
+static const struct ledmap_led ledmap_leds[];
+static const struct ledmap_event ledmap_events[];
 
 static bool power_save = false;
 static uint8_t led_val = 0;
 
-static uint8_t led_saved_evt[ARRAY_SIZE(leds)] = { 0 };
-static uint8_t led_blink_counter[ARRAY_SIZE(leds)] = { 0 };
+static struct ledmap_evt_action led_saved_evt[4][ARRAY_SIZE(ledmap_leds)] = { 0 };
+static uint8_t led_blink_counter[ARRAY_SIZE(ledmap_leds)] = { 0 };
 
 #if 0
 /**
@@ -51,10 +51,10 @@ static uint8_t led_blink_counter[ARRAY_SIZE(leds)] = { 0 };
  */
 static void led_set_ll(uint8_t led, bool on)
 {
-    if (led >= ARRAY_SIZE(leds))
+    if (led >= ARRAY_SIZE(ledmap_leds))
         return;
 
-    nrf_gpio_pin_write(leds[led].pin, !leds[led].dir ^ on);
+    nrf_gpio_pin_write(ledmap_leds[led].pin, !ledmap_leds[led].dir ^ on);
 }
 #endif
 
@@ -65,8 +65,8 @@ static void led_set_ll(uint8_t led, bool on)
  */
 static void leds_set_ll(uint8_t mask)
 {
-    for (uint8_t i = 0; i < ARRAY_SIZE(leds); i++) {
-        nrf_gpio_pin_write(leds[i].pin, !leds[i].dir ^ ((mask & (1 << i)) > 0));
+    for (uint8_t i = 0; i < ARRAY_SIZE(ledmap_leds); i++) {
+        nrf_gpio_pin_write(ledmap_leds[i].pin, !ledmap_leds[i].dir ^ ((mask & (1 << i)) > 0));
     }
 }
 
@@ -112,46 +112,85 @@ static void led_reverse(uint8_t led)
     led_set(led, !(led_val & (1 << led)));
 }
 
-static void ledmap_handler(enum user_event event, uint8_t param)
+static void led_actions_handler()
 {
-    for (uint8_t i = 0; i < ARRAY_SIZE(events); i++) {
-        if (events[i].event == event && events[i].param == param) {
-            for (uint8_t j = 0; j < ARRAY_SIZE(leds); j++) {
-                if ((1 << j) & events[i].led_mask) {
-                    led_saved_evt[j] = events[i].action;
-                    switch (events[i].action) {
-                    case TRIG_LED_ON:
-                        led_set(j, true);
-                        break;
-                    case TRIG_LED_OFF:
-                        led_set(j, false);
-                        break;
-                    case TRIG_LED_REVERSE:
-                        led_reverse(j);
-                        break;
-                    default:
-                        break;
-                    }
-
-                    leds_update();
-                    power_save_reset();
-                }
+    for (uint8_t i = 0; i < ARRAY_SIZE(ledmap_leds); i++) {
+        struct ledmap_evt_action action = led_saved_evt[0][i];
+        uint8_t j = 4;
+        while (j--) {
+            if (led_saved_evt[j][i].action != TRIG_NO_ACTION) {
+                action = led_saved_evt[j][i];
+                break;
             }
         }
+
+        switch (action.action) {
+        case TRIG_NO_ACTION:
+        case TRIG_LED_OFF:
+            led_set(i, false);
+            break;
+        case TRIG_LED_ON:
+            led_set(i, true);
+            break;
+        case TRIG_LED_REVERSE:
+            led_reverse(i);
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+static void ledmap_handler(enum user_event evt, uint8_t param)
+{
+    bool led_changed = false;
+    for (uint8_t i = 0; i < ARRAY_SIZE(ledmap_events); i++) {
+        struct ledmap_event event = ledmap_events[i];
+        if (event.event != evt || event.param != param)
+            continue;
+
+        for (uint8_t j = 0; j < ARRAY_SIZE(ledmap_leds); j++) {
+            if ((1 << j) & event.led_mask) {
+                led_saved_evt[event.action.priority][j] = event.action;
+                led_blink_counter[j] = 0;
+                led_changed = true;
+            }
+        }
+    }
+
+    if (led_changed) {
+        led_actions_handler();
+        leds_update();
+        power_save_reset();
     }
 }
 
 static void led_blink_timer_handler(void* context)
 {
-    for (uint8_t i = 0; i < ARRAY_SIZE(leds); i++) {
-        if (led_saved_evt[i] >> 6 == LED_TRIG_BLINK) {
-            uint8_t times = led_saved_evt[i] & 0x07;
-            uint8_t duration = (led_saved_evt[i] >> 3) & 0x07;
+    for (uint8_t i = 0; i < ARRAY_SIZE(ledmap_leds); i++) {
+        struct ledmap_evt_action action = led_saved_evt[0][i];
+        uint8_t j = 4;
+        while (j--) {
+            if (led_saved_evt[j][i].action != TRIG_NO_ACTION) {
+                action = led_saved_evt[j][i];
+                break;
+            }
+        }
 
-            // 判断是否达到次数。如果达到则重置计数器并关闭灯管
+        if (action.act_code == LED_TRIG_BLINK) {
+            uint8_t times = action.param & 0x03;
+            uint8_t duration = (action.param >> 2) & 0x03;
+
+            // 判断是否达到次数。如果达到则重置计数器并关闭灯光
             if (times && (led_blink_counter[i] >> 4) >= times) {
-                led_saved_evt[i] = TRIG_LED_OFF;
+                led_saved_evt[j][i].action = TRIG_NO_ACTION;
                 led_blink_counter[i] = 0;
+                // 更新灯光
+                led_actions_handler();
+                // 显示当前状态
+                if (!power_save) {
+                    leds_update();
+                }
                 continue;
             }
 
@@ -178,16 +217,16 @@ static void led_blink_timer_handler(void* context)
 
 static void leds_init()
 {
-    for (uint8_t i = 0; i < ARRAY_SIZE(leds); i++) {
-        nrf_gpio_cfg_output(leds[i].pin);
+    for (uint8_t i = 0; i < ARRAY_SIZE(ledmap_leds); i++) {
+        nrf_gpio_cfg_output(ledmap_leds[i].pin);
     }
     app_timer_create(&led_blink_timer, APP_TIMER_MODE_REPEATED, led_blink_timer_handler);
 }
 
 static void leds_deinit()
 {
-    for (uint8_t i = 0; i < ARRAY_SIZE(leds); i++) {
-        nrf_gpio_cfg_default(leds[i].pin);
+    for (uint8_t i = 0; i < ARRAY_SIZE(ledmap_leds); i++) {
+        nrf_gpio_cfg_default(ledmap_leds[i].pin);
     }
 }
 
@@ -199,7 +238,6 @@ static void ledmap_evt_handler(enum user_event event, void* arg)
         switch (param) {
         case KBD_STATE_POST_INIT: // 初始化LED
             leds_init();
-            leds_set_ll(0xFF);
             break;
         case KBD_STATE_INITED: // 启动闪亮计时器
             app_timer_start(led_blink_timer, APP_TIMER_TICKS(200), NULL);

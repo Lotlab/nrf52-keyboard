@@ -1,6 +1,7 @@
 #pragma once
 
 #include "events.h"
+#include <stdint.h>
 
 enum LED_Trigger {
     LED_TRIG_STATIC,
@@ -10,25 +11,38 @@ enum LED_Trigger {
 };
 
 enum LED_Trigger_Static {
+    LED_TRIG_NO_ACTION, // 无动作
     LED_TRIG_OFF, // 关闭 LED
     LED_TRIG_ON, // 启用 LED
     LED_TRIG_REVERSE, // 反转 LED 状态
 };
 
-struct led_define {
+struct ledmap_led {
     bool dir : 1; // 方向。0是拉低亮，1是拉高亮
     uint8_t pin : 7;
 };
 
-struct events_led {
+struct ledmap_evt_action {
+    uint8_t priority : 2;
+    union {
+        uint8_t action : 6;
+        struct {
+            uint8_t param : 4;
+            uint8_t act_code : 2;
+        };
+    };
+};
+
+struct ledmap_event {
     enum user_event event;
     uint8_t param;
     uint8_t led_mask;
-    uint8_t action;
+    struct ledmap_evt_action action;
 };
 
+#define TRIG_LED(g, c) (((g & 0x03) << 4) + ((c)&0x0F))
 
-#define TRIG_LED(g, c) (((g & 0x03) << 6) + ((c) & 0x3F))
+#define TRIG_NO_ACTION TRIG_LED(LED_TRIG_STATIC, LED_TRIG_NO_ACTION)
 
 /**
  * @brief 开启 LED
@@ -50,7 +64,7 @@ struct events_led {
  * @brief LED 以指定长度闪动指定次数
  * 
  */
-#define TRIG_LED_BLINK(times, duration) TRIG_LED(LED_TRIG_BLINK, ((duration & 0x07) << 3) + (times & 0x07))
+#define TRIG_LED_BLINK(times, duration) TRIG_LED(LED_TRIG_BLINK, ((duration & 0x03) << 2) + (times & 0x03))
 /**
  * @brief LED 开启一定时间后关闭
  * 
