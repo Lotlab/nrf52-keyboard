@@ -51,19 +51,19 @@ void action_macro_replay()
 {
     // 等待WAIT命令的毫秒数
     if (macro_delay) {
-#if KEYBOARD_SCAN_INTERVAL == 1
+#if KEYBOARD_FAST_SCAN_INTERVAL == 1
         macro_delay--;
 #else
-        macro_delay = macro_delay > KEYBOARD_SCAN_INTERVAL ? macro_delay - KEYBOARD_SCAN_INTERVAL : 0;
+        macro_delay = macro_delay > KEYBOARD_FAST_SCAN_INTERVAL ? macro_delay - KEYBOARD_FAST_SCAN_INTERVAL : 0;
 #endif
         return;
     }
     // 等待设置的两个宏之间的间隔秒数
     if (macro_interval) {
-#if KEYBOARD_SCAN_INTERVAL == 1
+#if KEYBOARD_FAST_SCAN_INTERVAL == 1
         macro_interval--;
 #else
-        macro_interval = macro_interval > KEYBOARD_SCAN_INTERVAL ? macro_interval - KEYBOARD_SCAN_INTERVAL : 0;
+        macro_interval = macro_interval > KEYBOARD_FAST_SCAN_INTERVAL ? macro_interval - KEYBOARD_FAST_SCAN_INTERVAL : 0;
 #endif
         return;
     }
