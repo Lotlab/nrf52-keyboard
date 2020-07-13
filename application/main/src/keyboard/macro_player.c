@@ -50,21 +50,13 @@ void action_macro_play(const macro_t* macro_p)
 void action_macro_replay()
 {
     // 等待WAIT命令的毫秒数
-    if (macro_delay) {
-#if KEYBOARD_FAST_SCAN_INTERVAL == 1
-        macro_delay--;
-#else
-        macro_delay = macro_delay > KEYBOARD_FAST_SCAN_INTERVAL ? macro_delay - KEYBOARD_FAST_SCAN_INTERVAL : 0;
-#endif
+    if (macro_delay >= KEYBOARD_FAST_SCAN_INTERVAL) {
+        macro_delay -= KEYBOARD_FAST_SCAN_INTERVAL;
         return;
     }
     // 等待设置的两个宏之间的间隔秒数
-    if (macro_interval) {
-#if KEYBOARD_FAST_SCAN_INTERVAL == 1
-        macro_interval--;
-#else
-        macro_interval = macro_interval > KEYBOARD_FAST_SCAN_INTERVAL ? macro_interval - KEYBOARD_FAST_SCAN_INTERVAL : 0;
-#endif
+    if (macro_interval >= KEYBOARD_FAST_SCAN_INTERVAL) {
+        macro_interval -= KEYBOARD_FAST_SCAN_INTERVAL;
         return;
     }
 
