@@ -18,8 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "driver/ledmap/ledmap.h"
 #include <stdint.h>
+
+#ifdef NRF52_APP
+    #include "ledmap/ledmap.h"
+#endif
 
 /* USB和蓝牙的显示参数 */
 #define VENDOR_ID 0x1209 /* USB VID */
@@ -85,8 +88,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_DFU_START 24
 #define LED_DFU_FINISH 23
 // #define LED_DFU_POSITIVE
-// 定义两个LED灯
-static const struct ledmap_led ledmap_leds[] = { { .dir = 0, .pin = 25 }, { .dir = 0, .pin = 23 } };
 
 // USB UART 传输配置
 #define HAS_USB // 启用与CH554的通信支持
@@ -114,6 +115,10 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 17, 18, 19, 20, 21, 2
 
 #define DEBOUNCE 5 /* 硬件消抖次数，设置为0则不消抖 */
 #define MATRIX_SCAN_DELAY_CYCLE 36 /* 按键扫描等待IO稳定的延时时长 */
+
+#ifdef NRF52_APP
+// 定义两个LED灯
+static const struct ledmap_led ledmap_leds[] = { { .dir = 0, .pin = 25 }, { .dir = 0, .pin = 23 } };
 
 // LED事件
 static const struct ledmap_event ledmap_events[] = {
@@ -185,3 +190,4 @@ static const struct ledmap_event ledmap_events[] = {
         .action = { .priority = 0, .action = TRIG_LED_ON },
     },
 };
+#endif
