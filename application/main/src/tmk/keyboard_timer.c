@@ -15,10 +15,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
 #include "timer.h"
+#include <stdint.h>
 
 #include "app_timer.h"
+
+#define TICK_PER_MILLISECOND (32768 / (APP_TIMER_CONFIG_RTC_FREQUENCY + 1) / 1000)
 
 void timer_init()
 {
@@ -43,7 +45,7 @@ inline uint32_t timer_read32()
 
     // but, tmk does not use 32bit timer
     time = app_timer_cnt_get();
-    return time / 32;
+    return time / TICK_PER_MILLISECOND;
 }
 
 inline uint16_t timer_elapsed(uint16_t last)
@@ -54,6 +56,6 @@ inline uint16_t timer_elapsed(uint16_t last)
 inline uint32_t timer_elapsed32(uint32_t last)
 {
     uint32_t time = app_timer_cnt_get();
-    uint32_t elapsed = app_timer_cnt_diff_compute(time, last * 32);
-    return elapsed / 32;
+    uint32_t elapsed = app_timer_cnt_diff_compute(time, last * TICK_PER_MILLISECOND);
+    return elapsed / TICK_PER_MILLISECOND;
 }
