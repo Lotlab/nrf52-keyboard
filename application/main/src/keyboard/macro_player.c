@@ -24,8 +24,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "action.h"
 #include "action_macro.h"
 #include "action_util.h"
+#include "app_timer.h"
 #include "keyboard_host_driver.h"
 #include "queue.h"
+
+#define MACRO_PLAY_INTERVAL APP_TIMER_TICKS(1)
+APP_TIMER_DEF(m_keyboard_macro_timer);
 
 #ifndef NO_ACTION_MACRO
 #define MAX_MACRO_QUEUE 5
@@ -36,36 +40,56 @@ static uint8_t macro_interval = 0;
 static uint8_t macro_interval_reload = DEFAULT_MACRO_INTERVAL;
 static uint8_t macro_delay = 0;
 static uint8_t mod_storage = 0;
+static bool timer_started = false;
 
 QUEUE(const macro_t*, macro_queue, MAX_MACRO_QUEUE);
 
 void action_macro_play(const macro_t* macro_p)
 {
     macro_queue_push(macro_p);
+    // 启用播放定时器
+    if (!timer_started) {
+        ret_code_t err_code = app_timer_start(
+            m_keyboard_macro_timer,
+            MACRO_PLAY_INTERVAL,
+            NULL);
+        APP_ERROR_CHECK(err_code);
+
+        timer_started = true;
+    }
 }
 
 /**
  * 播放宏
  */
-void action_macro_replay()
+static void action_macro_replay(void* p_context)
 {
+    UNUSED_PARAMETER(p_context);
+
     // 等待WAIT命令的毫秒数
-    if (macro_delay >= KEYBOARD_FAST_SCAN_INTERVAL) {
-        macro_delay -= KEYBOARD_FAST_SCAN_INTERVAL;
+    if (macro_delay >= 1) {
+        macro_delay -= 1;
         return;
     }
     // 等待设置的两个宏之间的间隔秒数
-    if (macro_interval >= KEYBOARD_FAST_SCAN_INTERVAL) {
-        macro_interval -= KEYBOARD_FAST_SCAN_INTERVAL;
+    if (macro_interval >= 1) {
+        macro_interval -= 1;
         return;
     }
 
     // 重载下一个等待播放的宏
     if (!current_macro) {
-        if (macro_queue_empty())
+        if (macro_queue_empty()) {
+            if (timer_started) {
+                ret_code_t err_code = app_timer_stop(m_keyboard_macro_timer);
+                APP_ERROR_CHECK(err_code);
+
+                timer_started = false;
+            }
             return;
-        else
+        } else {
             current_macro = *macro_queue_peek();
+        }
     }
 
     // 当前发送队列不为空，等待空
@@ -135,6 +159,15 @@ void action_macro_replay()
         return;
     }
     macro_interval = macro_interval_reload;
+}
+
+void macro_play_timer_init()
+{
+    ret_code_t err_code = app_timer_create(
+        &m_keyboard_macro_timer,
+        APP_TIMER_MODE_REPEATED,
+        action_macro_replay);
+    APP_ERROR_CHECK(err_code);
 }
 
 #endif

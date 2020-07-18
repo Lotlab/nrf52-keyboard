@@ -75,8 +75,6 @@ static void keyboard_scan_handler(void* p_context)
     {
         keyboard_task();
     }
-    // 处理宏播放
-    action_macro_replay();
 }
 
 /**
@@ -231,6 +229,7 @@ void ble_keyboard_init(void)
     // - matrix_init();
     host_set_driver(&driver); // 设置 host driver
     keyboard_timer_init(); // 初始化计时器
+    macro_play_timer_init(); // 初始化宏计数器
 #ifdef ENABLE_WATCHDOG
     keyboard_wdt_init(); // 初始化看门狗
 #endif
