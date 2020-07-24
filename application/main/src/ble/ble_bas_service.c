@@ -18,6 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ble_bas_service.h"
 #include <string.h>
 
+#include "action.h"
+
 #include "ble_bas.h"
 #include "ble_config.h"
 
@@ -121,4 +123,26 @@ ADC_CONVERT_CHANNEL(batt_channel);
 void battery_service_init(void)
 {
     bas_init();
+}
+
+/**
+ * @brief 输出电池剩余电量.
+ *
+ */
+void print_battery_percentage()
+{
+    int digits[10] = { KC_0, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9 };
+
+    char percentage[3];
+    sprintf(percentage, "%d", battery_info.percentage);
+
+    const char *num = percentage;
+    while (1) {
+        char digit = *num;
+        if (!digit) break;
+        int keycode = digits[digit - 0x30];
+        register_code(keycode);
+        unregister_code(keycode);
+        ++num;
+    }
 }
