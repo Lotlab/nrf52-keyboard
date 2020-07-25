@@ -19,7 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "action.h"
-#include "wait.h"
 
 #include "ble_bas.h"
 #include "ble_config.h"
@@ -146,7 +145,6 @@ void print_battery_percentage()
                 int keycode = digits[index];
                 register_code(keycode);
                 unregister_code(keycode);
-                wait_ms(1);
             }
         } while ((factor /= 10) >= 1);
     }

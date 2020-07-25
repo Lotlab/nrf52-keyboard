@@ -99,7 +99,6 @@ __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint
                 break;
             }
             break;
-
         default:
             break;
         }
