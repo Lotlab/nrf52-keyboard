@@ -25,6 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "host.h"
 #include "keymap.h"
 #include "ble_services.h"
+#include "ble_bas_service.h"
 
 #ifdef NKRO_ENABLE
 
@@ -63,6 +64,9 @@ __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint
                 break;
             case CONTROL_BOOTLOADER: // 跳转到bootloader
                 bootloader_jump();
+                break;
+            case CONTROL_BATTERY_PERCENTAGE: // 输出电池剩余电量
+                print_battery_percentage();
                 break;
             default:
                 break;
