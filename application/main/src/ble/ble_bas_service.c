@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "action.h"
+#include "wait.h"
 
 #include "ble_bas.h"
 #include "ble_config.h"
@@ -132,17 +133,21 @@ void battery_service_init(void)
 void print_battery_percentage()
 {
     int digits[10] = { KC_0, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9 };
+    char percentage = battery_info.percentage;
 
-    char percentage[3];
-    sprintf(percentage, "%d", battery_info.percentage);
-
-    const char *num = percentage;
-    while (1) {
-        char digit = *num;
-        if (!digit) break;
-        int keycode = digits[digit - 0x30];
-        register_code(keycode);
-        unregister_code(keycode);
-        ++num;
+    if (percentage == 0) {
+        register_code(KC_0);
+        unregister_code(KC_0);
+    } else {
+        int factor = 100;
+        do {
+            if (percentage >= factor) {
+                int index = (percentage / factor) % 10;
+                int keycode = digits[index];
+                register_code(keycode);
+                unregister_code(keycode);
+                wait_ms(1);
+            }
+        } while ((factor /= 10) >= 1);
     }
 }

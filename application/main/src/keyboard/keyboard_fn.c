@@ -65,6 +65,9 @@ __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint
             case CONTROL_BOOTLOADER: // 跳转到bootloader
                 bootloader_jump();
                 break;
+            case CONTROL_BATTERY_PERCENTAGE: // 输出电池剩余电量
+                print_battery_percentage();
+                break;
             default:
                 break;
             }
@@ -92,16 +95,6 @@ __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint
                 switch_device_rebond();
                 break;
 #endif
-            default:
-                break;
-            }
-            break;
-
-        case BATTERY_INFO:
-            switch (opt) {
-            case BATTERY_PERCENTAGE: // 输出电池剩余电量
-                print_battery_percentage();
-                break;
             default:
                 break;
             }
