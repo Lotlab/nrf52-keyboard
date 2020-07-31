@@ -21,6 +21,18 @@ ifndef NRF_PACKAGE_NAME
 	NRF_PACKAGE_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_$(VERSION).zip
 endif
 
+ifndef NRF_MERGE_SIGN_NAME
+	NRF_MERGE_SIGN_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
+endif
+
+ifndef NRF_MERGE_SD_NAME
+	NRF_MERGE_SD_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_with_sd.hex
+endif
+
+ifndef NRF_MERGE_ALL_NAME
+	NRF_MERGE_ALL_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_sign_with_sd.hex
+endif
+
 $(OUTPUT_DIRECTORY)/nrf52_kbd.out: \
 	LINKER_SCRIPT  := $(APP_PROJ_DIR)/$(LD_NAME)
 
@@ -246,8 +258,9 @@ ifeq ($(SOFTDEVICE), S112)
 	ASMFLAGS += -DS112
 	SOFTDEVICE_NAME := s112_nrf52_6.1.1_softdevice.hex
 	SOFTDEVICE_VER  := 0xb8
+ifndef SOFTDEVICE_PATH
 	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s112/hex/s112_nrf52_6.1.1_softdevice.hex
-	
+endif
     INC_FOLDERS += \
 		$(SDK_ROOT)/components/softdevice/s112/headers/nrf52 \
 		$(SDK_ROOT)/components/softdevice/s112/headers
@@ -257,8 +270,9 @@ else ifeq ($(SOFTDEVICE), S132)
 	ASMFLAGS += -DS132
 	SOFTDEVICE_NAME := s132_nrf52_6.1.1_softdevice.hex
 	SOFTDEVICE_VER  := 0xb7
+ifndef SOFTDEVICE_PATH
 	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_6.1.1_softdevice.hex
-	
+endif
 	INC_FOLDERS += \
 		$(SDK_ROOT)/components/softdevice/s132/headers/nrf52 \
 		$(SDK_ROOT)/components/softdevice/s132/headers
@@ -359,16 +373,16 @@ pyocd_flash_softdevice:
 
 # Merge Package for download
 merge_setting: setting
-	@echo Merging program with signature to $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
-	mergehex -m $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
+	@echo Merging program with signature to $(NRF_MERGE_SIGN_NAME)
+	mergehex -m $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(NRF_MERGE_SIGN_NAME)
 
 merge_softdevice: default
-	@echo Merging program and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/nrf52_kbd_with_sd.hex
-	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(OUTPUT_DIRECTORY)/nrf52_kbd_with_sd.hex
+	@echo Merging program and SoftDevice $(SOFTDEVICE_NAME) to $(NRF_MERGE_SD_NAME)
+	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(NRF_MERGE_SD_NAME)
 
 merge_all: setting
-	@echo Merging program, signature and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/nrf52_kbd_sign_with_sd.hex
-	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(OUTPUT_DIRECTORY)/nrf52_kbd_sign_with_sd.hex
+	@echo Merging program, signature and SoftDevice $(SOFTDEVICE_NAME) to $(NRF_MERGE_ALL_NAME)
+	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(NRF_MERGE_ALL_NAME)
 
 # Erase chip
 erase:
