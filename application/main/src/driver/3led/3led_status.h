@@ -33,3 +33,16 @@ void status_led_charging(bool state);
  **/
 void status_led_usb(bool state);
 
+/**
+ * 读取状态灯开关存储值
+ */
+uint8_t leds_turn_off_read(void);
+
+/**
+ * 写入状态灯开关存储值
+ */
+void leds_turn_off_write(uint8_t val);
+/** 
+ * LED状态灯开关
+ **/
+void leds_switch();

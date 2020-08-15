@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "action_layer.h"
 #include "action_util.h"
 #include "app_timer.h"
+#include "ble_bas_service.h"
 #include "ble_services.h"
 #include "bootloader.h"
 #include "command.h"
@@ -32,6 +33,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "nrf_pwr_mgmt.h"
 #ifdef RGBLIGHT_ENABLE
 #include "rgblight.h"
+#endif
+#ifdef THREE_LED_STATUS
+#include "3led_status.h"
 #endif
 #include "eeconfig.h"
 #include "usb_comm.h"
@@ -237,7 +241,7 @@ static bool command_common(uint8_t code)
 #endif
         app_timer_start(command_run_timer, APP_TIMER_TICKS(1000), (void*)(uint32_t)COMMAND_SLEEP);
         break;
-    case KC_ESC:
+    case KC_BSPC:
     case KC_GRV:
         //休眠
         clear_keyboard();
@@ -246,6 +250,15 @@ static bool command_common(uint8_t code)
 #endif
         app_timer_start(command_run_timer, APP_TIMER_TICKS(1000), (void*)(uint32_t)COMMAND_SYSTEMOFF);
         break;
+    case KC_H:
+        clear_keyboard();
+        print_battery_percentage();
+        break;
+#ifdef THREE_LED_STATUS
+    case KC_L:
+        leds_switch();
+        break;
+#endif
     case KC_I:
         //重置键盘
         clear_keyboard();
