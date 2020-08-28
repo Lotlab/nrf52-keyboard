@@ -204,23 +204,10 @@ static void timers_init(void)
 #endif
 }
 
-/**
- * @brief 尝试初始化存储，若无法初始化则尝试清空存储区。
- * 
- */
-static void storage_check(void)
-{
-    ret_code_t err_code = fds_init();
-    if (err_code == FDS_ERR_NO_PAGES) {
-        fstorage_clear();
-    }
-}
-
 /**@brief Function for initializing services that will be used by the application.
  */
 static void services_init(void)
 {
-    storage_check();
     ble_services_init();
     battery_service_init();
     hid_service_init(service_error_handler);
@@ -341,6 +328,7 @@ int main(void)
     set_stage(KBD_STATE_PRE_INIT);
 
     ble_stack_init();
+    storage_init();       //存储初始化
     scheduler_init();
     services_init();
     ble_keyboard_init();
