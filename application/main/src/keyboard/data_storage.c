@@ -362,12 +362,25 @@ void storage_delete(uint8_t mask)
 }
 
 /**
+ * @brief 尝试初始化存储，若无法初始化则尝试清空存储区。
+ * 
+ */
+static void storage_check(void)
+{
+    ret_code_t err_code = fds_init();
+    if (err_code == FDS_ERR_NO_PAGES) {
+        fstorage_clear();
+    }
+}
+
+/**
  * @brief 初始化存储模块并读取记录
  * 
  */
 void storage_init()
 {
     storage_callback_init();
+    storage_check();  //存储检测
 #ifdef CONFIG_STORAGE
     // 初始化配置分片
     config_storage_init();

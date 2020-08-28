@@ -220,7 +220,6 @@ void ble_keyboard_init(void)
     keyboard_setup(); // 初始化各按键阵列
     // - martix_setup();
     keyboard_led_init(); // 初始化LED
-    storage_init(); // 初始化自定义keymap
 #ifdef HAS_USB
     usb_comm_init(); // 初始化USB通讯
 #endif
