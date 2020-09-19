@@ -45,6 +45,15 @@ ifeq (yes,$(strip $(RGBLIGHT_ENABLE)))
     OPT_DEFS += -DNRFX_PWM_ENABLED=1 -DNRFX_PWM0_ENABLED=1 -DPWM_ENABLED=1 -DPWM0_ENABLED=1 -DRGBLIGHT_ENABLE
 endif
 
+ifeq (yes,$(strip $(RGB_LIGHT_ENABLE)))
+
+    INC_FOLDERS += $(DRIVER_DIR)/rgb_light \
+
+    SRC_FILES +=$(DRIVER_DIR)/rgb_light/rgb_light.c \
+                
+    OPT_DEFS += -DRGB_LIGHT_ENABLE
+endif
+
 ifeq (yes,$(strip $(SHARED_I2C_DRIVER)))
     INC_FOLDERS += $(DRIVER_DIR)/i2c
     SRC_FILES += $(DRIVER_DIR)/i2c/shared_i2c.c

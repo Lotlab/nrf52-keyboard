@@ -82,6 +82,3 @@ endif
 ifeq (yes,$(strip $(KEYMAP_SECTION_ENABLE)))
     OPT_DEFS += -DKEYMAP_SECTION_ENABLE
 endif
-ifeq (yes,$(strip $(RGBLIGHT_ENABLE)))
-    OPT_DEFS += -DRGBLIGHT_ENABLE
-endif
