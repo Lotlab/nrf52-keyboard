@@ -131,9 +131,9 @@ void keyboard_led_rgb_init()
     uint32_t err_code;
     low_power_pwm_config_t lppwm_config = {
 #ifdef LED_RGB_CC
-        .active_high = LOW_POWER_PWM_CONFIG_ACTIVE_LOW,
+        .active_high = true,
 #else
-        .active_high = LOW_POWER_PWM_CONFIG_ACTIVE_HIGH,
+        .active_high = false,
 #endif
         .period = (1 << PWM_BITS) - 1,
         .p_port = LOW_POWER_PWM_CONFIG_PORT,
