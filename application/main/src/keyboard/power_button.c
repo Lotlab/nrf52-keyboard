@@ -42,8 +42,10 @@ static void button_handler(void)
 
     if (!nrf_gpio_pin_read(POWER_BUTTON)) //如果BUTTON输入低电平(按下)，则启动计数
     {
+        if (button_count < 10) {
         button_count++;
         return;
+        }
     } else {
         //1~4秒关机
         if (button_count > 1 && button_count <= 4) {
@@ -57,10 +59,15 @@ static void button_handler(void)
         }
         //10秒以上重置
         if (button_count >= 10) {
-            button_count = 0;
+            if (button_count == 10) {
             delete_bonds();
             storage_delete(0x0F);
             storage_read(0x0F);
+            }
+            if (button_count >= 15) {
+            NVIC_SystemReset();
+            }
+            button_count++;
         }
         //上述判断最大误差1秒
     }
