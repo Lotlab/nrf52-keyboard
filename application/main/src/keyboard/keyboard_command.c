@@ -34,6 +34,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef RGBLIGHT_ENABLE
 #include "rgblight.h"
 #endif
+#ifdef RGB_LIGHT_ENABLE
+#include "rgb_light.h"
+#endif
 #ifdef THREE_LED_STATUS
 #include "3led_status.h"
 #endif
@@ -194,7 +197,33 @@ static bool command_common(uint8_t code)
         clear_keyboard();
         advertising_restart(BLE_ADV_MODE_FAST, true);
         break;
-#ifdef RGBLIGHT_ENABLE //RGB灯控制
+#ifdef RGB_LIGHT_ENABLE //RGB灯（无控制芯片）控制
+    case KC_Z:
+        rgb_light_step();
+        break;
+    case KC_X:
+        rgb_light_toggle();
+        break;
+    case KC_C:
+        rgb_light_increase_hue();
+        break;
+    case KC_V:
+        rgb_light_decrease_hue();
+        break;
+    case KC_A:
+        rgb_light_increase_sat();
+        break;
+    case KC_S:
+        rgb_light_decrease_sat();
+        break;
+    case KC_D:
+        rgb_light_increase_val();
+        break;
+    case KC_F:
+        rgb_light_decrease_val();
+        break;
+#endif
+#ifdef RGBLIGHT_ENABLE //RGB灯（带控制芯片）控制
     case KC_Z:
         rgblight_step();
         break;
