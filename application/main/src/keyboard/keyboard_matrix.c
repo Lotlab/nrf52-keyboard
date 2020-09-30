@@ -49,9 +49,13 @@ static uint8_t debouncing = DEBOUNCE_RELOAD;
 static matrix_row_t matrix[MATRIX_ROWS];
 static matrix_row_t matrix_debouncing[MATRIX_ROWS];
 
+#ifdef LESS_IO
+static matrix_row_t read_cols(uint8_t row);
+#else
 static matrix_row_t read_cols(void);
+#endif
 static void select_row(uint8_t row);
-static void unselect_rows(void);
+static void unselect_rows(uint8_t row);
 
 #ifdef ROW_IN
 #define READ_COL(pin) (!nrf_gpio_pin_read(pin))
@@ -65,24 +69,6 @@ static void unselect_rows(void);
  */
 void matrix_init(void)
 {
-    for (uint_fast8_t i = MATRIX_ROWS; i--;) {
-        nrf_gpio_cfg(
-            (uint32_t)row_pin_array[i],
-            NRF_GPIO_PIN_DIR_OUTPUT,
-            NRF_GPIO_PIN_INPUT_DISCONNECT,
-            NRF_GPIO_PIN_NOPULL,
-#ifdef ROW_IN
-            NRF_GPIO_PIN_S0D1,
-#else
-            NRF_GPIO_PIN_S0S1,
-#endif
-            NRF_GPIO_PIN_NOSENSE);
-#ifdef ROW_IN
-        nrf_gpio_pin_set((uint32_t)row_pin_array[i]);
-#else
-        nrf_gpio_pin_clear((uint32_t)row_pin_array[i]); //Set pin to low
-#endif
-    }
     for (uint_fast8_t i = MATRIX_COLS; i--;) {
 #ifdef ROW_IN
         nrf_gpio_cfg_input((uint32_t)column_pin_array[i], NRF_GPIO_PIN_PULLUP);
@@ -92,6 +78,23 @@ void matrix_init(void)
     }
 }
 /** read all rows */
+#ifdef LESS_IO
+static matrix_row_t read_cols(uint8_t row)
+{
+    uint16_t result = 0;
+
+    for (uint_fast8_t c = 0; c < MATRIX_COLS; c++) {
+
+        if (c == row)
+             continue;
+
+        if (READ_COL((uint32_t)column_pin_array[c]))
+            result |= 1 << c;
+    }
+
+    return result;
+}
+#else
 static matrix_row_t read_cols(void)
 {
     uint16_t result = 0;
@@ -103,9 +106,25 @@ static matrix_row_t read_cols(void)
 
     return result;
 }
+#endif
 
 static void select_row(uint8_t row)
 {
+nrf_gpio_cfg(
+            (uint32_t)row_pin_array[row],
+            NRF_GPIO_PIN_DIR_OUTPUT,
+            NRF_GPIO_PIN_INPUT_DISCONNECT,
+            NRF_GPIO_PIN_NOPULL,
+#ifdef LESS_IO
+            NRF_GPIO_PIN_H0D1,
+#else
+#ifdef ROW_IN
+            NRF_GPIO_PIN_S0D1,
+#else
+            NRF_GPIO_PIN_S0S1,
+#endif
+#endif
+            NRF_GPIO_PIN_NOSENSE);
 #ifdef ROW_IN
     nrf_gpio_pin_clear((uint32_t)row_pin_array[row]);
 #else
@@ -113,15 +132,21 @@ static void select_row(uint8_t row)
 #endif
 }
 
-static void unselect_rows(void)
+static void unselect_rows(uint8_t row)
 {
-    for (uint_fast8_t i = 0; i < MATRIX_ROWS; i++) {
+#ifdef LESS_IO
 #ifdef ROW_IN
-        nrf_gpio_pin_set((uint32_t)row_pin_array[i]);
+    nrf_gpio_cfg_input((uint32_t)row_pin_array[row], NRF_GPIO_PIN_PULLUP);
 #else
-        nrf_gpio_pin_clear((uint32_t)row_pin_array[i]);
+    nrf_gpio_cfg_input((uint32_t)row_pin_array[row], NRF_GPIO_PIN_PULLDOWN);
 #endif
-    }
+#else
+#ifdef ROW_IN
+    nrf_gpio_pin_set((uint32_t)row_pin_array[row]);
+#else
+    nrf_gpio_pin_clear((uint32_t)row_pin_array[row]);
+#endif
+#endif
 }
 
 static inline void delay_us(void)
@@ -142,11 +167,12 @@ uint8_t matrix_scan(void)
 {
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         select_row(i);
-#ifdef HYBRID_MATRIX
-        init_cols();
-#endif
         delay_us(); // wait stable
+#ifdef LESS_IO
+        matrix_row_t cols = read_cols(i);
+#else
         matrix_row_t cols = read_cols();
+#endif
         if (matrix_debouncing[i] != cols) {
             matrix_debouncing[i] = cols;
             if (debouncing) {
@@ -156,7 +182,7 @@ uint8_t matrix_scan(void)
             }
             debouncing = DEBOUNCE_RELOAD;
         }
-        unselect_rows();
+        unselect_rows(i);
     }
 
     if (debouncing) {
@@ -255,9 +281,11 @@ uint8_t matrix_key_count(void)
  */
 void matrix_deinit(void)
 {
+#ifndef LESS_IO
     for (uint8_t i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_cfg_default(column_pin_array[i]);
     }
+#endif
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         nrf_gpio_cfg_default(row_pin_array[i]);
     }
