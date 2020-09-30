@@ -204,16 +204,6 @@ static void timers_init(void)
 #endif
 }
 
-/**@brief Function for initializing services that will be used by the application.
- */
-static void services_init(void)
-{
-    ble_services_init();
-    battery_service_init();
-    hid_service_init(service_error_handler);
-    adc_init();
-}
-
 /**@brief Function for starting timers.
  */
 static void timers_start(void)
@@ -324,13 +314,16 @@ int main(void)
     // Initialize.
     timers_init();
     power_management_init();
-
+    storage_init();       //存储初始化
+	
     set_stage(KBD_STATE_PRE_INIT);
 
     ble_stack_init();
-    storage_init();       //存储初始化
     scheduler_init();
-    services_init();
+    ble_services_init();
+    battery_service_init();
+    hid_service_init(service_error_handler);
+    adc_init();
     ble_keyboard_init();
 
 #if !defined(BOOTMAGIC_ENABLE) && defined(BOOTCHECK_ENABLE)
