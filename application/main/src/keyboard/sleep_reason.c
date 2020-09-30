@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nrf.h"
 #include "nrf_soc.h"
 
-#define BIT_MASK 0x02
+#define SLEEP_REASON_BIT_MASK 0x02
 
 /**
  * @brief 读取睡眠原因
@@ -31,7 +31,7 @@ bool sleep_reason_get(void)
 {
     uint32_t data;
     sd_power_gpregret_get(0, &data);
-    return data & BIT_MASK;
+    return !(data & SLEEP_REASON_BIT_MASK);
 }
 
 /**
@@ -45,9 +45,9 @@ void sleep_reason_set(bool val)
     sd_power_gpregret_get(0, &data);
 
     if (val) {
-        data |= BIT_MASK;
+        data -= (data & SLEEP_REASON_BIT_MASK);  //自动睡眠标志位0
     } else {
-        data -= (data & BIT_MASK);
+        data |= SLEEP_REASON_BIT_MASK;           //手动睡眠标志位1
     }
     sd_power_gpregret_clr(0, 0xffffffff);
     sd_power_gpregret_set(0, data);
