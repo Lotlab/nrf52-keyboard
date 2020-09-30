@@ -81,6 +81,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_STATUS_BLE 7
 #define LED_STATUS_CHARGING 5
 #define LED_STATUS_USB 6
+#define LED_BLE_CHANNEL1 7
+#define LED_BLE_CHANNEL2 6
+#define LED_BLE_CHANNEL3 5
 #define LED_POSITIVE // LED上拉驱动
 // 独立硬件按钮
 #define POWER_BUTTON 3
