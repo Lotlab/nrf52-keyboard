@@ -55,7 +55,6 @@ enum command_delay_hander_event {
     COMMAND_DFU,         //跳转Bootloader
     COMMAND_SLEEP,       //手动休眠
     COMMAND_SYSTEMOFF,   //手动关机
-    COMMAND_DEL_STORAGE, //清空配置存储
     COMMAND_BOND,        //清空绑定
     COMMAND_SWITCH       //切换蓝牙设备
 };
@@ -82,10 +81,6 @@ static void command_delay_handler(void* p_context)
         switch_device_select(devices_id);
         advertising_restart(BLE_ADV_MODE_FAST, false);
 #endif
-        break;
-    case COMMAND_DEL_STORAGE:
-        storage_delete(0x0F);
-        storage_read(0x0F);
         break;
     case COMMAND_SLEEP:
         sleep(SLEEP_MANUALLY);
@@ -259,11 +254,6 @@ static bool command_common(uint8_t code)
         leds_switch();
         break;
 #endif
-    case KC_I:
-        //重置键盘
-        clear_keyboard();
-        app_timer_start(command_run_timer, APP_TIMER_TICKS(200), (void*)(uint32_t)COMMAND_DEL_STORAGE);
-        break;
     default:
         return false;
     }
