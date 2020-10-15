@@ -19,9 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "action.h"
-
+#include "action_util.h"
 #include "ble_bas.h"
 #include "ble_config.h"
+#include "nrf_delay.h"
 
 #include "../config/keyboard_config.h"
 #include "adc_convert.h"
@@ -135,16 +136,16 @@ void print_battery_percentage()
     char percentage = battery_info.percentage;
 
     if (percentage == 0) {
-        register_code(KC_0);
-        unregister_code(KC_0);
+        type_code(KC_N);
+    } else if (percentage == 100) {
+        type_code(KC_F);
     } else {
         int factor = 100;
         do {
             if (percentage >= factor) {
                 int index = (percentage / factor) % 10;
                 int keycode = digits[index];
-                register_code(keycode);
-                unregister_code(keycode);
+                type_code(keycode);
             }
         } while ((factor /= 10) >= 1);
     }
