@@ -192,62 +192,57 @@ QUEUE(struct fds_update_op, gc_queue, 5);
  */
 static void storage_callback(fds_evt_t const* p_evt)
 {
-
-    switch (p_evt->id) 
-    {
-        case FDS_EVT_INIT: 
-        {
-            if (p_evt->result == FDS_SUCCESS) {
-                s_fds_initialized = true;
-            }
-            // 暂时停用清除数据
-            //if (p_evt->result == FDS_ERR_NO_PAGES) {
-            //   fstorage_clear();
-            //}
-        } break;
-        case FDS_EVT_GC: 
-        {
+    switch (p_evt->id) {
+    case FDS_EVT_INIT:
+        if (p_evt->result == FDS_SUCCESS) {
+            s_fds_initialized = true;
+        }
+        if (p_evt->result == FDS_ERR_NO_PAGES) {
+            fstorage_clear();
+        }
+        break;
+    case FDS_EVT_GC:
         // GC完毕事件
-            if (p_evt->result == FDS_SUCCESS) {
-                ret_code_t err_code;
+        if (p_evt->result == FDS_SUCCESS) {
+            ret_code_t err_code;
 
-                while (!gc_queue_empty()) {
-                    struct fds_update_op* item = gc_queue_peek();
-                    switch (item->type) {
-                    case FDS_OP_UPDATE:
-                        err_code = fds_record_update(item->record_desc, item->record);
-                        break;
-                    case FDS_OP_WRITE:
-                        err_code = fds_record_write(item->record_desc, item->record);
-                        break;
-                    default:
-                        // 操作未定义，直接跳过
-                        err_code = FDS_SUCCESS;
+            while (!gc_queue_empty()) {
+                struct fds_update_op* item = gc_queue_peek();
+                switch (item->type) {
+                case FDS_OP_UPDATE:
+                    err_code = fds_record_update(item->record_desc, item->record);
+                    break;
+                case FDS_OP_WRITE:
+                    err_code = fds_record_write(item->record_desc, item->record);
+                    break;
+                default:
+                    // 操作未定义，直接跳过
+                    err_code = FDS_SUCCESS;
+                    break;
+                }
+                if (err_code == FDS_SUCCESS) {
+                    gc_queue_pop();
+                } else {
+                    // 没有空间了，尝试GC
+                    if (err_code == FDS_ERR_NO_SPACE_IN_FLASH) {
+                        fds_gc();
                         break;
                     }
-                    if (err_code == FDS_SUCCESS) {
-                        gc_queue_pop();
-                    } else {
-                        // 没有空间了，尝试GC
-                        if (err_code == FDS_ERR_NO_SPACE_IN_FLASH) {
-                            fds_gc();
+                    // 操作队列没有空间了，等会再说
+                    if (err_code == FDS_ERR_NO_SPACE_IN_QUEUES) {
                         break;
-                        }
-                        // 操作队列没有空间了，等会再说
-                        if (err_code == FDS_ERR_NO_SPACE_IN_QUEUES) {
-                            break;
                         // todo: 等有空间再重新调用？
-                        }
                     }
                 }
             }
         }
-        case FDS_EVT_UPDATE:
-            break;
-        case FDS_EVT_WRITE:
-            break;
-        default:
-            break;
+        break;
+    case FDS_EVT_UPDATE:
+        break;
+    case FDS_EVT_WRITE:
+        break;
+    default:
+        break;
     }
 }
 
@@ -258,13 +253,12 @@ static void storage_callback(fds_evt_t const* p_evt)
 static void storage_callback_init()
 {
     ret_code_t err_code;
-    (void)fds_register(&storage_callback);  //注册FDS
-
-    err_code = fds_init();                  //初始化FDS
+    (void)fds_register(&storage_callback); //注册FDS
+    err_code = fds_init();                 //初始化FDS
     APP_ERROR_CHECK(err_code);
-    while(!s_fds_initialized)              // 等待初始化完成
+    while (!s_fds_initialized)             // 等待初始化完成
     {
-        sd_app_evt_wait();                  // 等待过程中待机
+        sd_app_evt_wait();                 // 等待过程中待机
     }
 }
 
