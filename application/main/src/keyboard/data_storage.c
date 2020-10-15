@@ -56,6 +56,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 REGISTER_FDS_BLOCK(keymap, KEYMAP_SIZE_WORD, KEYMAP_RECORD_KEY)
 
 static bool keymap_valid = true;
+static bool volatile s_fds_initialized;
 static void check_keymap()
 {
     bool flag = false;
@@ -191,50 +192,74 @@ QUEUE(struct fds_update_op, gc_queue, 5);
  */
 static void storage_callback(fds_evt_t const* p_evt)
 {
-    // GC完毕事件
-    if (p_evt->id == FDS_EVT_GC && p_evt->result == FDS_SUCCESS) {
-        ret_code_t err_code;
+    switch (p_evt->id) {
+    case FDS_EVT_INIT:
+        if (p_evt->result == FDS_SUCCESS) {
+            s_fds_initialized = true;
+        }
+        if (p_evt->result == FDS_ERR_NO_PAGES) {
+            fstorage_clear();
+        }
+        break;
+    case FDS_EVT_GC:
+        // GC完毕事件
+        if (p_evt->result == FDS_SUCCESS) {
+            ret_code_t err_code;
 
-        while (!gc_queue_empty()) {
-            struct fds_update_op* item = gc_queue_peek();
-            switch (item->type) {
-            case FDS_OP_UPDATE:
-                err_code = fds_record_update(item->record_desc, item->record);
-                break;
-            case FDS_OP_WRITE:
-                err_code = fds_record_write(item->record_desc, item->record);
-                break;
-            default:
-                // 操作未定义，直接跳过
-                err_code = FDS_SUCCESS;
-                break;
-            }
-            if (err_code == FDS_SUCCESS) {
-                gc_queue_pop();
-            } else {
-                // 没有空间了，尝试GC
-                if (err_code == FDS_ERR_NO_SPACE_IN_FLASH) {
-                    fds_gc();
+            while (!gc_queue_empty()) {
+                struct fds_update_op* item = gc_queue_peek();
+                switch (item->type) {
+                case FDS_OP_UPDATE:
+                    err_code = fds_record_update(item->record_desc, item->record);
+                    break;
+                case FDS_OP_WRITE:
+                    err_code = fds_record_write(item->record_desc, item->record);
+                    break;
+                default:
+                    // 操作未定义，直接跳过
+                    err_code = FDS_SUCCESS;
                     break;
                 }
-                // 操作队列没有空间了，等会再说
-                if (err_code == FDS_ERR_NO_SPACE_IN_QUEUES) {
-                    break;
-                    // todo: 等有空间再重新调用？
+                if (err_code == FDS_SUCCESS) {
+                    gc_queue_pop();
+                } else {
+                    // 没有空间了，尝试GC
+                    if (err_code == FDS_ERR_NO_SPACE_IN_FLASH) {
+                        fds_gc();
+                        break;
+                    }
+                    // 操作队列没有空间了，等会再说
+                    if (err_code == FDS_ERR_NO_SPACE_IN_QUEUES) {
+                        break;
+                        // todo: 等有空间再重新调用？
+                    }
                 }
             }
         }
+        break;
+    case FDS_EVT_UPDATE:
+        break;
+    case FDS_EVT_WRITE:
+        break;
+    default:
+        break;
     }
 }
 
 /**
- * @brief 初始化FDS回调
+ * @brief 初始化FDS
  * 
  */
 static void storage_callback_init()
 {
-    ret_code_t code = fds_register(&storage_callback);
-    APP_ERROR_CHECK(code);
+    ret_code_t err_code;
+    (void)fds_register(&storage_callback); //注册FDS
+    err_code = fds_init();                 //初始化FDS
+    APP_ERROR_CHECK(err_code);
+    while (!s_fds_initialized)             // 等待初始化完成
+    {
+        sd_app_evt_wait();                 // 等待过程中待机
+    }
 }
 
 /**
@@ -362,25 +387,12 @@ void storage_delete(uint8_t mask)
 }
 
 /**
- * @brief 尝试初始化存储，若无法初始化则尝试清空存储区。
- * 
- */
-static void storage_check(void)
-{
-    ret_code_t err_code = fds_init();
-    if (err_code == FDS_ERR_NO_PAGES) {
-        fstorage_clear();
-    }
-}
-
-/**
  * @brief 初始化存储模块并读取记录
  * 
  */
 void storage_init()
 {
     storage_callback_init();
-    storage_check();  //存储检测
 #ifdef CONFIG_STORAGE
     // 初始化配置分片
     config_storage_init();
