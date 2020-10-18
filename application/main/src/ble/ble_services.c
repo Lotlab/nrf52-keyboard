@@ -35,6 +35,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nrf_sdh_ble.h"
 #include "nrf_sdh_soc.h"
 #include "peer_manager_handler.h"
+#ifdef HAS_USB
+#include "usb_comm.h"
+#endif
 
 #include "ble_config.h"
 #include "data_storage.h"
@@ -260,7 +263,13 @@ void switch_device_select(uint8_t id)
 {
     ret_code_t ret;
     ble_gap_addr_t gap_addr;
-	// 如果重复切换，则直接退出，不做任何操作
+//如果启用USB功能，当切换设备时，先禁用USB
+#ifdef HAS_USB
+    if (usb_working()) {
+        usb_comm_switch();
+    }
+#endif
+    // 如果重复切换，则直接退出，不做任何操作
     if (id == switch_id) {
         return;
     } else {
