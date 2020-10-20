@@ -154,18 +154,13 @@ static bool command_common(uint8_t code)
         keyboard_nkro = !keyboard_nkro;
         break;
 #endif
-    case KC_0:
-    case KC_F10:
+    case KC_1 ... KC_8:
         //切换默认层
-        switch_default_layer(0);
+        switch_default_layer(code - KC_1);
         break;
-    case KC_1 ... KC_9:
+    case KC_F1 ... KC_F8:
         //切换默认层
-        switch_default_layer((code - KC_1) + 1);
-        break;
-    case KC_F1 ... KC_F9:
-        //切换默认层
-        switch_default_layer((code - KC_F1) + 1);
+        switch_default_layer(code - KC_F1);
         break;
     case KC_M:
 #ifdef HAS_USB
