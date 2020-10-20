@@ -40,6 +40,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef THREE_LED_STATUS
 #include "3led_status.h"
 #endif
+#ifdef BOOTCHECK_ENABLE
+#include "keyboard_bootcheck.h"
+#endif
 #include "eeconfig.h"
 #include "usb_comm.h"
 #include "util.h"
@@ -277,6 +280,10 @@ static bool command_common(uint8_t code)
     case KC_H:
         clear_keyboard();
         print_battery_percentage();
+        break;
+    case KC_I:
+        clear_keyboard();
+        bootcheck_flag_toggle();
         break;
 #ifdef THREE_LED_STATUS
     case KC_L:

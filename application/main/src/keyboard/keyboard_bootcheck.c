@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../main.h"
 #include "bootmagic.h"
 #include "config.h"
+#include "data_storage.h"
 #include "hook.h"
 #include "keycode.h"
 #include "nrf_delay.h"
@@ -82,29 +83,59 @@ static bool keypress_check()
 #endif
 }
 
+//注册bootcheck_flag需要的存储区
+CONFIG_SECTION(bootcheck_flag, 1);
+
+/**
+ * @brief 读取是否启用bootcheck
+ * 
+ * @return true 启用
+ * @return false 不启用
+ */
+bool bootcheck_flag_get(void)
+{
+    return bootcheck_flag.data[0];
+}
+
+/**
+ * @brief 切换是否启用bootcheck
+ * 
+ */
+void bootcheck_flag_toggle(void)
+{
+    if (bootcheck_flag.data[0]) {
+        bootcheck_flag.data[0] = 0x00;
+    } else {
+        bootcheck_flag.data[0] = 0x01;
+    }
+    storage_write((1 << STORAGE_CONFIG));
+}
+
 __attribute__((weak)) void boot_check()
 {
-    bool sleep_flag = true;
+    if (bootcheck_flag_get()) {
+        bool sleep_flag = true;
 #ifdef DEBUG_SKIP_PWRON_CHECK
-    // debug状态下自动开机
-    sleep_flag = false;
-#endif
-
-    // 自动休眠则不需要需要使用BOOT按键开机
-    if (sleep_reason_get())
+        // debug状态下自动开机
         sleep_flag = false;
-
-    // 如果以上条件均不满足则尝试检测开机按键
-    if (sleep_flag) {
-        sleep_flag = !keypress_check();
-#ifdef HAS_USB
-        // 若连接至主机则自动开机
-        if (usb_working())
-            sleep_flag &= false;
 #endif
-    }
 
-    if (sleep_flag) {
-        sleep(SLEEP_NOT_PWRON);
+        // 自动休眠则不需要需要使用BOOT按键开机
+        if (sleep_reason_get())
+            sleep_flag = false;
+
+        // 如果以上条件均不满足则尝试检测开机按键
+        if (sleep_flag) {
+            sleep_flag = !keypress_check();
+#ifdef HAS_USB
+            // 若连接至主机则自动开机
+            if (usb_working())
+                sleep_flag &= false;
+#endif
+        }
+
+        if (sleep_flag) {
+            sleep(SLEEP_NOT_PWRON);
+        }
     }
 }

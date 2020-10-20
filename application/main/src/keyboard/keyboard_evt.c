@@ -106,10 +106,10 @@ static void internal_event_handler(enum user_event event, void* arg)
     switch (event) {
     case USER_EVT_SLEEP:
         if (subEvent == SLEEP_EVT_MANUAL) {
-            // 手动休眠时，设置标志位1，下次按键启动
+            // 手动休眠时，设置标志位0，下次按键启动
             sleep_reason_set(false);
         } else {
-            // 手动关机或自动休眠时，设置标志位0，下次免按键启动
+            // 手动关机或自动休眠时，设置标志位1，下次免按键启动
             sleep_reason_set(true);
         }
         break;

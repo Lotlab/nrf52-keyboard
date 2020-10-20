@@ -16,10 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "sleep_reason.h"
+#include "data_storage.h"
 #include "nrf.h"
 #include "nrf_soc.h"
 
-#define SLEEP_REASON_BIT_MASK 0x02
+//注册sleep_reason需要的存储区
+CONFIG_SECTION(sleep_reason, 1);
 
 /**
  * @brief 读取睡眠原因
@@ -29,9 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 bool sleep_reason_get(void)
 {
-    uint32_t data;
-    sd_power_gpregret_get(0, &data);
-    return !(data & SLEEP_REASON_BIT_MASK);
+   return sleep_reason.data[0];
 }
 
 /**
@@ -41,14 +41,6 @@ bool sleep_reason_get(void)
  */
 void sleep_reason_set(bool val)
 {
-    uint32_t data;
-    sd_power_gpregret_get(0, &data);
-
-    if (val) {
-        data -= (data & SLEEP_REASON_BIT_MASK);  //自动睡眠标志位0
-    } else {
-        data |= SLEEP_REASON_BIT_MASK;           //手动睡眠标志位1
-    }
-    sd_power_gpregret_clr(0, 0xffffffff);
-    sd_power_gpregret_set(0, data);
+    sleep_reason.data[0] = val;
+    storage_write((1 << STORAGE_CONFIG));
 }
