@@ -90,7 +90,7 @@ static void power_button_evt_handler(enum user_event event, void* arg)
     switch (event) {
     case USER_EVT_STAGE:
         switch (arg2) {
-        case KBD_STATE_PRE_INIT: // 初始化LED
+        case KBD_STATE_POST_INIT: // 初始化LED
             buttons_init();
             break;
         default:

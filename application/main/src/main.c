@@ -109,6 +109,18 @@
 #define SCHED_QUEUE_SIZE 20 /**< Maximum number of events in the scheduler queue. */
 #endif
 
+APP_TIMER_DEF(sleep_delay_timer);
+static void sleep_delay_handler(void* p_context);
+
+/**
+ * @brief 初始化睡眠前延时计时器
+ * 
+ */
+void sleep_delay_timer_init(void)
+{
+    app_timer_create(&sleep_delay_timer, APP_TIMER_MODE_SINGLE_SHOT, sleep_delay_handler);
+}
+
 static void set_stage(enum keyboard_state stage)
 {
     trig_event_param(USER_EVT_STAGE, stage);
@@ -150,7 +162,6 @@ static void reset_prepare(void)
 {
     // 禁用键盘LED
     keyboard_led_deinit();
-    set_stage(KBD_STATE_SLEEP);
 
     ret_code_t err_code;
     err_code = app_timer_stop_all();
@@ -171,6 +182,7 @@ static bool app_shutdown_handler(nrf_pwr_mgmt_evt_t event)
 {
     switch (event) {
     case NRF_PWR_MGMT_EVT_PREPARE_DFU:;
+        set_stage(KBD_STATE_SLEEP);
         reset_prepare();
         break;
 
@@ -202,6 +214,7 @@ static void timers_init(void)
 #ifdef COMMAND_ENABLE
     command_timer_init();
 #endif
+    sleep_delay_timer_init();
 }
 
 /**@brief Function for starting timers.
@@ -222,7 +235,10 @@ static void timers_start(void)
  */
 void notify_sleep(enum sleep_evt_type mode)
 {
+    matrix_deinit(); // 关闭按键阵列
     trig_event_param(USER_EVT_SLEEP, mode);
+    set_stage(KBD_STATE_SLEEP);
+    app_timer_start(sleep_delay_timer, APP_TIMER_TICKS(200), (void*)(uint32_t)mode); //延迟200ms进入睡眠
 }
 
 /**
@@ -235,8 +251,6 @@ static void sleep_mode_enter(bool keyboard_wakeup)
     reset_prepare();
     if (keyboard_wakeup) {
         matrix_wakeup_prepare(); // 准备按键阵列用于唤醒
-    } else {
-        matrix_deinit(); // 关闭按键阵列所有
     }
 #ifdef HAS_USB
     usb_comm_sleep_prepare();
@@ -245,6 +259,25 @@ static void sleep_mode_enter(bool keyboard_wakeup)
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
     ret_code_t err_code = sd_power_system_off();
     APP_ERROR_CHECK(err_code);
+}
+
+/**
+ * @brief 延迟运行handler
+ * 
+ * @param context 
+ */
+static void sleep_delay_handler(void* p_context)
+{
+    uint8_t sleep_mode = (uint32_t)p_context;
+    switch (sleep_mode) {
+    case SLEEP_EVT_AUTO:
+    case SLEEP_EVT_MANUAL:
+        sleep_mode_enter(true);
+        break;
+    case SLEEP_EVT_MANUAL_NO_MATRIX_WAKEUP:
+        sleep_mode_enter(false);
+        break;
+    }
 }
 
 /**
@@ -258,15 +291,12 @@ void sleep(enum SLEEP_REASON reason)
     case SLEEP_NO_CONNECTION:
     case SLEEP_TIMEOUT:
         notify_sleep(SLEEP_EVT_AUTO);
-        sleep_mode_enter(true);
         break;
     case SLEEP_MANUALLY:
         notify_sleep(SLEEP_EVT_MANUAL);
-        sleep_mode_enter(true);
         break;
     case SLEEP_MANUALLY_NO_MATRIX_WAKEUP:
         notify_sleep(SLEEP_EVT_MANUAL_NO_MATRIX_WAKEUP);
-        sleep_mode_enter(false);
         break;
     case SLEEP_NOT_PWRON:
         sleep_mode_enter(true);
