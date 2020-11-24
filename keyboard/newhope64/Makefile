@@ -1,11 +1,11 @@
 ROOT_DIR := ../..
-USER_SRC_DIR := ./user_src
 APP_MAIN_DIR := $(ROOT_DIR)/application/main
 TMK_CORE_DIR := $(ROOT_DIR)/tmk/tmk_core
 USB_SOURCE_DIR := $(ROOT_DIR)/usb
 
 APP_PROJ_DIR := $(APP_MAIN_DIR)/project
 APP_SRC_DIR := $(APP_MAIN_DIR)/src
+USER_SRC_DIR := $(APP_SRC_DIR)/user/glab
 
 CONFIG_H = config.h
 CONFIG_H_DIR = .
@@ -13,10 +13,12 @@ CONFIG_H_DIR = .
 include ./rules.mk
 
 INC_FOLDERS += \
-    . \
+	. \
+	$(USER_SRC_DIR) \
 
 SRC_FILES += \
 	keymap_plain.c \
+	$(USER_SRC_DIR)/user_fn.c
 
 all: default ch554
 
