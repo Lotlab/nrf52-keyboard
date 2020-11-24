@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT_ID 0x0514 /* USB PID */
 #define CONF_VENDOR_ID 0x4366 /* 配置项目内显示的VendorID */
 #define CONF_PRODUCT_ID 0x0312 /* 配置项目内显示的ProductID */
-#define DEVICE_VER 0x0001 /* 硬件版本 */
+#define DEVICE_VER 0x0004 /* 硬件版本 */
 #define MANUFACTURER "Lotlab" /* 硬件制造商，用于蓝牙显示 */
 #define PRODUCT "GT Omega45" /* 硬件名词，用于蓝牙显示 */
 #define MACADDR_SEPRATOR ' ' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
@@ -68,7 +68,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define NO_ACTION_FUNCTION
 
 // LED 配置
-#define LED_CAPS 4  //caps led ：5 ； led1、2、3、4：19、20、27、26
+// #define LED_CAPS 4  //caps led ：5 ； led1、2、3、4：19、20、27、26
 
 // ws2812 RGB 配置
 #define RGB_DI_PIN 10
@@ -85,6 +85,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_BLE_CHANNEL2 20
 #define LED_BLE_CHANNEL3 18
 #define LED_POSITIVE // LED上拉驱动
+
+// RGB 配置
+#define LED_RGB_CC // 是否为共阴LED
+#define LED_RGB_R 5
+#define LED_RGB_G 6
+#define LED_RGB_B 7
+#define RGB_LIGHT_ANIMATIONS
+
 // 独立硬件按钮
 #define POWER_BUTTON 3
 
@@ -120,3 +128,7 @@ static const uint8_t column_pin_array[MATRIX_COLS] = {28, 25, 24, 23, 22, 21, 11
 
 #define DEBOUNCE 5 /* 硬件消抖次数，设置为0则不消抖 */
 #define MATRIX_SCAN_DELAY_CYCLE 48 /* 按键扫描等待IO稳定的延时时长 */
+
+//配置RTC预分频器.
+// <0> 32MHz <1> 16MHz <3> 8MHz <7> 4MHz <15> 2MHz <31> 1MHz 
+#define APP_TIMER_CONFIG_RTC_FREQUENCY 0
