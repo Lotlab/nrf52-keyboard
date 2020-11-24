@@ -398,6 +398,8 @@ static void advertising_config_get(ble_adv_modes_config_t* p_config)
     p_config->ble_adv_slow_interval = APP_ADV_SLOW_INTERVAL;
     p_config->ble_adv_slow_timeout = APP_ADV_SLOW_DURATION;
     p_config->ble_adv_on_disconnect_disabled = false;
+    p_config->ble_adv_extended_enabled = false;
+    p_config->ble_adv_primary_phy = BLE_GAP_PHY_1MBPS;
 }
 
 #ifdef BUTTONLESS_DFU
@@ -898,14 +900,16 @@ static void advertising_init(void)
     ble_advertising_init_t init;
 
     memset(&init, 0, sizeof(init));
-
     adv_flags = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
     init.advdata.name_type = BLE_ADVDATA_FULL_NAME;
     init.advdata.include_appearance = true;
     init.advdata.flags = adv_flags;
     init.advdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
     init.advdata.uuids_complete.p_uuids = m_adv_uuids;
-
+#ifdef HIGH_TX_POWER
+    int8_t tx_power_level = 4;
+    init.advdata.p_tx_power_level = &tx_power_level;
+#endif
     advertising_config_get(&init.config);
 
     init.evt_handler = on_adv_evt;
