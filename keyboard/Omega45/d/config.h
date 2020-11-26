@@ -110,6 +110,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define PIN_CHARGING !UCC1
 //#define PIN_STANDBY !UCC2
 
+// 多用途 Bootloader 按钮
+#define NRF_BL_DFU_MULTI_ROLE_BTN 3
+// Bootloader指示灯
+#define LED_DFU_INIT 7
+#define LED_DFU_START 5
+#define LED_DFU_FINISH 6
+
 // 按键阵列配置
 #define MATRIX_ROWS 4 /* 硬件阵列行数 */
 #define MATRIX_COLS 12 /* 硬件阵列列数 */
