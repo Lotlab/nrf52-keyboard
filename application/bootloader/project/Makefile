@@ -158,10 +158,6 @@ ifdef CONFIG_H_DIR
 	INC_FOLDERS += $(CONFIG_H_DIR)
 endif
 
-# Libraries common to all targets
-LIB_FILES += \
-	$(SDK_ROOT)/external/nrf_oberon/lib/cortex-m4/soft-float/liboberon_2.0.7.a \
-	$(SDK_ROOT)/external/micro-ecc/nrf52nf_armgcc/armgcc/micro_ecc_lib_nrf52.a \
 
 # Optimization flags
 OPT = -Os -g3
