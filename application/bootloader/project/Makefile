@@ -1,5 +1,5 @@
 PROJECT_NAME     := secure_bootloader_ble_s112_pca10040e
-TARGETS          := nrf52_bootloader
+TARGETS          := $(NRF_CHIP)_bootloader
 
 ifndef OUTPUT_DIRECTORY
 OUTPUT_DIRECTORY := _build
@@ -33,7 +33,7 @@ else
 	$(error cannot handle NRF_CHIP [$(NRF_CHIP)])
 endif
 
-$(OUTPUT_DIRECTORY)/nrf52_bootloader.out: \
+$(OUTPUT_DIRECTORY)/$(NRF_CHIP)_bootloader.out: \
 	LINKER_SCRIPT  := $(APP_PROJ_DIR)/$(LD_NAME)
 
 # Source files common to all targets
@@ -158,7 +158,6 @@ ifdef CONFIG_H_DIR
 	INC_FOLDERS += $(CONFIG_H_DIR)
 endif
 
-
 # Optimization flags
 OPT = -Os -g3
 # Uncomment the line below to enable link time optimization
@@ -249,10 +248,10 @@ LDFLAGS += -Wl,--gc-sections
 # use newlib in nano version
 LDFLAGS += --specs=nano.specs
 
-nrf52_bootloader: CFLAGS += -D__HEAP_SIZE=$(HEAP_SIZE)
-nrf52_bootloader: CFLAGS += -D__STACK_SIZE=$(STACK_SIZE)
-nrf52_bootloader: ASMFLAGS += -D__HEAP_SIZE=$(HEAP_SIZE)
-nrf52_bootloader: ASMFLAGS += -D__STACK_SIZE=$(STACK_SIZE)
+$(NRF_CHIP)_bootloader: CFLAGS += -D__HEAP_SIZE=$(HEAP_SIZE)
+$(NRF_CHIP)_bootloader: CFLAGS += -D__STACK_SIZE=$(STACK_SIZE)
+$(NRF_CHIP)_bootloader: ASMFLAGS += -D__HEAP_SIZE=$(HEAP_SIZE)
+$(NRF_CHIP)_bootloader: ASMFLAGS += -D__STACK_SIZE=$(STACK_SIZE)
 
 # Add standard libraries at the very end of the linker input, after all objects
 # that may need symbols provided by these libraries.
@@ -262,7 +261,7 @@ LIB_FILES += -lc -lnosys -lm
 .PHONY: default help
 
 # Default target - first one defined
-default: nrf52_bootloader
+default: $(NRF_CHIP)_bootloader
 
 # Print all targets that can be built
 help:
@@ -281,13 +280,13 @@ $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
 # Flash the program
 flash: default
-	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex
-	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex --sectorerase
+	@echo Flashing: $(OUTPUT_DIRECTORY)/$(NRF_CHIP)_bootloader.hex
+	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/$(NRF_CHIP)_bootloader.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
 pyocd_flash: default
-	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex
-	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex
+	@echo Flashing: $(OUTPUT_DIRECTORY)/$(NRF_CHIP)_bootloader.hex
+	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)$(NRF_CHIP)_bootloader.hex
 	pyocd cmd -t nrf52 -c reset
 
 # Flash softdevice
@@ -302,8 +301,8 @@ pyocd_flash_softdevice:
 	pyocd cmd -t nrf52 -c reset
 
 merge_softdevice: default
-	@echo Merging program and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/nrf52_bootloader_sd.hex
-	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex -o $(OUTPUT_DIRECTORY)/nrf52_bootloader_sd.hex
+	@echo Merging program and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/$(NRF_CHIP)_bootloader_sd.hex
+	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/$(NRF_CHIP)_bootloader.hex -o $(OUTPUT_DIRECTORY)/$(NRF_CHIP)_bootloader_sd.hex
 
 erase:
 	nrfjprog -f nrf52 --eraseall
