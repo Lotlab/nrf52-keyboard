@@ -235,7 +235,6 @@ static void timers_start(void)
  */
 void notify_sleep(enum sleep_evt_type mode)
 {
-    matrix_deinit(); // 关闭按键阵列
     trig_event_param(USER_EVT_SLEEP, mode);
     set_stage(KBD_STATE_SLEEP);
     app_timer_start(sleep_delay_timer, APP_TIMER_TICKS(200), (void*)(uint32_t)mode); //延迟200ms进入睡眠
@@ -251,15 +250,17 @@ static void sleep_mode_enter(bool keyboard_wakeup)
     reset_prepare();
     if (keyboard_wakeup) {
         matrix_wakeup_prepare(); // 准备按键阵列用于唤醒
+    } else {
+        matrix_deinit(); // 关闭按键阵列
     }
 #ifdef HAS_USB
-    usb_comm_sleep_prepare();
+        usb_comm_sleep_prepare();
 #endif
 
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
     ret_code_t err_code = sd_power_system_off();
     APP_ERROR_CHECK(err_code);
-}
+    }
 
 /**
  * @brief 延迟运行handler
