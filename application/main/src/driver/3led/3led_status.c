@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_timer.h"
 #include "config.h"
 
+#include "data_storage.h"
 #include "keyboard_evt.h"
 #include "keyboard_led.h"
 #include "nrf.h"
@@ -32,13 +33,31 @@ uint8_t blink_led_id;
 bool blink_status = true; //当前蓝牙广播LED闪烁状态
 static uint8_t saved_status_led_val; // 暂存的LED的值
 
+//注册指示灯开关需要的存储区
+CONFIG_SECTION(leds_turn_off, 1);
+/**
+ * 读取状态灯开关存储值.
+ */
+uint8_t leds_turn_off_read(void)
+{
+    return leds_turn_off.data[0];
+}
+/**
+ * 写入状态灯开关存储值
+ */
+void leds_turn_off_write(uint8_t val)
+{
+    if (leds_turn_off.data[0] != val) {
+        leds_turn_off.data[0] = val;
+        storage_write((1 << STORAGE_CONFIG));
+    }
+}
+
 enum status_led {
     BIT_LED_BLE,
     BIT_LED_USB,
     BIT_LED_CHARGING
 };
-
-static void status_led_set_internal(uint8_t val);
 
 /** 
  * 蓝牙广播状态闪烁LED
@@ -47,25 +66,24 @@ void ble_led_blink_timer_handler(void* context)
 {
     if (!usb_working()) {
         switch (blink_led_id) {
-#ifdef LED_BLE_CHANNEL1
         case 0:
-            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL1) : 0);
-            break;
+#ifdef LED_BLE_CHANNEL1
+            LED_WRITE(LED_BLE_CHANNEL1, blink_status);
 #endif
-#ifdef LED_BLE_CHANNEL2
+            break;
         case 1:
-            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL2) : 0);
-            break;
+#ifdef LED_BLE_CHANNEL2
+            LED_WRITE(LED_BLE_CHANNEL2, blink_status);
 #endif
+            break;
+        case 2:
 #ifdef LED_BLE_CHANNEL3
-        case 2:
-            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL3) : 0);
-            break;
+            LED_WRITE(LED_BLE_CHANNEL3, blink_status);
 #elif defined(LED_BLE_CHANNEL1) && defined(LED_BLE_CHANNEL2)
-        case 2:
-            status_led_set_internal(blink_status ? (1 << LED_BLE_CHANNEL1) | (1 << LED_BLE_CHANNEL2) : 0);
-            break;
+            LED_WRITE(LED_BLE_CHANNEL1, blink_status);
+            LED_WRITE(LED_BLE_CHANNEL2, blink_status);
 #endif
+            break;
         default:
             break;
         }
@@ -78,16 +96,26 @@ void ble_led_blink_timer_handler(void* context)
  **/
 void status_led_init()
 {
+    if (!leds_turn_off_read()) {
 #ifdef LED_STATUS_BLE
-    nrf_gpio_cfg_output(LED_STATUS_BLE);
+        nrf_gpio_cfg_output(LED_STATUS_BLE);
 #endif
 #ifdef LED_STATUS_USB
-    nrf_gpio_cfg_output(LED_STATUS_USB);
+        nrf_gpio_cfg_output(LED_STATUS_USB);
 #endif
 #ifdef LED_STATUS_CHARGING
-    nrf_gpio_cfg_output(LED_STATUS_CHARGING);
+        nrf_gpio_cfg_output(LED_STATUS_CHARGING);
 #endif
-    app_timer_create(&ble_led_blink_timer, APP_TIMER_MODE_REPEATED, ble_led_blink_timer_handler);
+#ifdef LED_BLE_CHANNEL1
+    nrf_gpio_cfg_output(LED_BLE_CHANNEL1);
+#endif
+#ifdef LED_BLE_CHANNEL2
+    nrf_gpio_cfg_output(LED_BLE_CHANNEL2);
+#endif
+#ifdef LED_BLE_CHANNEL3
+    nrf_gpio_cfg_output(LED_BLE_CHANNEL3);
+#endif
+    }
 }
 
 /**
@@ -108,6 +136,15 @@ void status_led_deinit(void)
 #ifdef LED_STATUS_CHARGING
     nrf_gpio_cfg_default(LED_STATUS_CHARGING);
 #endif
+#ifdef LED_BLE_CHANNEL1
+    nrf_gpio_cfg_default(LED_BLE_CHANNEL1);
+#endif
+#ifdef LED_BLE_CHANNEL2
+    nrf_gpio_cfg_default(LED_BLE_CHANNEL2);
+#endif
+#ifdef LED_BLE_CHANNEL3
+    nrf_gpio_cfg_default(LED_BLE_CHANNEL3);
+#endif
 #endif
 }
 
@@ -116,6 +153,7 @@ void status_led_deinit(void)
  **/
 static void status_led_set_internal(uint8_t val)
 {
+
 #ifdef LED_STATUS_BLE
     LED_WRITE(LED_STATUS_BLE, val & (1 << BIT_LED_BLE));
 #endif
@@ -140,7 +178,9 @@ void status_led_off()
  **/
 void status_led_on()
 {
-    status_led_set_internal(saved_status_led_val);
+    if (!leds_turn_off_read()) {
+        status_led_set_internal(saved_status_led_val);
+    }
 }
 
 /** 
@@ -178,7 +218,8 @@ static void ble_blink_led_on()
  */
 static void ble_blink_led_off()
 {
-    status_led_off();
+    blink_status = false;
+    ble_led_blink_timer_handler(NULL); //即刻执行闪烁
     app_timer_stop(ble_led_blink_timer);
 }
 
@@ -221,6 +262,22 @@ void status_led_usb(bool state)
     set_led_on();
 }
 
+/** 
+ * LED状态灯开关
+ **/
+void leds_switch()
+{
+    if (!leds_turn_off_read()) {
+        leds_turn_off_write(1);
+    } else {
+        leds_turn_off_write(0);
+    }
+    status_led_deinit();
+    status_led_init();
+    set_led_on();
+}
+
+
 static void status_led_evt_handler(enum user_event event, void* arg)
 {
     uint8_t arg2 = (uint32_t)arg;
@@ -229,10 +286,14 @@ static void status_led_evt_handler(enum user_event event, void* arg)
         switch (arg2) {
         case KBD_STATE_POST_INIT: // 初始化LED
             status_led_init();
+            app_timer_create(&ble_led_blink_timer, APP_TIMER_MODE_REPEATED, ble_led_blink_timer_handler);
             status_led_all_on();
-            nrf_delay_ms(10);
+            nrf_delay_ms(20);
             break;
         case KBD_STATE_SLEEP: // 准备休眠
+            status_led_all_on();
+            nrf_delay_ms(20);
+            status_led_off();
             status_led_deinit();
             break;
         default:
