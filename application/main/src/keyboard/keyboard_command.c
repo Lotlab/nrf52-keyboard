@@ -273,11 +273,14 @@ static bool command_common(uint8_t code)
         clear_keyboard();
         bootcheck_flag_toggle();
         break;
-#ifdef THREE_LED_STATUS
     case KC_L:
+#ifdef THREE_LED_STATUS
         leds_switch();
-        break;
 #endif
+#ifdef RGB_LIGHT_ENABLE
+        rgb_indicator_toggle();
+#endif
+        break;
     default:
         return false;
     }
