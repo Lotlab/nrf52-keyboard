@@ -147,13 +147,6 @@ static bool command_common(uint8_t code)
     static host_driver_t* host_driver = 0;
 #endif
     switch (code) {
-#ifdef NKRO_ENABLE
-    case KC_N:
-        //切换全键无冲模式
-        clear_keyboard();
-        keyboard_nkro = !keyboard_nkro;
-        break;
-#endif
     case KC_1 ... KC_8:
         //切换默认层
         switch_default_layer(code - KC_1);
