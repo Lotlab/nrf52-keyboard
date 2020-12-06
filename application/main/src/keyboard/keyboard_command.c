@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 #include "nrf_delay.h"
 #include "nrf_pwr_mgmt.h"
-#ifdef RGBLIGHT_ENABLE
+#ifdef WS2812_ENABLE
 #include "rgblight.h"
 #endif
 #ifdef RGB_LIGHT_ENABLE
@@ -221,45 +221,45 @@ static bool command_common(uint8_t code)
         rgb_light_decrease_val();
         break;
 #endif
-#ifdef RGBLIGHT_ENABLE //RGB灯（带控制芯片）控制
+#ifdef WS2812_ENABLE //RGB灯（带控制芯片）控制
     case KC_Z:
-        rgblight_step();
+        ws2812_step();
         break;
     case KC_X:
-        rgblight_toggle();
+        ws2812_toggle();
         break;
     case KC_C:
-        rgblight_increase_hue();
+        ws2812_increase_hue();
         break;
     case KC_V:
-        rgblight_decrease_hue();
+        ws2812_decrease_hue();
         break;
     case KC_A:
-        rgblight_increase_sat();
+        ws2812_increase_sat();
         break;
     case KC_S:
-        rgblight_decrease_sat();
+        ws2812_decrease_sat();
         break;
     case KC_D:
-        rgblight_increase_val();
+        ws2812_increase_val();
         break;
     case KC_F:
-        rgblight_decrease_val();
+        ws2812_decrease_val();
         break;
 #endif
     case KC_B:
         //重启到DFU模式
         clear_keyboard();
-#ifdef RGBLIGHT_ENABLE
-        rgblight_disable_noeeprom();
+#ifdef WS2812_ENABLE
+        ws2812_disable_noeeprom();
 #endif
         app_timer_start(command_run_timer, APP_TIMER_TICKS(1000), (void*)(uint32_t)COMMAND_DFU);
         break;
     case KC_P:
         //休眠
         clear_keyboard();
-#ifdef RGBLIGHT_ENABLE
-        rgblight_disable_noeeprom();
+#ifdef WS2812_ENABLE
+        ws2812_disable_noeeprom();
 #endif
         app_timer_start(command_run_timer, APP_TIMER_TICKS(1000), (void*)(uint32_t)COMMAND_SLEEP);
         break;
@@ -267,8 +267,8 @@ static bool command_common(uint8_t code)
     case KC_GRV:
         //休眠
         clear_keyboard();
-#ifdef RGBLIGHT_ENABLE
-        rgblight_disable_noeeprom();
+#ifdef WS2812_ENABLE
+        ws2812_disable_noeeprom();
 #endif
         app_timer_start(command_run_timer, APP_TIMER_TICKS(1000), (void*)(uint32_t)COMMAND_SYSTEMOFF);
         break;
