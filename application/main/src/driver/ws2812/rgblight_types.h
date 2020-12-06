@@ -20,8 +20,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RGBLIGHT_TYPES
-#define RGBLIGHT_TYPES
+#ifndef WS2812_TYPES
+#define WS2812_TYPES
 
 #ifdef __AVR__
   #include <avr/io.h>

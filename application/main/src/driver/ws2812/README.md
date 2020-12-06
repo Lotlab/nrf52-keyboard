@@ -4,16 +4,16 @@
 
 ### 启用配置
 ```
-RGBLIGHT_ENABLE = yes
+WS2812_ENABLE = yes
 
 ```
 
 ### Config 配置项目
 ```
-#define RGB_DI_PIN 8   //WS2812 RGB信号输入
-#define RGBLED_NUM 8   //WS2812灯数量
-#define RGBLIGHT_ANIMATIONS  //开启RGB动态灯效
-#define RGB_PWR_PIN 12           //POWER控制针脚-采用P MOS
-#define RGB_PWR_PIN_REVERSE 12   //POWER控制针脚-采用N MOS
+#define WS2812_DI_PIN 8   //WS2812 RGB信号输入
+#define WS2812_NUM 8   //WS2812灯数量
+#define WS2812_ANIMATIONS  //开启RGB动态灯效
+#define WS2812_PWR_PIN 12           //POWER控制针脚-采用P MOS
+#define WS2812_PWR_PIN_REVERSE 12   //POWER控制针脚-采用N MOS
 
 ```

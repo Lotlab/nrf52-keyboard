@@ -13,59 +13,59 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef RGBLIGHT_H
-#define RGBLIGHT_H
+#ifndef WS2812_H
+#define WS2812_H
 
 #ifdef CONFIG_H_FILE
     #include CONFIG_H_FILE
 #endif
 
-#ifdef RGBLIGHT_ANIMATIONS
-	#define RGBLIGHT_MODES 36
+#ifdef WS2812_ANIMATIONS
+	#define WS2812_MODES 36
 #else
-	#define RGBLIGHT_MODES 1
+	#define WS2812_MODES 1
 #endif
 
-#ifndef RGBLIGHT_EFFECT_BREATHE_CENTER
-#define RGBLIGHT_EFFECT_BREATHE_CENTER 1.85  // 1-2.7
+#ifndef WS2812_EFFECT_BREATHE_CENTER
+#define WS2812_EFFECT_BREATHE_CENTER 1.85  // 1-2.7
 #endif
 
-#ifndef RGBLIGHT_EFFECT_BREATHE_MAX
-#define RGBLIGHT_EFFECT_BREATHE_MAX 255   // 0-255
+#ifndef WS2812_EFFECT_BREATHE_MAX
+#define WS2812_EFFECT_BREATHE_MAX 255   // 0-255
 #endif
 
-#ifndef RGBLIGHT_EFFECT_SNAKE_LENGTH
-#define RGBLIGHT_EFFECT_SNAKE_LENGTH 4
+#ifndef WS2812_EFFECT_SNAKE_LENGTH
+#define WS2812_EFFECT_SNAKE_LENGTH 4
 #endif
 
-#ifndef RGBLIGHT_EFFECT_KNIGHT_LENGTH
-#define RGBLIGHT_EFFECT_KNIGHT_LENGTH 3
+#ifndef WS2812_EFFECT_KNIGHT_LENGTH
+#define WS2812_EFFECT_KNIGHT_LENGTH 3
 #endif
 
-#ifndef RGBLIGHT_EFFECT_KNIGHT_OFFSET
-#define RGBLIGHT_EFFECT_KNIGHT_OFFSET 0
+#ifndef WS2812_EFFECT_KNIGHT_OFFSET
+#define WS2812_EFFECT_KNIGHT_OFFSET 0
 #endif
 
-#ifndef RGBLIGHT_EFFECT_KNIGHT_LED_NUM
-#define RGBLIGHT_EFFECT_KNIGHT_LED_NUM RGBLED_NUM
+#ifndef WS2812_EFFECT_KNIGHT_LED_NUM
+#define WS2812_EFFECT_KNIGHT_LED_NUM WS2812_NUM
 #endif
 
-#ifndef RGBLIGHT_EFFECT_CHRISTMAS_INTERVAL
-#define RGBLIGHT_EFFECT_CHRISTMAS_INTERVAL 1000
+#ifndef WS2812_EFFECT_CHRISTMAS_INTERVAL
+#define WS2812_EFFECT_CHRISTMAS_INTERVAL 1000
 #endif
 
-#ifndef RGBLIGHT_EFFECT_CHRISTMAS_STEP
-#define RGBLIGHT_EFFECT_CHRISTMAS_STEP 2
+#ifndef WS2812_EFFECT_CHRISTMAS_STEP
+#define WS2812_EFFECT_CHRISTMAS_STEP 2
 #endif
 
-#ifndef RGBLIGHT_HUE_STEP
-#define RGBLIGHT_HUE_STEP 6
+#ifndef WS2812_HUE_STEP
+#define WS2812_HUE_STEP 6
 #endif
-#ifndef RGBLIGHT_SAT_STEP
-#define RGBLIGHT_SAT_STEP 17
+#ifndef WS2812_SAT_STEP
+#define WS2812_SAT_STEP 17
 #endif
-#ifndef RGBLIGHT_VAL_STEP
-#define RGBLIGHT_VAL_STEP 17
+#ifndef WS2812_VAL_STEP
+#define WS2812_VAL_STEP 17
 #endif
 
 #define RGBLED_TIMER_TOP F_CPU/(256*64)
@@ -74,13 +74,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "eeconfig.h"
-#ifndef RGBLIGHT_CUSTOM_DRIVER
+#ifndef WS2812_CUSTOM_DRIVER
 #include "ws2812.h"
 #endif
-#include "rgblight_types.h"
-#include "rgblight_list.h"
+#include "ws2812_types.h"
+#include "ws2812_list.h"
 
-extern LED_TYPE led[RGBLED_NUM];
+extern LED_TYPE led[WS2812_NUM];
 
 extern const uint8_t RGBLED_BREATHING_INTERVALS[4] ;
 extern const uint8_t RGBLED_RAINBOW_MOOD_INTERVALS[3] ;
@@ -98,37 +98,37 @@ typedef union {
     uint8_t  sat     :8;
     uint8_t  val     :8;
   };
-} rgblight_config_t;
+} ws2812_config_t;
 
-void rgblight_init(void);
-void rgblight_increase(void);
-void rgblight_decrease(void);
-void rgblight_toggle(void);
-void rgblight_enable(void);
-void rgblight_disable(void);
-void rgblight_step(void);
-void rgblight_step_reverse(void);
-uint32_t rgblight_get_mode(void);
-void rgblight_mode(uint8_t mode);
-void rgblight_set(void);
-void rgblight_sleep_prepare(void);
-void rgblight_update_dword(uint32_t dword);
-void rgblight_increase_hue(void);
-void rgblight_decrease_hue(void);
-void rgblight_increase_sat(void);
-void rgblight_decrease_sat(void);
-void rgblight_increase_val(void);
-void rgblight_decrease_val(void);
-void rgblight_sethsv(uint16_t hue, uint8_t sat, uint8_t val);
-uint16_t rgblight_get_hue(void);
-uint8_t rgblight_get_sat(void);
-uint8_t rgblight_get_val(void);
-void rgblight_setrgb(uint8_t r, uint8_t g, uint8_t b);
-void rgblight_setrgb_at(uint8_t r, uint8_t g, uint8_t b, uint8_t index);
-void rgblight_sethsv_at(uint16_t hue, uint8_t sat, uint8_t val, uint8_t index);
+void ws2812_init(void);
+void ws2812_increase(void);
+void ws2812_decrease(void);
+void ws2812_toggle(void);
+void WS2812_ENABLE(void);
+void ws2812_disable(void);
+void ws2812_step(void);
+void ws2812_step_reverse(void);
+uint32_t ws2812_get_mode(void);
+void ws2812_mode(uint8_t mode);
+void ws2812_set(void);
+void ws2812_sleep_prepare(void);
+void ws2812_update_dword(uint32_t dword);
+void ws2812_increase_hue(void);
+void ws2812_decrease_hue(void);
+void ws2812_increase_sat(void);
+void ws2812_decrease_sat(void);
+void ws2812_increase_val(void);
+void ws2812_decrease_val(void);
+void ws2812_sethsv(uint16_t hue, uint8_t sat, uint8_t val);
+uint16_t ws2812_get_hue(void);
+uint8_t ws2812_get_sat(void);
+uint8_t ws2812_get_val(void);
+void ws2812_setrgb(uint8_t r, uint8_t g, uint8_t b);
+void ws2812_setrgb_at(uint8_t r, uint8_t g, uint8_t b, uint8_t index);
+void ws2812_sethsv_at(uint16_t hue, uint8_t sat, uint8_t val, uint8_t index);
 
 void eeconfig_update_rgblight(uint32_t val);
-void eeconfig_update_rgblight_default(void);
+void eeconfig_update_ws2812_default(void);
 void eeconfig_debug_rgblight(void);
 
 void rgb_matrix_increase(void);
@@ -137,32 +137,32 @@ void rgb_matrix_decrease(void);
 void sethsv(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE *led1);
 void setrgb(uint8_t r, uint8_t g, uint8_t b, LED_TYPE *led1);
 
-void rgblight_sethsv_noeeprom(uint16_t hue, uint8_t sat, uint8_t val);
-void rgblight_mode_noeeprom(uint8_t mode);
-void rgblight_toggle_noeeprom(void);
-void rgblight_enable_noeeprom(void);
-void rgblight_disable_noeeprom(void);
+void ws2812_sethsv_noeeprom(uint16_t hue, uint8_t sat, uint8_t val);
+void ws2812_mode_noeeprom(uint8_t mode);
+void ws2812_toggle_noeeprom(void);
+void WS2812_ENABLE_noeeprom(void);
+void ws2812_disable_noeeprom(void);
 
-void rgblight_sethsv_eeprom_helper(uint16_t hue, uint8_t sat, uint8_t val, bool write_to_eeprom);
-void rgblight_mode_eeprom_helper(uint8_t mode, bool write_to_eeprom);
+void ws2812_sethsv_eeprom_helper(uint16_t hue, uint8_t sat, uint8_t val, bool write_to_eeprom);
+void ws2812_mode_eeprom_helper(uint8_t mode, bool write_to_eeprom);
 
 
-#define EZ_RGB(val) rgblight_show_solid_color((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
-void rgblight_show_solid_color(uint8_t r, uint8_t g, uint8_t b);
+#define EZ_RGB(val) ws2812_show_solid_color((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
+void ws2812_show_solid_color(uint8_t r, uint8_t g, uint8_t b);
 
-void rgblight_task(void);
+void ws2812_task(void);
 
-void rgblight_timer_init(void);
-void rgblight_timer_enable(void);
-void rgblight_timer_disable(void);
-void rgblight_timer_toggle(void);
-void rgblight_effect_breathing(uint8_t interval);
-void rgblight_effect_rainbow_mood(uint8_t interval);
-void rgblight_effect_rainbow_swirl(uint8_t interval);
-void rgblight_effect_snake(uint8_t interval);
-void rgblight_effect_knight(uint8_t interval);
-void rgblight_effect_christmas(void);
-void rgblight_effect_rgbtest(void);
-void rgblight_effect_alternating(void);
+void ws2812_timer_init(void);
+void ws2812_timer_enable(void);
+void ws2812_timer_disable(void);
+void ws2812_timer_toggle(void);
+void ws2812_effect_breathing(uint8_t interval);
+void ws2812_effect_rainbow_mood(uint8_t interval);
+void ws2812_effect_rainbow_swirl(uint8_t interval);
+void ws2812_effect_snake(uint8_t interval);
+void ws2812_effect_knight(uint8_t interval);
+void ws2812_effect_christmas(void);
+void ws2812_effect_rgbtest(void);
+void ws2812_effect_alternating(void);
 
 #endif

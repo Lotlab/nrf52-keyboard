@@ -34,7 +34,7 @@ ifeq (yes,$(strip $(ROTARY_ENCODER)))
                 -DROTARY_ENCODER
 endif
 
-ifeq (yes,$(strip $(RGBLIGHT_ENABLE)))
+ifeq (yes,$(strip $(WS2812_ENABLE)))
     INC_FOLDERS += \
 	    $(DRIVER_DIR)/ws2812
 
@@ -42,7 +42,7 @@ ifeq (yes,$(strip $(RGBLIGHT_ENABLE)))
 	            $(DRIVER_DIR)/ws2812/rgblight.c \
 	            $(DRIVER_DIR)/ws2812/led_tables.c \
 	            $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_pwm.c
-    OPT_DEFS += -DNRFX_PWM_ENABLED=1 -DNRFX_PWM0_ENABLED=1 -DPWM_ENABLED=1 -DPWM0_ENABLED=1 -DRGBLIGHT_ENABLE
+    OPT_DEFS += -DNRFX_PWM_ENABLED=1 -DNRFX_PWM0_ENABLED=1 -DPWM_ENABLED=1 -DPWM0_ENABLED=1 -DWS2812_ENABLE
 endif
 
 ifeq (yes,$(strip $(RGB_LIGHT_ENABLE)))

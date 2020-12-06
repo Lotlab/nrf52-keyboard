@@ -39,7 +39,7 @@ void pwm_handler(nrfx_pwm_evt_type_t event_type)
 void ws2812_setleds(LED_TYPE* ledarray, uint16_t number_of_leds)
 {
     // if (usb_working()) {
-    ws2812_setleds_pin(ledarray, number_of_leds, RGB_DI_PIN);
+    ws2812_setleds_pin(ledarray, number_of_leds, WS2812_DI_PIN);
     // }
 }
 
@@ -67,7 +67,7 @@ void ws2812_setleds_pin(LED_TYPE* ledarray, uint16_t number_of_leds, uint8_t pin
 
     const uint16_t t0H = PWM_0H_DURATION | (0x8000);
     const uint16_t t1H = PWM_1H_DURATION | (0x8000);
-    nrf_pwm_values_common_t led[RGBLED_NUM * 3 * 8 + DUMMY_SIGNAL_LEN * 3 * 8 + 8];
+    nrf_pwm_values_common_t led[WS2812_NUM * 3 * 8 + DUMMY_SIGNAL_LEN * 3 * 8 + 8];
     nrf_pwm_values_t p_led = { .p_common = led };
     nrf_pwm_sequence_t pwm_seq = {
         .values = p_led,
@@ -114,7 +114,7 @@ void ws2812_setleds_rgbw(LED_TYPE* ledarray, uint16_t number_of_leds)
 {
     const uint16_t t0H = ((int)(0.35f / 0.0625f)) | (0x8000);
     const uint16_t t1H = ((int)(1.36f / 0.0625f)) | (0x8000);
-    nrf_pwm_values_common_t led[RGBLED_NUM * 3 * 8 + 1];
+    nrf_pwm_values_common_t led[WS2812_NUM * 3 * 8 + 1];
     nrf_pwm_values_t p_led = { .p_common = led };
     nrf_pwm_sequence_t pwm_seq = {
         .values = p_led,
