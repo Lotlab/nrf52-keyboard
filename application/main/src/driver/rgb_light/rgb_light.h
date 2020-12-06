@@ -57,11 +57,13 @@ extern const uint8_t RGBLED_RAINBOW_MOOD_INTERVALS[3] ;
 typedef union {
   uint32_t raw;
   struct {
-    bool     enable  :1;
-    uint8_t  mode    :4;
-    uint16_t hue     :9;
-    uint8_t  sat     :8;
-    uint8_t  val     :8;
+    bool     enable   :1;
+    bool     ind      :1;
+    bool     reserved :1;
+    uint8_t  mode     :4;
+    uint16_t hue      :9;
+    uint8_t  sat      :8;
+    uint8_t  val      :8;
   };
 } rgb_light_config_t;
 
@@ -69,6 +71,7 @@ void rgb_light_init(void);
 void rgb_light_increase(void);
 void rgb_light_decrease(void);
 void rgb_light_toggle(void);
+void rgb_indicator_toggle(void);
 void rgb_light_enable(void);
 void rgb_light_disable(void);
 void rgb_light_step(void);
@@ -94,9 +97,6 @@ void rgb_light_sethsv_at(uint16_t hue, uint8_t sat, uint8_t val, uint8_t index);
 void eeconfig_update_rgb_light(uint32_t val);
 void eeconfig_update_rgb_light_default(void);
 void eeconfig_debug_rgb_light(void);
-
-void rgb_matrix_increase(void);
-void rgb_matrix_decrease(void);
 
 void sethsv(uint16_t hue, uint8_t sat, uint8_t val);
 void setrgb(uint8_t r, uint8_t g, uint8_t b);

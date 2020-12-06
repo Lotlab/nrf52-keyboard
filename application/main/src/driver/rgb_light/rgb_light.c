@@ -281,6 +281,7 @@ void eeconfig_update_rgb_light_default(void)
 #else
     rgb_light_config.enable = 0;
 #endif
+    rgb_light_config.ind = 1;
     rgb_light_config.mode = 1;
     rgb_light_config.hue = 0;
     rgb_light_config.sat = 255;
@@ -351,7 +352,7 @@ uint32_t rgb_light_get_mode(void)
 
 void rgb_light_mode_eeprom_helper(uint8_t mode, bool write_to_eeprom)
 {
-    if (!rgb_light_config.enable) {
+    if (!rgb_light_config.enable || rgb_light_config.ind) {
         return;
     }
     if (mode < 1) {
@@ -391,6 +392,9 @@ void rgb_light_mode_noeeprom(uint8_t mode)
 
 void rgb_light_toggle(void)
 {
+    if (rgb_light_config.ind) {
+        return;
+    }
     if (rgb_light_config.enable) {
         rgb_light_disable();
     } else {
@@ -398,8 +402,17 @@ void rgb_light_toggle(void)
     }
 }
 
+void rgb_indicator_toggle(void)
+{
+    rgb_light_config.ind = !rgb_light_config.ind;
+    eeconfig_update_rgb_light(rgb_light_config.raw);
+}
+
 void rgb_light_toggle_noeeprom(void)
 {
+    if (rgb_light_config.ind) {
+        return;
+    }
     if (rgb_light_config.enable) {
         rgb_light_disable_noeeprom();
     } else {
@@ -423,14 +436,8 @@ void rgb_light_enable_noeeprom(void)
     rgb_light_lppwm_start();
 }
 
-void rgb_light_set_val(uint8_t value)
-{
-    sethsv(rgb_light_config.hue, rgb_light_config.sat, value);
-}
-
 void rgb_light_disable(void)
 {
-
 #ifdef RGB_LIGHT_ANIMATIONS
     rgb_light_timer_disable();
 #endif
@@ -450,29 +457,20 @@ void rgb_light_disable_noeeprom(void)
     rgb_light_config.enable = 0;
 }
 
-// Deals with the messy details of incrementing an integer
-uint8_t increment(uint8_t value, uint8_t step, uint8_t min, uint8_t max)
-{
-    int16_t new_value = value;
-    new_value += step;
-    return MIN(MAX(new_value, min), max);
-}
-
-uint8_t decrement(uint8_t value, uint8_t step, uint8_t min, uint8_t max)
-{
-    int16_t new_value = value;
-    new_value -= step;
-    return MIN(MAX(new_value, min), max);
-}
-
 void rgb_light_increase_hue(void)
 {
+    if (rgb_light_config.ind) {
+        return;
+    }
     uint16_t hue;
     hue = (rgb_light_config.hue + RGB_LIGHT_HUE_STEP) % 360;
     rgb_light_sethsv(hue, rgb_light_config.sat, rgb_light_config.val);
 }
 void rgb_light_decrease_hue(void)
 {
+    if (rgb_light_config.ind) {
+        return;
+    }
     uint16_t hue;
     if (rgb_light_config.hue - RGB_LIGHT_HUE_STEP < 0) {
         hue = (rgb_light_config.hue + 360 - RGB_LIGHT_HUE_STEP) % 360;
@@ -483,6 +481,9 @@ void rgb_light_decrease_hue(void)
 }
 void rgb_light_increase_sat(void)
 {
+    if (rgb_light_config.ind) {
+        return;
+    }
     uint8_t sat;
     if (rgb_light_config.sat + RGB_LIGHT_SAT_STEP > 255) {
         sat = 255;
@@ -493,6 +494,9 @@ void rgb_light_increase_sat(void)
 }
 void rgb_light_decrease_sat(void)
 {
+    if (rgb_light_config.ind) {
+        return;
+    }
     uint8_t sat;
     if (rgb_light_config.sat - RGB_LIGHT_SAT_STEP < 0) {
         sat = 0;
@@ -503,6 +507,9 @@ void rgb_light_decrease_sat(void)
 }
 void rgb_light_increase_val(void)
 {
+    if (rgb_light_config.ind) {
+        return;
+    }
     uint8_t val;
     if (rgb_light_config.val + RGB_LIGHT_VAL_STEP > RGB_LIGHT_LIMIT_VAL) {
         val = RGB_LIGHT_LIMIT_VAL;
@@ -513,6 +520,9 @@ void rgb_light_increase_val(void)
 }
 void rgb_light_decrease_val(void)
 {
+    if (rgb_light_config.ind) {
+        return;
+    }
     uint8_t val;
     if (rgb_light_config.val - RGB_LIGHT_VAL_STEP < 0) {
         val = 0;
@@ -524,14 +534,14 @@ void rgb_light_decrease_val(void)
 
 void rgb_light_sethsv_noeeprom_old(uint16_t hue, uint8_t sat, uint8_t val)
 {
-    if (rgb_light_config.enable) {
+    if (rgb_light_config.enable && !rgb_light_config.ind) {
         sethsv(hue, sat, val);
     }
 }
 
 void rgb_light_sethsv_eeprom_helper(uint16_t hue, uint8_t sat, uint8_t val, bool write_to_eeprom)
 {
-    if (rgb_light_config.enable) {
+    if (rgb_light_config.enable && !rgb_light_config.ind) {
         if (rgb_light_config.mode == 1) {
             // same static color
             sethsv(hue, sat, val);
@@ -611,7 +621,7 @@ void rgb_light_timer_toggle(void)
 
 void rgb_light_task(void)
 {
-    if (rgb_light_timer_enabled) {
+    if (rgb_light_timer_enabled && !rgb_light_config.ind) {
         // mode = 1, static light, do nothing here
         if (rgb_light_config.mode >= 2 && rgb_light_config.mode <= 5) {
             // mode = 2 to 5, breathing mode
@@ -666,6 +676,68 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
             break;
         case KBD_STATE_SLEEP: // 准备休眠
             rgb_light_lppwm_deinit();
+            break;
+        default:
+            break;
+        }
+        break;
+    case USER_EVT_POWERSAVE:
+        switch (arg2) {
+        case PWR_SAVE_ENTER: // 进入省电模式
+            if (rgb_light_config.ind) {
+                setrgb(0, 0, 0);
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    case USER_EVT_USB: // USB事件
+        switch (arg2) {
+        case USB_WORKING:
+            if (rgb_light_config.ind) {
+                rgb_light_setrgb_green();
+            }
+            break;
+        default:
+            if (rgb_light_config.ind) {
+                setrgb(0, 0, 0);
+            }
+            break;
+        }
+        break;
+    case USER_EVT_BLE_DEVICE_SWITCH: // 蓝牙设备通道切换事件
+        switch (arg2) {
+        case BLE_DEVICE_CHANNEL0:
+            if (rgb_light_config.ind) {
+                rgb_light_setrgb_white();
+            }
+            break;
+        case BLE_DEVICE_CHANNEL1:
+            if (rgb_light_config.ind) {
+                rgb_light_setrgb_yellow();
+            }
+            break;
+        case BLE_DEVICE_CHANNEL2:
+            if (rgb_light_config.ind) {
+                rgb_light_setrgb_red();
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    case USER_EVT_BLE_STATE_CHANGE: // 蓝牙状态事件
+        switch (arg2) {
+        case BLE_STATE_CONNECTED:
+            if (rgb_light_config.ind) {
+                rgb_light_setrgb_blue();
+            }
+            break;
+        case BLE_STATE_DISCONNECT:
+            if (rgb_light_config.ind) {
+            //    setrgb(0, 0, 0);
+            }
             break;
         default:
             break;
