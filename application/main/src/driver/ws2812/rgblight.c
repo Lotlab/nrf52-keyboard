@@ -342,7 +342,7 @@ void ws2812_toggle(void)
     if (ws2812_config.enable) {
         ws2812_disable();
     } else {
-        WS2812_ENABLE();
+        ws2812_enable();
     }
 }
 
@@ -351,11 +351,11 @@ void ws2812_toggle_noeeprom(void)
     if (ws2812_config.enable) {
         ws2812_disable_noeeprom();
     } else {
-        WS2812_ENABLE_noeeprom();
+        ws2812_enable_noeeprom();
     }
 }
 
-void WS2812_ENABLE(void)
+void ws2812_enable(void)
 {
     rgb_pwr_on();
     ws2812_config.enable = 1;
@@ -364,7 +364,7 @@ void WS2812_ENABLE(void)
     ws2812_mode(ws2812_config.mode);
 }
 
-void WS2812_ENABLE_noeeprom(void)
+void ws2812_enable_noeeprom(void)
 {
     rgb_pwr_on();
     ws2812_config.enable = 1;
@@ -664,7 +664,7 @@ void ws2812_timer_toggle(void)
 
 void ws2812_show_solid_color(uint8_t r, uint8_t g, uint8_t b)
 {
-    WS2812_ENABLE();
+    ws2812_enable();
     ws2812_mode(1);
     ws2812_setrgb(r, g, b);
 }

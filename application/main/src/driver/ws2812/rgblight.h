@@ -77,8 +77,8 @@
 #ifndef WS2812_CUSTOM_DRIVER
 #include "ws2812.h"
 #endif
-#include "ws2812_types.h"
-#include "ws2812_list.h"
+#include "rgblight_types.h"
+#include "rgblight_list.h"
 
 extern LED_TYPE led[WS2812_NUM];
 
@@ -104,7 +104,7 @@ void ws2812_init(void);
 void ws2812_increase(void);
 void ws2812_decrease(void);
 void ws2812_toggle(void);
-void WS2812_ENABLE(void);
+void ws2812_enable(void);
 void ws2812_disable(void);
 void ws2812_step(void);
 void ws2812_step_reverse(void);
@@ -140,7 +140,7 @@ void setrgb(uint8_t r, uint8_t g, uint8_t b, LED_TYPE *led1);
 void ws2812_sethsv_noeeprom(uint16_t hue, uint8_t sat, uint8_t val);
 void ws2812_mode_noeeprom(uint8_t mode);
 void ws2812_toggle_noeeprom(void);
-void WS2812_ENABLE_noeeprom(void);
+void ws2812_enable_noeeprom(void);
 void ws2812_disable_noeeprom(void);
 
 void ws2812_sethsv_eeprom_helper(uint16_t hue, uint8_t sat, uint8_t val, bool write_to_eeprom);

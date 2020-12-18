@@ -27,7 +27,7 @@
 //#include "i2cmaster.h"
 
 #include <stdint.h>
-#include "ws2812_types.h"
+#include "rgblight_types.h"
 
 #ifdef CONFIG_H_FILE
     #include CONFIG_H_FILE
