@@ -269,10 +269,12 @@ static bool command_common(uint8_t code)
         clear_keyboard();
         print_battery_percentage();
         break;
+#ifdef BOOTCHECK_ENABLE        
     case KC_I:
         clear_keyboard();
         bootcheck_flag_toggle();
         break;
+#endif
     case KC_L:
 #ifdef THREE_LED_STATUS
         leds_switch();
