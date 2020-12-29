@@ -91,6 +91,9 @@ __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint
             case SWITCH_DEVICE_BLE_2:
                 switch_device_select(2);
                 break;
+            case SWITCH_DEVICE_BLE_READV:
+                advertising_restart(BLE_ADV_MODE_FAST, true);
+                break;
             case SWITCH_DEVICE_BLE_REBOND:
                 switch_device_rebond();
                 break;

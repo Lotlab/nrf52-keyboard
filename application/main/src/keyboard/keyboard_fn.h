@@ -16,10 +16,11 @@ enum fn_keyboard_control {
 
 enum fn_switch_device {
     SWITCH_DEVICE_USB, // 切换USB状态
+    SWITCH_DEVICE_BLE_REBOND = 0x07,
     SWITCH_DEVICE_BLE_0 = 0x08,
     SWITCH_DEVICE_BLE_1 = 0x09,
     SWITCH_DEVICE_BLE_2 = 0x0a,
-    SWITCH_DEVICE_BLE_REBOND = 0x07,
+    SWITCH_DEVICE_BLE_READV = 0x0b,
 };
 
 /**
