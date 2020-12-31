@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MODS_SHIFT_MASK (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT))
 #define MODS_RSHIFT_MASK (MOD_BIT(KC_RSHIFT))
+#define MODS_LSHIFT_MASK (MOD_BIT(KC_LSHIFT))
 
 void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
 {
@@ -71,7 +72,7 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
             break;
         case AF_TRICKY_L:
             if (record->event.pressed) {
-                if (get_mods() & MODS_RSHIFT_MASK) {
+                if ((get_mods() & MODS_RSHIFT_MASK) && !(get_mods() & MODS_LSHIFT_MASK)){
                     tricky_registered = KC_SCLN;
                 } else {
                     tricky_registered = KC_L;
