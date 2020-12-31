@@ -20,6 +20,7 @@
 #include "keyboard_evt.h"
 #include "low_power_pwm.h"
 #include "nrf_gpio.h"
+#include "power_save.h"
 #include "progmem.h"
 #include "timer.h"
 #include "wait.h"
@@ -429,6 +430,7 @@ void rgb_indicator_toggle(void)
 #endif
         rgb_light_lppwm_start();
         led_status_change();
+        power_save_reset();
     } else {
         setrgb(0, 0, 0);
         if(rgb_light_config.enable){
