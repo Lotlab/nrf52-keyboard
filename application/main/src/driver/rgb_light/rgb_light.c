@@ -50,7 +50,9 @@ const uint8_t RGBLED_RAINBOW_MOOD_INTERVALS[]
 __attribute__((weak))
 
 rgb_light_config_t rgb_light_config;
-bool rgb_light_timer_enabled = false;
+static bool rgb_light_timer_enabled = false;
+static bool ble_connected = false;
+static bool usb_working = false;
 
 #define PWM_BITS 8
 #define PWM_PRESCALER (8 - PWM_BITS)
@@ -181,6 +183,21 @@ static void rgb_light_lppwm_deinit()
     nrf_gpio_cfg_input(LED_RGB_R, NRF_GPIO_PIN_PULLDOWN);
     nrf_gpio_cfg_input(LED_RGB_G, NRF_GPIO_PIN_PULLDOWN);
     nrf_gpio_cfg_input(LED_RGB_B, NRF_GPIO_PIN_PULLDOWN);
+}
+
+static void led_status_change()
+{
+    if (rgb_light_config.ind) {
+        if (usb_working) {
+            rgb_light_setrgb_green();
+        } else {
+            if (ble_connected) {
+                rgb_light_setrgb_blue();
+            } else {
+                setrgb(0, 0, 0);
+            }
+        }
+    }
 }
 
 void sethsv(uint16_t hue, uint8_t sat, uint8_t val)
@@ -406,6 +423,14 @@ void rgb_indicator_toggle(void)
 {
     rgb_light_config.ind = !rgb_light_config.ind;
     eeconfig_update_rgb_light(rgb_light_config.raw);
+    if (rgb_light_config.ind) {
+#ifdef RGB_LIGHT_ANIMATIONS
+        rgb_light_timer_disable();
+#endif
+        led_status_change();
+    } else {
+        rgb_light_mode_eeprom_helper(rgb_light_config.mode, false);
+    }
 }
 
 void rgb_light_toggle_noeeprom(void)
@@ -695,14 +720,12 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
     case USER_EVT_USB: // USB事件
         switch (arg2) {
         case USB_WORKING:
-            if (rgb_light_config.ind) {
-                rgb_light_setrgb_green();
-            }
+            usb_working = true;
+            led_status_change();
             break;
         default:
-            if (rgb_light_config.ind) {
-                setrgb(0, 0, 0);
-            }
+            usb_working = false;
+            led_status_change();
             break;
         }
         break;
@@ -710,12 +733,12 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
         switch (arg2) {
         case BLE_DEVICE_CHANNEL0:
             if (rgb_light_config.ind) {
-                rgb_light_setrgb_white();
+                setrgb (0xFF, 0x10, 0x20);
             }
             break;
         case BLE_DEVICE_CHANNEL1:
             if (rgb_light_config.ind) {
-                rgb_light_setrgb_yellow();
+                setrgb (0xFF, 0x60, 0x00);
             }
             break;
         case BLE_DEVICE_CHANNEL2:
@@ -730,14 +753,12 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
     case USER_EVT_BLE_STATE_CHANGE: // 蓝牙状态事件
         switch (arg2) {
         case BLE_STATE_CONNECTED:
-            if (rgb_light_config.ind) {
-                rgb_light_setrgb_blue();
-            }
+            ble_connected = true;
+            led_status_change();
             break;
         case BLE_STATE_DISCONNECT:
-            if (rgb_light_config.ind) {
-            //    setrgb(0, 0, 0);
-            }
+            ble_connected = false;
+            led_status_change();
             break;
         default:
             break;
