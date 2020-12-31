@@ -427,9 +427,15 @@ void rgb_indicator_toggle(void)
 #ifdef RGB_LIGHT_ANIMATIONS
         rgb_light_timer_disable();
 #endif
+        rgb_light_lppwm_start();
         led_status_change();
     } else {
+        setrgb(0, 0, 0);
+        if(rgb_light_config.enable){
         rgb_light_mode_eeprom_helper(rgb_light_config.mode, false);
+        } else {
+        rgb_light_lppwm_stop();
+        }
     }
 }
 
@@ -711,6 +717,12 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
         case PWR_SAVE_ENTER: // 进入省电模式
             if (rgb_light_config.ind) {
                 setrgb(0, 0, 0);
+                rgb_light_lppwm_stop();
+            }
+            break;
+        case PWR_SAVE_EXIT: // 退出省电模式
+            if (rgb_light_config.ind) {
+                rgb_light_lppwm_start();
             }
             break;
         default:
