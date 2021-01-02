@@ -320,6 +320,8 @@ void switch_device_init()
 
     ret = sd_ble_gap_addr_set(&gap_addr);
     APP_ERROR_CHECK(ret);
+
+    trig_event_param(USER_EVT_BLE_DEVICE_SWITCH, switch_id);
 }
 #endif
 
