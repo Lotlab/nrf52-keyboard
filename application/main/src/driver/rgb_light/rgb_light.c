@@ -790,7 +790,10 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
             led_status_change();
         break;
         case BLE_STATE_SLOW_ADV:
-            setrgb(0, 0, 0);
+            if (rgb_light_config.ind)
+            {
+                setrgb(0, 0, 0);
+            }
         break;
         default:
             break;
