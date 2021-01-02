@@ -54,6 +54,7 @@ rgb_light_config_t rgb_light_config;
 static bool rgb_light_timer_enabled = false;
 static bool ble_connected = false;
 static bool usb_working = false;
+static uint8_t ble_channel = 0;
 
 #define PWM_BITS 8
 #define PWM_PRESCALER (8 - PWM_BITS)
@@ -195,9 +196,23 @@ static void led_status_change()
             if (ble_connected) {
                 rgb_light_setrgb_blue();
             } else {
-                setrgb(0, 0, 0);
+                switch (ble_channel) {
+                case 0:
+                    setrgb(0xFF, 0x10, 0x20); //粉色
+                    break;
+                case 1:
+                    setrgb(0xFF, 0x60, 0x00); //黄色
+                    break;
+                case 2:
+                    setrgb(0xFF, 0x00, 0x00); //红色
+                    break;
+                default:
+                    setrgb(0, 0, 0);
+                    break;
+                }
             }
         }
+        power_save_reset();
     }
 }
 
@@ -430,7 +445,6 @@ void rgb_indicator_toggle(void)
 #endif
         rgb_light_lppwm_start();
         led_status_change();
-        power_save_reset();
     } else {
         setrgb(0, 0, 0);
         if(rgb_light_config.enable){
@@ -746,19 +760,16 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
     case USER_EVT_BLE_DEVICE_SWITCH: // 蓝牙设备通道切换事件
         switch (arg2) {
         case BLE_DEVICE_CHANNEL0:
-            if (rgb_light_config.ind) {
-                setrgb (0xFF, 0x10, 0x20);
-            }
+            ble_channel = 0;
+            led_status_change();
             break;
         case BLE_DEVICE_CHANNEL1:
-            if (rgb_light_config.ind) {
-                setrgb (0xFF, 0x60, 0x00);
-            }
+            ble_channel = 1;
+            led_status_change();
             break;
         case BLE_DEVICE_CHANNEL2:
-            if (rgb_light_config.ind) {
-                rgb_light_setrgb_red();
-            }
+            ble_channel = 2;
+            led_status_change();
             break;
         default:
             break;
@@ -774,6 +785,13 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
             ble_connected = false;
             led_status_change();
             break;
+        case BLE_STATE_FAST_ADV:
+            ble_connected = false;
+            led_status_change();
+        break;
+        case BLE_STATE_SLOW_ADV:
+            setrgb(0, 0, 0);
+        break;
         default:
             break;
         }
