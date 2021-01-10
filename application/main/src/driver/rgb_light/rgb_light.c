@@ -1,4 +1,5 @@
-/* Copyright 2016-2017 Yang Liu     modify by Geno
+/* Copyright 2016-2017 Yang Liu
+ *           2020-2021 modify by Geno
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,6 +56,8 @@ static bool rgb_light_timer_enabled = false;
 static bool ble_connected = false;
 static bool usb_working = false;
 static uint8_t ble_channel = 0;
+static bool rgb_working = false;
+
 
 #define PWM_BITS 8
 #define PWM_PRESCALER (8 - PWM_BITS)
@@ -115,6 +118,7 @@ static void rgb_light_lppwm_start()
     APP_ERROR_CHECK(err_code);
     err_code = low_power_pwm_start(&led_b, led_b.bit_mask);
     APP_ERROR_CHECK(err_code);
+    rgb_working = true;
 }
 /**
  * @brief 停止PWM
@@ -129,6 +133,7 @@ static void rgb_light_lppwm_stop()
     APP_ERROR_CHECK(err_code);
     err_code = low_power_pwm_stop(&led_g);
     APP_ERROR_CHECK(err_code);
+    rgb_working = false;
 }
 
 /**
@@ -435,23 +440,31 @@ void rgb_light_toggle(void)
     }
 }
 
+//指示灯模式和轴灯模式切换
 void rgb_indicator_toggle(void)
 {
     rgb_light_config.ind = !rgb_light_config.ind;
     eeconfig_update_rgb_light(rgb_light_config.raw);
-    if (rgb_light_config.ind) {
+    if (rgb_light_config.ind) {  //指示灯模式
 #ifdef RGB_LIGHT_ANIMATIONS
-        rgb_light_timer_disable();
+      rgb_light_timer_disable();  //指示灯模式不需要动效，关闭动效计时器
 #endif
-        rgb_light_lppwm_start();
-        led_status_change();
-    } else {
-        setrgb(0, 0, 0);
-        if(rgb_light_config.enable){
-        rgb_light_mode_eeprom_helper(rgb_light_config.mode, false);
-        } else {
-        rgb_light_lppwm_stop();
+      if (!rgb_working) {
+        rgb_light_lppwm_start(); //如果切换前轴灯处于关闭状态（llpwm处于关闭），先启用lppwm
+      }
+      led_status_change();
+    } else {  //轴灯模式
+      if (rgb_light_config.enable) {
+        if (!rgb_working) {  //如果切换前处于省电模式（llpwm处于关闭），先启用lppwm
+          rgb_light_lppwm_start();
         }
+        rgb_light_mode_eeprom_helper(rgb_light_config.mode, false);
+      } else {
+        if (rgb_working) {  //如果llpwm开启才需要关闭
+          setrgb(0, 0, 0);
+          rgb_light_lppwm_stop();
+        }
+      }
     }
 }
 
