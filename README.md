@@ -127,7 +127,7 @@ Type `make help` for all flashing command.
 然后安装 [SDCC](http://sdcc.sourceforge.net/) 用于编译CH554相关代码。
 
 ### Bootloader 的编译
-参见[这篇文章](https://devzone.nordicsemi.com/b/blog/posts/getting-started-with-nordics-secure-dfu-bootloader)，先编译uECC库，然后再编译Bootloader
+参见[这篇文章](https://devzone.nordicsemi.com/nordic/short-range-guides/b/software-development-kit/posts/getting-started-with-nordics-secure-dfu-bootloader)，先编译uECC库，然后再编译Bootloader
 
 ```bash
 cd application/bootloader/project
