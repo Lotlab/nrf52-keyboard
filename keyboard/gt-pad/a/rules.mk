@@ -17,3 +17,4 @@ endif
 ONBOARD_CMSIS_DAP = yes   # 启用板载调试器
 RGB_LIGHT_ENABLE = yes     #启用RGB轴灯
 ROTARY_ENCODER = yes # 启用编码器
+# SSD1306_OLED = yes
