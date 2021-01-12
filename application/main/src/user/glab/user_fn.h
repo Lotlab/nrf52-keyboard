@@ -1,7 +1,8 @@
 #pragma once
 
 enum fn_user_functions {
-	USER_FN_KEY = 0x10 //0x0F以前为系统保留，自定义从0x10开始；
+	TRICKY_KEY = 0x10, //0x0F以前为系统保留，自定义从0x10开始；
+	RGB_LIGHT_CONTROL = 0x11,
 };
 
 enum fn_user_fn_key {
@@ -13,3 +14,14 @@ enum fn_user_fn_key {
     AF_TRICKY_BSPC,
 };
 
+enum fn_rgb_light_control {
+    RGB_LIGHT_STEP,
+    RGB_LIGHT_TOGGLE,
+    RGB_LIGHT_IHUE,
+    RGB_LIGHT_DHUE,
+    RGB_LIGHT_ISAT,
+    RGB_LIGHT_DSAT,
+    RGB_LIGHT_IVAL,
+    RGB_LIGHT_DVAL,
+    RGB_LIGHT_TML,
+};

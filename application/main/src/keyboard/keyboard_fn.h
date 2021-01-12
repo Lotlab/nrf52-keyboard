@@ -5,7 +5,6 @@
 enum fn_functions {
     KEYBOARD_CONTROL,
     SWITCH_DEVICE,
-    RGB_LIGHT_CONTROL,
 };
 
 enum fn_keyboard_control {
@@ -22,18 +21,6 @@ enum fn_switch_device {
     SWITCH_DEVICE_BLE_1 = 0x09,
     SWITCH_DEVICE_BLE_2 = 0x0a,
     SWITCH_DEVICE_BLE_READV = 0x0b,
-};
-
-enum fn_rgb_light_control {
-    RGB_LIGHT_STEP,
-    RGB_LIGHT_TOGGLE,
-    RGB_LIGHT_IHUE,
-    RGB_LIGHT_DHUE,
-    RGB_LIGHT_ISAT,
-    RGB_LIGHT_DSAT,
-    RGB_LIGHT_IVAL,
-    RGB_LIGHT_DVAL,
-    RGB_LIGHT_TML,
 };
 
 /**

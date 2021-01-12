@@ -26,10 +26,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "keymap.h"
 #include "ble_services.h"
 #include "ble_bas_service.h"
-#include "keyboard_command.h"
-#ifdef RGB_LIGHT_ENABLE
-#include "rgb_light.h"
-#endif
 
 #ifdef NKRO_ENABLE
 
@@ -100,41 +96,6 @@ __attribute__((weak)) void action_function(keyrecord_t* record, uint8_t id, uint
                 break;
             case SWITCH_DEVICE_BLE_REBOND:
                 switch_device_rebond();
-                break;
-#endif
-            default:
-                break;
-            }
-            break;
-        case RGB_LIGHT_CONTROL:
-            switch (opt) {
-#ifdef RGB_LIGHT_ENABLE //RGB灯（无控制芯片）控制
-            case RGB_LIGHT_STEP:
-                rgb_light_step();
-                break;
-            case RGB_LIGHT_TOGGLE:
-                rgb_light_toggle();
-                break;
-            case RGB_LIGHT_IHUE:
-                rgb_light_increase_hue();
-                break;
-            case RGB_LIGHT_DHUE:
-                rgb_light_decrease_hue();
-                break;
-            case RGB_LIGHT_ISAT:
-                rgb_light_increase_sat();
-                break;
-            case RGB_LIGHT_DSAT:
-                rgb_light_decrease_sat();
-                break;
-            case RGB_LIGHT_IVAL:
-                rgb_light_increase_val();
-                break;
-            case RGB_LIGHT_DVAL:
-                rgb_light_decrease_val();
-                break;
-            case RGB_LIGHT_TML:
-                rgb_indicator_toggle();
                 break;
 #endif
             default:
