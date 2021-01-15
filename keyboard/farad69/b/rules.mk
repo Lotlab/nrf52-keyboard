@@ -4,6 +4,7 @@ NRF_CHIP := nrf52832
 
 # 配置项：功能选项
 # BOOTMAGIC_ENABLE = yes  # 启用Bootmagic
+# BOOTCHECK_ENABLE = yes  # 启用Bootchek
 EXTRAKEY_ENABLE = yes	  # 启用媒体键功能
 MOUSEKEY_ENABLE = yes     # 启用鼠标键功能
 NKRO_ENABLE = yes	      # 启用USB的全键无冲功能

@@ -1,6 +1,7 @@
 OPT_DEFS += -DERGOCONN_HAND_LEFT
 SDCC_CFLAGS += -DERGOCONN_HAND_LEFT
 COMMON_ROOT = ../common
-SRC_FILES += keymap_left.c
+SRC_FILES += $(COMMON_ROOT)/keymap_left.c
+HARDWARE_VERSION := REV_1
 
 include $(COMMON_ROOT)/common.mk

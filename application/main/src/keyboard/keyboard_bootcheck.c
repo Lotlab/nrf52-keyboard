@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdint.h>
 
 #include "../main.h"
-#include "bootmagic.h"
 #include "config.h"
+#include "bootmagic.h"
 #include "hook.h"
 #include "keycode.h"
 #include "nrf_delay.h"

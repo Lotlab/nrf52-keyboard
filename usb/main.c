@@ -28,6 +28,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
+typedef void (*func)(void);
+const func isp_enter = 0x3800;
+
 /**
  * @brief CH554 软复位
  *
@@ -134,12 +137,31 @@ static INTERRUPT(UARTInterrupt, INT_NO_UART1)
 }
 
 /**
+ * @brief 禁用看门狗
+ * 
+ */
+static void DisableWatchDog()
+{
+    SAFE_MOD = 0x55;
+    SAFE_MOD = 0xaa; //进入安全模式
+    GLOBAL_CFG &= ~bWDOG_EN; //禁用看门狗复位
+    SAFE_MOD = 0x00; //退出安全模式
+}
+
+/**
  * @brief 端点3下传数据。下传的是Keymap数据包
  *
  */
 void EP3_OUT()
 {
     uint8_t len = Ep3Buffer[2] + 2;
+    if (Ep3Buffer[1] == 0xF0 && len == 2) {
+        DisableWatchDog();
+        USB_CTRL = 0;
+        UDEV_CTRL = 0x80;
+        DelayMs(10);
+        isp_enter();
+    }
     uart_send_keymap(&Ep3Buffer[1], len);
 }
 

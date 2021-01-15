@@ -15,12 +15,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "led_rgb.h"
-#include "power_save.h"
+#include "config.h"
 #include "low_power_pwm.h"
 #include "nrf.h"
 #include "nrf_gpio.h"
-#include "config.h"
+#include "power_save.h"
 #include <stdint.h>
+
+#define PWM_BITS 7
+#define PWM_PRESCALER (8 - PWM_BITS)
 
 static low_power_pwm_t led_r;
 static low_power_pwm_t led_g;
@@ -52,6 +55,10 @@ const uint8_t gamma[] = {
     112, 114, 116, 118, 120, 122, 124, 127
 };
 
+static inline void led_val_set(low_power_pwm_t *pwm, char val) {
+    low_power_pwm_duty_set(pwm, val >> PWM_PRESCALER);
+} 
+
 /**
  * @brief 设置RGB灯光值
  * 
@@ -69,9 +76,9 @@ static void keyboard_led_rgb_set_internal(uint32_t color)
     b = gamma[b];
 
     // 红色灯光的亮度在同样电流下是其他两个的一半，故需要校正颜色
-    low_power_pwm_duty_set(&led_r, r * 2);
-    low_power_pwm_duty_set(&led_g, g);
-    low_power_pwm_duty_set(&led_b, b);
+    led_val_set(&led_r, r * 2);
+    led_val_set(&led_g, g);
+    led_val_set(&led_b, b);
 }
 
 /**
@@ -87,17 +94,50 @@ void keyboard_led_rgb_set(uint32_t color)
 }
 
 /**
+ * @brief 启动PWM
+ * 
+ */
+static void keyboard_led_lppwm_start()
+{
+    uint32_t err_code;
+    err_code = low_power_pwm_start(&led_r, led_r.bit_mask);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_start(&led_g, led_g.bit_mask);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_start(&led_b, led_b.bit_mask);
+    APP_ERROR_CHECK(err_code);
+}
+/**
+ * @brief 停止PWM
+ * 
+ */
+static void keyboard_led_lppwm_stop()
+{
+    uint32_t err_code;
+    err_code = low_power_pwm_stop(&led_r);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_stop(&led_g);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_stop(&led_g);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**
  * @brief 初始化RGB灯光
  * 
  */
 void keyboard_led_rgb_init()
 {
     uint32_t err_code;
-    low_power_pwm_config_t lppwm_config = LOW_POWER_PWM_DEFAULT_CONFIG(0);
-
+    low_power_pwm_config_t lppwm_config = {
 #ifdef LED_RGB_CC
-    lppwm_config.active_high = true;
+        .active_high = true,
+#else
+        .active_high = false,
 #endif
+        .period = (1 << PWM_BITS) - 1,
+        .p_port = LOW_POWER_PWM_CONFIG_PORT,
+    };
 
     APP_TIMER_DEF(lpp_timer_0);
     lppwm_config.bit_mask = 1 << LED_RGB_R;
@@ -123,12 +163,7 @@ void keyboard_led_rgb_init()
     err_code = low_power_pwm_duty_set(&led_b, 0);
     APP_ERROR_CHECK(err_code);
 
-    err_code = low_power_pwm_start(&led_r, led_r.bit_mask);
-    APP_ERROR_CHECK(err_code);
-    err_code = low_power_pwm_start(&led_g, led_g.bit_mask);
-    APP_ERROR_CHECK(err_code);
-    err_code = low_power_pwm_start(&led_b, led_b.bit_mask);
-    APP_ERROR_CHECK(err_code);
+    keyboard_led_lppwm_start();
 }
 /**
  * @brief 关闭 RGB LED 的显示
@@ -136,9 +171,7 @@ void keyboard_led_rgb_init()
  */
 void keyboard_led_rgb_deinit()
 {
-    low_power_pwm_stop(&led_r);
-    low_power_pwm_stop(&led_g);
-    low_power_pwm_stop(&led_b);
+    keyboard_led_lppwm_stop();
 
     nrf_gpio_cfg_default(LED_RGB_R);
     nrf_gpio_cfg_default(LED_RGB_G);
@@ -165,4 +198,9 @@ void keyboard_led_rgb_direct(uint32_t color)
 void keyboard_led_rgb_switch(bool on)
 {
     keyboard_led_rgb_set_internal(on ? saved_color : 0);
+    if (on) {
+        keyboard_led_lppwm_start();
+    } else {
+        keyboard_led_lppwm_stop();
+    }
 }

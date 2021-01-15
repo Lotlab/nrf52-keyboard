@@ -190,13 +190,19 @@ else
 endif
 
 # Optimization flags
-OPT = -Os -g3
+ifeq (yes,$(strip $(DEBUG)))
+    OPT_DEFS += -DDEBUG
+	OPT = -O1
+else
+	OPT = -Os -g3
+endif
 # Uncomment the line below to enable link time optimization
 #OPT += -flto
 OPT += $(OPT_DEFS)
 
 # C flags common to all targets
 CFLAGS += $(OPT)
+CFLAGS += -DNRF52_APP
 CFLAGS += -DNRF52_PAN_74
 CFLAGS += -DNRFX_COREDEP_DELAY_US_LOOP_CYCLES=3
 CFLAGS += -DNRF_DFU_SVCI_ENABLED

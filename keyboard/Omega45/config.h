@@ -74,21 +74,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RGB_DI_PIN 10
 #define RGBLED_NUM 8
 #define RGBLIGHT_ANIMATIONS
-//#define RGB_PWR_PIN xx // P-mos
+#define RGB_PWR_PIN 17 // P-mos
 //#define RGB_PWR_PIN_REVERSE 12 // N-mos
 
 // 3灯指示配置引脚
-#define LED_STATUS_BLE 20
-#define LED_STATUS_CHARGING 19
+#define LED_STATUS_BLE 19
+#define LED_STATUS_CHARGING 18
 #define LED_STATUS_USB 20
+#define LED_BLE_CHANNEL1 19
+#define LED_BLE_CHANNEL2 20
+#define LED_BLE_CHANNEL3 18
 #define LED_POSITIVE // LED上拉驱动
 // 独立硬件按钮
 #define POWER_BUTTON 3
 
-// UART 传输配置
-#define HAS_USB
-#define UART_RXD 8
-#define UART_TXD 9
+// USB UART 传输配置
+#define HAS_USB // 启用与CH554的通信支持
+#define UART_RXD 8 // UART_RX口IO 17
+#define UART_TXD 9 // UART_TX口IO 18
 //#define UART_DET 19 // UART 检测引脚，若此脚被拉低，则说明USB正在工作。若不配置则使用RX口作为检测引脚
 #define UART_BAUDRATE NRF_UART_BAUDRATE_115200 // 通信波特率，请不要修改
 
@@ -96,7 +99,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0 // 电量检测引脚 Pin 2
 
 // 充电检测配置
-#define PIN_CHARGING !UCC1
+//#define PIN_CHARGING !UCC1
 //#define PIN_STANDBY !UCC2
 
 // 按键阵列配置

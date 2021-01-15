@@ -29,10 +29,14 @@ endif
 
 ifeq (yes,$(strip $(BOOTMAGIC_ENABLE)))
     SRC_FILES += $(COMMON_DIR)/bootmagic.c
+    SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_bootmagic.c
     SRC_FILES += $(APP_SRC_DIR)/tmk/eeconfig.c
     OPT_DEFS += -DBOOTMAGIC_ENABLE
 else
+    ifeq (yes,$(strip $(BOOTCHECK_ENABLE)))
     SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_bootcheck.c
+    OPT_DEFS += -DBOOTCHECK_ENABLE
+    endif
 endif
 
 ifeq (yes,$(strip $(MOUSEKEY_ENABLE)))
