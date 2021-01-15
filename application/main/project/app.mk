@@ -21,6 +21,10 @@ ifndef NRF_PACKAGE_NAME
 	NRF_PACKAGE_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_$(VERSION).zip
 endif
 
+ifndef NRF_SIGN_HEX_NAME
+	NRF_SIGN_HEX_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
+endif
+
 $(OUTPUT_DIRECTORY)/nrf52_kbd.out: \
 	LINKER_SCRIPT  := $(APP_PROJ_DIR)/$(LD_NAME)
 
@@ -359,8 +363,8 @@ pyocd_flash_softdevice:
 
 # Merge Package for download
 merge_setting: setting
-	@echo Merging program with signature to $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
-	mergehex -m $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
+	@echo Merging program with signature to $(NRF_SIGN_HEX_NAME)/nrf52_kbd_sign.hex
+	mergehex -m $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(NRF_SIGN_HEX_NAME)
 
 merge_softdevice: default
 	@echo Merging program and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/nrf52_kbd_with_sd.hex
