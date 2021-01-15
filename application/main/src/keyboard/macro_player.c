@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 
 #include "action.h"
-#include "action_macro.h"
+#include "action_macro_extend.h"
 #include "action_util.h"
 #include "app_timer.h"
 #include "keyboard_host_driver.h"
@@ -41,11 +41,30 @@ static uint8_t macro_interval_reload = DEFAULT_MACRO_INTERVAL;
 static uint8_t macro_delay = 0;
 static uint8_t mod_storage = 0;
 static bool timer_started = false;
+static bool macro_repeaet = false;
 
 QUEUE(const macro_t*, macro_queue, MAX_MACRO_QUEUE);
 
+void macro_cancle()
+{
+    macro_queue_clear();
+    current_macro = 0;
+    macro_repeaet = false;
+    macro_delay = 0;
+    macro_interval_reload = DEFAULT_MACRO_INTERVAL;
+}
+
 void action_macro_play(const macro_t* macro_p)
 {
+    // 处理循环宏
+    if (macro_repeaet) {
+        // 按下了同一个宏按键，则取消宏
+        if (macro_p == *macro_queue_peek()) {
+            macro_cancle();
+        }
+        return;
+    }
+
     macro_queue_push(macro_p);
     // 启用播放定时器
     if (!timer_started) {
@@ -148,10 +167,16 @@ static void action_macro_replay(void* p_context)
         unregister_code(*current_macro & 0x7F);
         current_macro++;
         break;
+    case REPEAT:
+        // 重复宏：直接重放这个宏
+        current_macro = *macro_queue_peek();
+        macro_repeaet = true;
+        break;
     case END:
         // 出队，重置当前宏的设置
         macro_queue_pop();
         current_macro = 0;
+        macro_repeaet = false;
         macro_interval_reload = DEFAULT_MACRO_INTERVAL;
         mod_storage = 0;
         break;
