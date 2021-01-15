@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2020 Jim Jiang <jim@lotlab.org>
+Copyright (C) 2020-2021 Jim Jiang <jim@lotlab.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,20 +19,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "keyboard_evt.h"
-#include "nrf52_bitfields.h"
 #include "nrf_qdec.h"
 #include "nrfx_qdec.h"
-
-#include "ssd1306/oled_graph.h"
-#include "ssd1306/ssd1306_oled.h"
 
 #include "keyboard_matrix.h"
 #include "nrf_gpio.h"
 
 #include "app_timer.h"
 
-#define LOW_POWER_QDEC
-#ifdef LOW_POWER_QDEC
+#ifdef LOW_POWER_QDEC_TICKS
 APP_TIMER_DEF(qdec_timer);
 #endif
 
@@ -51,7 +46,7 @@ static int8_t count;
 static int8_t last_count;
 void decoder_event_handler(nrfx_qdec_event_t event)
 {
-#ifndef LOW_POWER_QDEC
+#ifndef LOW_POWER_QDEC_TICKS
     if (event.type == NRF_QDEC_EVENT_REPORTRDY) {
         count += event.data.report.acc;
         if (event.data.report.acc != 0 && count % 4 == 0) {
@@ -81,7 +76,7 @@ void decoder_event_handler(nrfx_qdec_event_t event)
 #endif
 }
 
-#ifdef LOW_POWER_QDEC
+#ifdef LOW_POWER_QDEC_TICKS
 static void decoder_timeout_handler(void* p_context)
 {
     nrf_qdec_task_trigger(NRF_QDEC_TASK_START);
@@ -95,7 +90,7 @@ static void decoder_timeout_handler(void* p_context)
 static void encoder_init()
 {
     nrfx_qdec_init(&qdec_config, decoder_event_handler);
-#ifdef LOW_POWER_QDEC
+#ifdef LOW_POWER_QDEC_TICKS
     nrf_qdec_shorts_enable(QDEC_SHORTS_SAMPLERDY_STOP_Msk);
 #endif
 
@@ -104,7 +99,7 @@ static void encoder_init()
 
     nrfx_qdec_enable();
 
-#ifdef LOW_POWER_QDEC
+#ifdef LOW_POWER_QDEC_TICKS
     app_timer_create(&qdec_timer, APP_TIMER_MODE_REPEATED, decoder_timeout_handler);
     app_timer_start(qdec_timer, APP_TIMER_TICKS(2), NULL);
 #endif
