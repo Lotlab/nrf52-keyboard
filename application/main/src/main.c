@@ -101,14 +101,14 @@
 #include "protocol/usb_comm.h"
 
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
-
+#ifdef APP_TIMER_CONFIG_USE_SCHEDULER
 #define SCHED_MAX_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE /**< Maximum size of scheduler events. */
 #ifdef SVCALL_AS_NORMAL_FUNCTION
 #define SCHED_QUEUE_SIZE 30 /**< Maximum number of events in the scheduler queue. More is needed in case of Serialization. */
 #else
 #define SCHED_QUEUE_SIZE 20 /**< Maximum number of events in the scheduler queue. */
 #endif
-
+#endif
 APP_TIMER_DEF(sleep_delay_timer);
 static void sleep_delay_handler(void* p_context);
 
@@ -307,12 +307,14 @@ void sleep(enum SLEEP_REASON reason)
     }
 }
 
+#ifdef APP_TIMER_CONFIG_USE_SCHEDULER
 /**@brief Function for the Event Scheduler initialization.
  */
 static void scheduler_init(void)
 {
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
 }
+#endif
 
 /**@brief Function for initializing power management.
  */
@@ -331,7 +333,9 @@ static void power_management_init(void)
  */
 static void idle_state_handle(void)
 {
+#ifdef APP_TIMER_CONFIG_USE_SCHEDULER
     app_sched_execute();
+#endif
     execute_event();
     nrf_pwr_mgmt_run();
 }
@@ -350,7 +354,9 @@ int main(void)
     set_stage(KBD_STATE_PRE_INIT);
 
     ble_stack_init();
+#ifdef APP_TIMER_CONFIG_USE_SCHEDULER
     scheduler_init();
+#endif
     ble_services_init();
     battery_service_init();
     hid_service_init(service_error_handler);
