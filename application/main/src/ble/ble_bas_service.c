@@ -136,9 +136,15 @@ void print_battery_percentage()
     char percentage = battery_info.percentage;
 
     if (percentage == 0) {
-        type_code(KC_N);
+        type_code(KC_W);
+        type_code(KC_A);
+        type_code(KC_I);
+        type_code(KC_T);
     } else if (percentage == 100) {
         type_code(KC_F);
+        type_code(KC_U);
+        type_code(KC_L);
+        type_code(KC_L);
     } else {
         int factor = 100;
         do {
