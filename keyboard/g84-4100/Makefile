@@ -24,6 +24,7 @@ USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
 NRF52_DISABLE_FPU = yes # 禁用FPU
 LEDMAP = yes # 启用状态灯
 MOUSE_KEY_ENABLE = yes # 启用鼠标键
+ONBOARD_CMSIS_DAP = yes # 启用板载调试器
 
 ########## STOP HERE ##########
 # 除非你知道下面这些配置项是干什么的，否则不要去动它
