@@ -17,9 +17,10 @@ install:
   - mkdir /tmp/sdk
   - unzip -q /tmp/nRF5_SDK_15.3.0_59ac345.zip -d /tmp/sdk
   - wget https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-command-line-tools/sw/Versions-10-x-x/10-12-1/nRFCommandLineTools10121Linuxamd64tar.gz -O /tmp/nRF-command-line-tools.tar.gz
-  - tar xf /tmp/nRF-command-line-tools.tar.gz -C /tmp
-  - tar xf /tmp/nRF-Command-Line-Tools_10_12_1.tar -C /tmp
-  - sudo cp -r /tmp/mergehex /opt
+  - mkdir /tmp/tools
+  - tar xf /tmp/nRF-command-line-tools.tar.gz -C /tmp/tools
+  - tar xf /tmp/tools/nRF-Command-Line-Tools_10_12_1.tar -C /tmp/tools
+  - sudo cp -r /tmp/tools/mergehex /opt
   - sudo ln -s /opt/mergehex/mergehex /usr/local/bin/mergehex
 script:
   - cp template/Makefile.posix.template template/Makefile.posix
