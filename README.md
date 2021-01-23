@@ -55,7 +55,7 @@ Firstly, you should download [nRF5 SDK 15.3](https://www.nordicsemi.com/Software
 
 And then, install `gcc-arm-none-eabi-7-2018-q2-update`. Copy the `Makefile.posix.template` or `Makefile.windows.template` to `Makefile.posix` or `Makefile.windows` (depending your OS), then modify the toolchain path in the file to your gcc installed path.
 
-Install [SDCC](http://sdcc.sourceforge.net/) to compile code for CH554.
+Install [SDCC](http://sdcc.sourceforge.net/) to compile code for CH554. Note: This project require SDCC 4.0 to compile, older version in ubuntu 18.04 and debian 10 will not work.
 
 If you want to compile the bootloader, you should firstly complie the uECC library. See this [article](https://devzone.nordicsemi.com/b/blog/posts/getting-started-with-nordics-secure-dfu-bootloader).
 
@@ -64,6 +64,11 @@ Then,
 cd keyboard/lot60-ble
 make # Compile main program and the USB program
 make bootloader # Compile bootloader
+```
+
+We also provide Docker image for you to compile, this image contains toolchain and sdk. 
+```bash
+docker run lotlab/nrf52-keyboard
 ```
 
 ## Flashing
@@ -124,17 +129,15 @@ Type `make help` for all flashing command.
 首先下载 [nRF5 SDK 15.3](https://www.nordicsemi.com/Software-and-Tools/Software/nRF5-SDK/Download#infotabs), 解压并放入SDK文件夹。
 然后安装 gcc-arm-none-eabi-7-2018-q2-update，将template目录中对应平台的配置文件模板复制一份，重命名为`Makefile.posix`或`Makefile.windows`，修改里面工具路径为你的安装目录。
 
-然后安装 [SDCC](http://sdcc.sourceforge.net/) 用于编译CH554相关代码。
+然后安装 [SDCC](http://sdcc.sourceforge.net/) 用于编译CH554相关代码。注意：需要 SDCC 4.0 及以上版本才可编译，部分操作系统（如ubuntu 18.04, debian 10）内的 SDCC 版本无法满足要求。
+
+我们也提供了Docker镜像方便编译，请使用
+```bash
+docker run lotlab/nrf52-keyboard
+```
 
 ### Bootloader 的编译
 参见[这篇文章](https://devzone.nordicsemi.com/nordic/short-range-guides/b/software-development-kit/posts/getting-started-with-nordics-secure-dfu-bootloader)，先编译uECC库，然后再编译Bootloader
-
-```bash
-cd application/bootloader/project
-make SOFTDEVICE=S132 NRF_CHIP=nrf52832 NRF52_DISABLE_FPU=yes -j # nrf52832的编译命令
-make SOFTDEVICE=S112 NRF_CHIP=nrf52810 -j # nrf52810的编译命令
-```
-也可以直接参照下面的编译。
 
 ### 蓝牙程序和USB控制器的编译
 现在蓝牙和USB控制器程序的Makefile都放在一起了。进入对应的硬件目录，直接make即可。
