@@ -94,7 +94,7 @@ void matrix_init(void)
 /** read all rows */
 static matrix_row_t read_cols(void)
 {
-    uint16_t result = 0;
+    matrix_row_t result = 0;
 
     for (uint_fast8_t c = 0; c < MATRIX_COLS; c++) {
         if (READ_COL((uint32_t)column_pin_array[c]))
