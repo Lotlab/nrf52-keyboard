@@ -10,6 +10,9 @@ endif
 ifndef RELEASE_DIR
 RELEASE_DIR = $(OUTPUT_DIR)
 endif
+ifndef BUILD_PREFIX
+BUILD_PREFIX = "lot60-ble"
+endif
 
 .PHONY: clean all package usb merge_setting dist_clean
 
