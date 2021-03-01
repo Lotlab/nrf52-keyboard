@@ -134,18 +134,19 @@ void print_battery_percentage()
     int digits[10] = { KC_0, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9 };
     char percentage = battery_info.percentage;
 
-    if (percentage == 0) {
-        register_code(KC_0);
-        unregister_code(KC_0);
+    if (percentage <= 0) {
+        type_code(KC_0);
+    } else if (percentage >= 100) {
+        type_code(KC_O);
+        type_code(KC_K);
     } else {
-        int factor = 100;
-        do {
-            if (percentage >= factor) {
-                int index = (percentage / factor) % 10;
-                int keycode = digits[index];
-                register_code(keycode);
-                unregister_code(keycode);
-            }
-        } while ((factor /= 10) >= 1);
+        if (percentage >= 10) {
+            int index10 = (percentage / 10) % 10;
+            int digit10 = digits[index10];
+            type_code(digit10);
+        }
+        int index1 = percentage % 10;
+        int digit1 = digits[index1];
+        type_code(digit1);
     }
 }
