@@ -16,7 +16,7 @@ mkdir ./SDK
 mv /tmp/nRF5_SDK_15.3.0_59ac345/* ./SDK/
 
 # Tool
-wget https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-command-line-tools/sw/Versions-10-x-x/10-12-1/nRFCommandLineTools10121Linuxamd64tar.gz -O /tmp/nRF-command-line-tools.tar.gz
+wget https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-command-line-tools/sw/Versions-10-x-x/10-12-1/nRFCommandLineTools10121Linuxamd64.tar.gz -O /tmp/nRF-command-line-tools.tar.gz
 mkdir /tmp/tools
 tar xf /tmp/nRF-command-line-tools.tar.gz -C /tmp/tools
 tar xf /tmp/tools/nRF-Command-Line-Tools_10_12_1.tar -C /tmp/tools
