@@ -29,8 +29,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS];
 extern const action_t fn_actions[];
 
-/* GH60 keymap definition macro
- * K2C, K31 and  K3C are extra keys for ISO
+/* 
+ * @brief 按键阵列
+ * 第一组为实际布局
+ * 第二组为按键实际矩阵
  */
 #define KEYMAP( \
 	K00, K01, K02, K03, K04, K05, K06, K07, K08, K09, K0A, K0B, \
