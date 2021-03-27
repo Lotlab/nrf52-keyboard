@@ -110,6 +110,8 @@ static matrix_row_t read_cols(void)
 
 static void select_row(uint8_t row)
 {
+    if ((uint32_t)row_pin_array[row] > 31 )
+        return;
 nrf_gpio_cfg(
             (uint32_t)row_pin_array[row],
             NRF_GPIO_PIN_DIR_OUTPUT,
@@ -119,7 +121,7 @@ nrf_gpio_cfg(
             NRF_GPIO_PIN_H0D1,
 #else
 #ifdef ROW_IN
-            NRF_GPIO_PIN_S0D1,
+            NRF_GPIO_PIN_H0H1,
 #else
             NRF_GPIO_PIN_S0S1,
 #endif
@@ -134,6 +136,8 @@ nrf_gpio_cfg(
 
 static void unselect_rows(uint8_t row)
 {
+    if ((uint32_t)row_pin_array[row] > 31 )
+        return;
 #ifdef LESS_IO
 #ifdef ROW_IN
     nrf_gpio_cfg_input((uint32_t)row_pin_array[row], NRF_GPIO_PIN_PULLUP);
