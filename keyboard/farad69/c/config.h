@@ -137,9 +137,8 @@ static const uint8_t column_pin_array[MATRIX_COLS] = {11, 12, 13, 14, 15, 16, 17
 #define ROTARY_ENCODER_POS 5,0
 // 旋钮负向按钮映射
 #define ROTARY_ENCODER_NEG 5,1
-// SSD1306 LCD屏幕
-#define SSD1306_SDA 23
-#define SSD1306_SCL 24
+// 独立旋钮按键  用于关机后开机
+#define ROTARY_BUTTON 10
 
 /* define if matrix has ghost */
 // #define MATRIX_HAS_GHOST /* 按键阵列是否出现Ghost Key，若没有加二极管则需要启用这个项目 */
