@@ -319,4 +319,9 @@ void matrix_wakeup_prepare(void)
         nrf_gpio_pin_set(row_pin_array[i]);
     }
 #endif
+#ifdef ROTARY_BUTTON
+    nrf_gpio_cfg_sense_input(ROTARY_BUTTON,
+        NRF_GPIO_PIN_PULLUP,
+        NRF_GPIO_PIN_SENSE_LOW);
+#endif
 }
