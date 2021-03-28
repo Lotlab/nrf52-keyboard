@@ -57,10 +57,10 @@ extern const uint8_t RGBLED_RAINBOW_MOOD_INTERVALS[3] ;
 typedef union {
   uint32_t raw;
   struct {
-    bool     enable   :1;
-    bool     ind      :1;
-    bool     reserved :1;
-    uint8_t  mode     :4;
+    bool     enable   :1;  //是否启用
+    bool     ind      :1;  //是否指示灯模式
+    bool     reserved :1;  //保留
+    uint8_t  mode     :4;  //灯效模式
     uint16_t hue      :9;
     uint8_t  sat      :8;
     uint8_t  val      :8;
