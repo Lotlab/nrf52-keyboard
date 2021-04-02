@@ -7,7 +7,7 @@ ROOT_DIR := ../..
 
 # 配置项：主控芯片类型
 # 可选：nrf52810 或 nrf52832
-NRF_CHIP := nrf52810
+NRF_CHIP := nrf52832
 
 # 配置文件文件名
 CONFIG_H = config.h
@@ -22,7 +22,7 @@ EXTRAKEY_ENABLE = yes	# 启用媒体键功能
 NKRO_ENABLE = yes	# 启用USB的全键无冲功能
 USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
 
-ONBOARD_CMSIS_DAP = yes # 启用板载调试器
+ONBOARD_CMSIS_DAP = no # 启用板载调试器
 
 ########## STOP HERE ##########
 # 除非你知道下面这些配置项是干什么的，否则不要去动它
