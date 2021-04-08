@@ -186,12 +186,12 @@ static void dfu_multi_role_btn()
         press_count++;
     }
 
-    if (press_count > 400) {
-        if (press_count > 1000) {
-            // 10秒以上，清除所有存储的数据
+    if (press_count > 0) {
+        if (press_count > 50) {
+            // 5秒以上，清除所有存储的数据
             storage_clear();
         } else {
-            // 4秒以上，进入DFU
+            // 5秒以内，进入DFU
             dfu_set_enter();
         }
     }
