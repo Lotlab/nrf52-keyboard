@@ -80,23 +80,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)))
 
 // LED 配置
-#define LED_STATUS_R 22 // RGB状态LED
-#define LED_STATUS_G 23 // RGB状态LED
-#define LED_STATUS_B 24 // RGB状态LED
-#define LED_NUM 21
-#define LED_CAPS 20
+#define LED_STATUS_R 6 // RGB状态LED
+#define LED_STATUS_G 7 // RGB状态LED
+#define LED_STATUS_B 8 // RGB状态LED
+#define LED_NUM 5
+#define LED_CAPS 4
 #define LED_SCLK LED_STATUS_G
 // #define LED_POSITIVE // LED上拉驱动
 // #define LED_NO_DEINIT // 不要deinit端口，可以避免部分IO灯光无法关闭的问题
 
 // Bootloader 指示灯
-#define LED_DFU_INIT 22
-#define LED_DFU_START 23
-#define LED_DFU_FINISH 24
-// #define LED_DFU_POSITIVE // LED上拉驱动
+#define LED_DFU_INIT 6
+#define LED_DFU_START 7
+#define LED_DFU_FINISH 8
+#define LED_DFU_POSITIVE // LED上拉驱动
 
 // 多用途 Bootloader 按钮
-#define NRF_BL_DFU_MULTI_ROLE_BTN 37
+#define NRF_BL_DFU_MULTI_ROLE_BTN 21
 
 // USB UART 传输配置
 #define HAS_USB // 启用与CH554的通信支持
@@ -114,9 +114,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // 按键阵列配置
 #define MATRIX_ROWS 8 /* 硬件阵列行数 */
-#define MATRIX_COLS 19 /* 硬件阵列列数 */
-static const uint8_t row_pin_array[MATRIX_ROWS] = { 19, 12, 11, 10, 9, 8, 7, 6 };
-static const uint8_t column_pin_array[MATRIX_COLS] = { 33, 32, 31, 30, 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+#define MATRIX_COLS 5 /* 硬件阵列列数 */
+static const uint8_t row_pin_array[MATRIX_ROWS] = { 3, 31, 30, 29, 28, 27, 26, 25 };
+static const uint8_t column_pin_array[MATRIX_COLS] = { 17, 16, 15, 14, 13 };
 // #define ROW_IN // 取消ROW_IN定义表示键盘阵列的电流方向是从ROW->COL
 
 /* define if matrix has ghost */
