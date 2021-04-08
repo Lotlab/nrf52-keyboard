@@ -2,7 +2,7 @@ PROJECT_NAME     := ble_app_hids_keyboard_pca10040e_s112
 TARGETS          := nrf52_kbd
 
 ifndef OUTPUT_DIRECTORY
-	OUTPUT_DIRECTORY := _build
+	OUTPUT_DIRECTORY := build
 endif
 
 ifndef TEMPLATE_PATH
@@ -17,12 +17,12 @@ else
 	$(error cannot handle NRF_CHIP [$(NRF_CHIP)])
 endif
 
-ifndef NRF_PACKAGE_NAME
-	NRF_PACKAGE_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_$(VERSION).zip
-endif
-
 ifndef NRF_SIGN_HEX_NAME
 	NRF_SIGN_HEX_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
+endif
+
+ifndef APPLICATION_VERSION
+	APPLICATION_VERSION := 1
 endif
 
 $(OUTPUT_DIRECTORY)/nrf52_kbd.out: \
@@ -250,6 +250,7 @@ ifeq ($(SOFTDEVICE), S112)
 	ASMFLAGS += -DS112
 	SOFTDEVICE_NAME := s112_nrf52_6.1.1_softdevice.hex
 	SOFTDEVICE_VER  := 0xb8
+	SOFTDEVICE_ID  := 0x00b8
 	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s112/hex/s112_nrf52_6.1.1_softdevice.hex
 	
     INC_FOLDERS += \
@@ -261,6 +262,7 @@ else ifeq ($(SOFTDEVICE), S132)
 	ASMFLAGS += -DS132
 	SOFTDEVICE_NAME := s132_nrf52_6.1.1_softdevice.hex
 	SOFTDEVICE_VER  := 0xb7
+	SOFTDEVICE_ID  := 0x00b7
 	SOFTDEVICE_PATH := $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_6.1.1_softdevice.hex
 	
 	INC_FOLDERS += \
@@ -306,7 +308,9 @@ help:
 	@echo		merge_setting		- merge dfu setting with application
 	@echo		merge_softdevice	- merge softdevice with application
 	@echo		merge_all 			- merge softdevice and dfu setting with application
-	@echo		package	   			- pack firmware for DFU
+	@echo		package_app	   		- pack application for DFU
+	@echo		package_bl	   		- pack bootloader for DFU
+	@echo		package_all	   		- pack softdevice and bootloader and application for DFU
 	@echo		erase	   			- erase the chip
 	@echo All targets starts with "flash" could has prefix "pyocd_", which \
 	means use pyocd to flash chip. 
@@ -344,11 +348,19 @@ pyocd_flash_setting: setting
 	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52_settings.hex
 	pyocd cmd -t nrf52 -c reset
 
-# Package DFU firmware pack
-package: default
-	@echo Packing: $(OUTPUT_DIRECTORY)/nrf52_kbd.hex
-	nrfutil pkg generate --hw-version 52 --application-version 1 --application $(OUTPUT_DIRECTORY)/nrf52_kbd.hex \
-	--sd-req $(SOFTDEVICE_VER) --key-file $(APP_PROJ_DIR)/private.key $(NRF_PACKAGE_NAME)
+# Package application DFU pack
+package_app: default
+	@echo Packing: $(OUTPUT_DIRECTORY)/nrf52_kbd_$(VERSION).zip
+	nrfutil pkg generate --hw-version 52 --application-version $(APPLICATION_VERSION) --application $(OUTPUT_DIRECTORY)/nrf52_kbd.hex \
+	--sd-req $(SOFTDEVICE_VER) --key-file $(APP_PROJ_DIR)/private.key $(OUTPUT_DIRECTORY)/nrf52_kbd_$(VERSION).zip
+
+# Package application, bootloader, softdevice DFU pack
+package_all: default bootloader
+	@echo Packing: $(OUTPUT_DIRECTORY)/nrf52_kbd_all_$(VERSION).zip
+	nrfutil pkg generate --hw-version 52 --application-version $(APPLICATION_VERSION) --application $(OUTPUT_DIRECTORY)/nrf52_kbd.hex \
+	--bootloader-version $(BOOTLOADER_VERSION) --bootloader $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex \
+	--sd-id $(SOFTDEVICE_ID) --softdevice $(SOFTDEVICE_PATH) \
+	--sd-req $(SOFTDEVICE_VER) --key-file $(APP_PROJ_DIR)/private.key $(OUTPUT_DIRECTORY)/nrf52_kbd_all_$(VERSION).zip
 
 # Flash softdevice
 flash_softdevice:
