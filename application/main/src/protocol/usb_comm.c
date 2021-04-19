@@ -236,10 +236,10 @@ static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
     case APP_UART_TX_EMPTY:
         break;
 
-    case APP_UART_COMMUNICATION_ERROR:
-        app_uart_close();
-        uart_init_hardware();
-        break;
+    //case APP_UART_COMMUNICATION_ERROR:
+    //    app_uart_close();
+    //    uart_init_hardware();
+    //    break;
     case APP_UART_FIFO_ERROR:
         app_uart_flush();
         break;
