@@ -111,6 +111,9 @@ static void dfu_observer(nrf_dfu_evt_type_t evt_type)
 #endif
         break;
     case NRF_DFU_EVT_DFU_STARTED:
+#ifdef LED_DFU_INIT
+        LED_CLEAR(LED_DFU_INIT);
+#endif
 #ifdef LED_DFU_START
         LED_SET(LED_DFU_START);
 #endif
@@ -124,6 +127,9 @@ static void dfu_observer(nrf_dfu_evt_type_t evt_type)
     case NRF_DFU_EVT_DFU_FAILED:
     case NRF_DFU_EVT_DFU_ABORTED:
     case NRF_DFU_EVT_DFU_COMPLETED:
+#ifdef LED_DFU_INIT
+        LED_CLEAR(LED_DFU_START);
+#endif
 #ifdef LED_DFU_FINISH
         LED_SET(LED_DFU_FINISH);
 #endif
@@ -187,7 +193,7 @@ static void dfu_multi_role_btn()
     }
 
     if (press_count > 0) {
-        if (press_count > 50) {
+        if (press_count > 500) {
             // 5秒以上，清除所有存储的数据
             storage_clear();
         } else {
