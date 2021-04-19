@@ -160,7 +160,12 @@ endif
 
 
 # Optimization flags
-OPT = -Os -g3
+ifeq (yes,$(strip $(DEBUG)))
+	OPT = -Os -g
+else
+	OPT = -Os -g3
+endif
+
 # Uncomment the line below to enable link time optimization
 #OPT += -flto
 

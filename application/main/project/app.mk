@@ -193,10 +193,48 @@ else
 	SRC_FILES += $(SDK_ROOT)/components/libraries/timer/app_timer.c 
 endif
 
+ifeq (yes,$(strip $(RTT_LOG)))
+# Source files for rtt log
+SRC_FILES += \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_rtt.c \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_serial.c \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_default_backends.c \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_frontend.c \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_str_formatter.c
+
+CFLAGS += -DNRF_LOG_ENABLED=1
+CFLAGS += -DNRF_LOG_BACKEND_RTT_ENABLED=1
+CFLAGS += -DNRF_LOG_BACKEND_UART_ENABLED=0
+ASMFLAGS += -DNRF_LOG_ENABLED=1
+ASMFLAGS += -DNRF_LOG_BACKEND_RTT_ENABLED=1
+ASMFLAGS += -DNRF_LOG_BACKEND_UART_ENABLED=0
+endif
+
+ifeq (yes,$(strip $(UART_LOG)))
+# Source files for uart log
+SRC_FILES += \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_uart.c \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_serial.c \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_default_backends.c \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_frontend.c \
+	$(SDK_ROOT)/components/libraries/log/src/nrf_log_str_formatter.c
+
+CFLAGS += -DNRF_LOG_ENABLED=1
+CFLAGS += -DNRF_LOG_BACKEND_RTT_ENABLED=0
+CFLAGS += -DNRF_LOG_BACKEND_UART_ENABLED=1
+CFLAGS += -DNRF_LOG_BACKEND_UART_TX_PIN=12
+CFLAGS += -DNRF_LOG_BACKEND_UART_BAUDRATE=61865984		# 230400 baud
+ASMFLAGS += -DNRF_LOG_ENABLED=1
+ASMFLAGS += -DNRF_LOG_BACKEND_RTT_ENABLED=0
+ASMFLAGS += -DNRF_LOG_BACKEND_UART_ENABLED=1
+ASMFLAGS += -DNRF_LOG_BACKEND_UART_TX_PIN=12
+ASMFLAGS += -DNRF_LOG_BACKEND_UART_BAUDRATE=61865984		# 230400 baud
+endif
+
 # Optimization flags
 ifeq (yes,$(strip $(DEBUG)))
     OPT_DEFS += -DDEBUG
-	OPT = -O1
+	OPT = -O0 -g
 else
 	OPT = -Os -g3
 endif
