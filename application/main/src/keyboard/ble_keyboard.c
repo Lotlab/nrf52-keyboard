@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "nrf_log.h"
 #include "ble_keyboard.h" // self
 #include "../config/keyboard_config.h"
 #include "app_timer.h" // nordic
@@ -52,6 +53,8 @@ static bool powersave = true;
  */
 static void keyboard_switch_scan_mode(bool slow)
 {
+    NRF_LOG_INFO("switch scan mode %d", (int)slow);
+
     ret_code_t err_code = app_timer_stop(m_keyboard_scan_timer);
     APP_ERROR_CHECK(err_code);
 

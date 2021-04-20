@@ -53,14 +53,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // #define PASSKEY_REQUIRED /* 需要输入配对码 */
 #define ENABLE_WATCHDOG /* 启用看门狗 */
 //#define HIGH_TX_POWER /* 更改发射功率到+4dBm */
-#define MULTI_DEVICE_SWITCH  /*启用多设备切换 */
+// #define MULTI_DEVICE_SWITCH  /*启用多设备切换 */
 #define KEYMAP_STORAGE /* 启用keymap存储 */
 // #define MACRO_BLOCKING_MODE /* 在宏播放时禁用其他按键输入 */
 #define MACRO_STORAGE /* 启用宏存储功能 */
 #define CONFIG_STORAGE /* 启用配置存储功能 */
 #define BUTTONLESS_DFU /* 启用免按钮DFU */
 
-// #define DEBUG_SKIP_PWRON_CHECK /*  直接开机而跳过开机条件检测，用于调试 */
+#define DEBUG_SKIP_PWRON_CHECK /*  直接开机而跳过开机条件检测，用于调试 */
 
 /* TMK固件内置功能 */
 /* disable action features */
@@ -85,18 +85,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_STATUS_B 8 // RGB状态LED
 #define LED_NUM 5
 #define LED_CAPS 4
-#define LED_SCLK LED_STATUS_G
+#define LED_SCLK LED_STATUS_R
 // #define LED_POSITIVE // LED上拉驱动
 // #define LED_NO_DEINIT // 不要deinit端口，可以避免部分IO灯光无法关闭的问题
 
+// #define LED_STATUS_BLE 22 // 蓝牙连接指示灯
+#define LED_STATUS_CHARGING LED_STATUS_R // 充电指示灯
+#define LED_STATUS_USB LED_STATUS_G // USB连接状态指示灯
+
 // Bootloader 指示灯
 #define LED_DFU_INIT 6
-#define LED_DFU_START 7
-#define LED_DFU_FINISH 8
-#define LED_DFU_POSITIVE // LED上拉驱动
+#define LED_DFU_START 5
+#define LED_DFU_FINISH 4
+// #define LED_DFU_POSITIVE // LED上拉驱动
 
 // 多用途 Bootloader 按钮
-#define NRF_BL_DFU_MULTI_ROLE_BTN 21
+// #define NRF_BL_DFU_MULTI_ROLE_BTN 21
 
 // USB UART 传输配置
 #define HAS_USB // 启用与CH554的通信支持
@@ -114,9 +118,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // 按键阵列配置
 #define MATRIX_ROWS 8 /* 硬件阵列行数 */
-#define MATRIX_COLS 5 /* 硬件阵列列数 */
+#define MATRIX_COLS 19 /* 硬件阵列列数(1列包括功能按键) */
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 3, 31, 30, 29, 28, 27, 26, 25 };
-static const uint8_t column_pin_array[MATRIX_COLS] = { 17, 16, 15, 14, 13 };
+/* 硬件阵列列地址位数. Benq A800键盘直接驱动扫描按键阵列需要26(8行18列)个IO端口,
+   如果加上功能键(第19列)和状态灯(1个RGB LED + 2个普通LED)总共需要32个IO端口,
+   NRF52832的端口不够用. 因此用3个138译码器进行IO扩展, 只需用5个IO端口作为列地址
+   就能实现最多32列的阵列扫描. */
+#define MATRIX_COL_BITS 5
+// 列地址对应的IO端口. col_bit_pin_array[0]表示列地址第0位对应的IO端口.
+static const uint8_t col_bit_pin_array[MATRIX_COL_BITS] = { 17, 16, 15, 14, 13 };
 // #define ROW_IN // 取消ROW_IN定义表示键盘阵列的电流方向是从ROW->COL
 
 /* define if matrix has ghost */
@@ -126,9 +136,9 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 17, 16, 15, 14, 13 };
 #define MATRIX_SCAN_DELAY_CYCLE 36 /* 按键扫描等待IO稳定的延时时长 */
 
 // 板载调试器设置
-// #define SWD_CLK_IO T2EX
-// #define SWD_CLK_MASK bT2EX
-// #define SWD_CLK_PORT P1
-// #define SWD_DAT_IO T2
-// #define SWD_DAT_MASK bT2
-// #define SWD_DAT_PORT P1
+// #define SWD_CLK_IO INT0
+// #define SWD_CLK_MASK bINT0
+// #define SWD_CLK_PORT P3
+// #define SWD_DAT_IO RXD
+// #define SWD_DAT_MASK bRXD
+// #define SWD_DAT_PORT P3

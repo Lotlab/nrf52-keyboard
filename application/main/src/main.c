@@ -70,11 +70,15 @@
  * Also it would accept pairing requests from any peer device.
  */
 
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
+#include "nrf_log_default_backends.h"
 #include "app_error.h"
 #include "nordic_common.h"
 #include "nrf.h"
 #include "nrf_assert.h"
 #include "nrf_soc.h"
+#include "nrf_gpio.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -254,6 +258,8 @@ static void sleep_mode_enter(bool keyboard_wakeup)
  */
 void sleep(enum SLEEP_REASON reason)
 {
+    NRF_LOG_INFO("sleep with reason %d", (int)reason);
+
     switch (reason) {
     case SLEEP_NO_CONNECTION:
     case SLEEP_TIMEOUT:
@@ -311,11 +317,22 @@ bool erase_bonds = false;
  */
 int main(void)
 {
+#ifdef NRF_LOG_ENABLED
+    APP_ERROR_CHECK(NRF_LOG_INIT(NULL));
+    NRF_LOG_DEFAULT_BACKENDS_INIT();
+    NRF_LOG_INFO( "application startting");
+#endif
+
+    nrf_gpio_cfg_output(LED_CAPS);
+    nrf_gpio_cfg_output(LED_NUM);
+    LED_SET(LED_CAPS);
+    LED_CLEAR(LED_NUM);
+
     // Initialize.
     timers_init();
     power_management_init();
     storage_init();       //存储初始化
-	
+
     set_stage(KBD_STATE_PRE_INIT);
 
     ble_stack_init();
@@ -326,10 +343,10 @@ int main(void)
     adc_init();
     ble_keyboard_init();
 
-#if !defined(BOOTMAGIC_ENABLE) && defined(BOOTCHECK_ENABLE)
-    // use internal function to check if should boot.
-    boot_check();
-#endif
+// #if !defined(BOOTMAGIC_ENABLE) && defined(BOOTCHECK_ENABLE)
+//     // use internal function to check if should boot.
+    // boot_check();
+// #endif
 
     // call custom init function
     set_stage(KBD_STATE_POST_INIT);
@@ -337,11 +354,21 @@ int main(void)
     // Start execution.
     timers_start();
     advertising_start(erase_bonds);
+    NRF_LOG_INFO( "advertising startted");
 
     set_stage(KBD_STATE_INITED);
 
+    LED_SET(LED_CAPS);
+    LED_CLEAR(LED_CAPS);
+
+    NRF_LOG_INFO( "application startted");
+
     // Enter main loop.
     for (;;) {
+#ifdef NRF_LOG_ENABLED
+        NRF_LOG_PROCESS();
+#endif
+
         idle_state_handle();
     }
 }
