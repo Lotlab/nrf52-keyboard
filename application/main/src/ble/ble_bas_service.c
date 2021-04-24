@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "nrf_log.h"
 #include "ble_bas_service.h"
 #include <string.h>
 
@@ -77,6 +78,8 @@ static void calculate_battery_persentage(struct BatteryInfo* info)
         info->percentage = (info->voltage - 2900) / 29;
     else
         info->percentage = 0;
+
+    NRF_LOG_INFO("batt voltage=%dmv percentage=%%%d", info->voltage, info->percentage);
 }
 
 static void adc_result_handler(nrf_saadc_value_t value)
@@ -94,6 +97,10 @@ static void adc_result_handler(nrf_saadc_value_t value)
         // value  = V_in / 1.2 * 1024
         // V_in   = V_bat * 2.2 / 12.2
         battery_info.voltage = result * 1200 * 122 / 1024 / 22;
+        
+        // 电量矫正
+        battery_info.voltage = battery_info.voltage * 4000 / 4048;
+
         calculate_battery_persentage(&battery_info);
         battery_level_update(battery_info.percentage);
     }
