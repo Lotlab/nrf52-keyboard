@@ -296,7 +296,7 @@ void matrix_deinit(void)
 void matrix_wakeup_prepare(void)
 {
 // 这里监听所有按键作为唤醒按键，所以真正的唤醒判断应该在main的初始化过程中
-#ifdef ROW_IN
+// #ifdef ROW_IN
     // for (uint8_t i = 0; i < MATRIX_COL_BITS; i++) {
     //     nrf_gpio_cfg_output(col_bit_pin_array[i]);
     //     nrf_gpio_pin_set(col_bit_pin_array[i]);
@@ -304,13 +304,14 @@ void matrix_wakeup_prepare(void)
     // for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
     //     nrf_gpio_cfg_sense_input(row_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     // }
-#else
+// #else
     for (uint8_t i = 0; i < MATRIX_COL_BITS; i++) {
-        nrf_gpio_cfg_sense_input(col_bit_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+        nrf_gpio_cfg_output(col_bit_pin_array[i]);
+        nrf_gpio_pin_set(col_bit_pin_array[i]);  // 所有列地址线高电平, 3个38译码器都输出高电平
     }
+
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-        nrf_gpio_cfg_output(row_pin_array[i]);
-        nrf_gpio_pin_set(row_pin_array[i]);
+        nrf_gpio_cfg_sense_input(row_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     }
-#endif
+// #endif
 }
