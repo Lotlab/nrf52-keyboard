@@ -26,135 +26,135 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MODS_RSHIFT_MASK (MOD_BIT(KC_RSHIFT))
 #define MODS_LSHIFT_MASK (MOD_BIT(KC_LSHIFT))
 
-void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt) {
-  static uint8_t tricky_registered;
-  if (record->event.pressed) {
+void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
+{
+    static uint8_t tricky_registered;
     switch (id) {
-      case TRICKY_KEY:
+    case TRICKY_KEY:
         switch (opt) {
-          case AF_TRICKY_ESC:
+        case AF_TRICKY_ESC:
             if (record->event.pressed) {
-              if (get_mods() & MODS_SHIFT_MASK) {
-                tricky_registered = KC_GRV;
-              } else {
-                tricky_registered = KC_ESC;
-              }
-              register_code(tricky_registered);
-              send_keyboard_report();
+                if (get_mods() & MODS_SHIFT_MASK) {
+                    tricky_registered = KC_GRV;
+                } else {
+                    tricky_registered = KC_ESC;
+                }
+                register_code(tricky_registered);
+                send_keyboard_report();
             } else {
-              unregister_code(tricky_registered);
-              send_keyboard_report();
+                unregister_code(tricky_registered);
+                send_keyboard_report();
             }
             break;
-          case AF_TRICKY_SLSH:
+        case AF_TRICKY_SLSH:
             if (record->event.pressed) {
-              if (get_mods() & MODS_RSHIFT_MASK) {
-                tricky_registered = KC_SLSH;
-              } else {
-                tricky_registered = KC_DOT;
-              }
-              register_code(tricky_registered);
-              send_keyboard_report();
+                if (get_mods() & MODS_RSHIFT_MASK) {
+                    tricky_registered = KC_SLSH;
+                } else {
+                    tricky_registered = KC_DOT;
+                }
+                register_code(tricky_registered);
+                send_keyboard_report();
             } else {
-              unregister_code(tricky_registered);
-              send_keyboard_report();
+                unregister_code(tricky_registered);
+                send_keyboard_report();
             }
             break;
-          case AF_TRICKY_ENTER:
+        case AF_TRICKY_ENTER:
             if (record->event.pressed) {
-              if (get_mods() & MODS_RSHIFT_MASK) {
-                tricky_registered = KC_QUOT;
-              } else {
-                tricky_registered = KC_ENTER;
-              }
-              register_code(tricky_registered);
-              send_keyboard_report();
+                if (get_mods() & MODS_RSHIFT_MASK) {
+                    tricky_registered = KC_QUOT;
+                } else {
+                    tricky_registered = KC_ENTER;
+                }
+                register_code(tricky_registered);
+                send_keyboard_report();
             } else {
-              unregister_code(tricky_registered);
-              send_keyboard_report();
+                unregister_code(tricky_registered);
+                send_keyboard_report();
             }
             break;
-          case AF_TRICKY_L:
+        case AF_TRICKY_L:
             if (record->event.pressed) {
-              if ((get_mods() & MODS_RSHIFT_MASK) &&
-                  !(get_mods() & MODS_LSHIFT_MASK)) {
-                tricky_registered = KC_SCLN;
-              } else {
-                tricky_registered = KC_L;
-              }
-              register_code(tricky_registered);
-              send_keyboard_report();
+                if ((get_mods() & MODS_RSHIFT_MASK) && !(get_mods() & MODS_LSHIFT_MASK)) {
+                    tricky_registered = KC_SCLN;
+                } else {
+                    tricky_registered = KC_L;
+                }
+                register_code(tricky_registered);
+                send_keyboard_report();
             } else {
-              unregister_code(tricky_registered);
-              send_keyboard_report();
+                unregister_code(tricky_registered);
+                send_keyboard_report();
             }
             break;
-          case AF_TRICKY_UP:
+        case AF_TRICKY_UP:
             if (record->event.pressed) {
-              if (get_mods() & MODS_RSHIFT_MASK) {
-                tricky_registered = KC_SLSH;
-              } else {
-                tricky_registered = KC_UP;
-              }
-              register_code(tricky_registered);
-              send_keyboard_report();
+                if (get_mods() & MODS_RSHIFT_MASK) {
+                    tricky_registered = KC_SLSH;
+                } else {
+                    tricky_registered = KC_UP;
+                }
+                register_code(tricky_registered);
+                send_keyboard_report();
             } else {
-              unregister_code(tricky_registered);
-              send_keyboard_report();
+                unregister_code(tricky_registered);
+                send_keyboard_report();
             }
             break;
-          case AF_TRICKY_BSPC:
+        case AF_TRICKY_BSPC:
             if (record->event.pressed) {
-              if (get_mods() & MODS_RSHIFT_MASK) {
-                tricky_registered = KC_BSLS;
-              } else {
-                tricky_registered = KC_BSPC;
-              }
-              register_code(tricky_registered);
-              send_keyboard_report();
+                if (get_mods() & MODS_RSHIFT_MASK) {
+                    tricky_registered = KC_BSLS;
+                } else {
+                    tricky_registered = KC_BSPC;
+                }
+                register_code(tricky_registered);
+                send_keyboard_report();
             } else {
-              unregister_code(tricky_registered);
-              send_keyboard_report();
+                unregister_code(tricky_registered);
+                send_keyboard_report();
             }
             break;
-          default:
+        default:
             break;
         }
-      case RGB_LIGHT_CONTROL:
-        switch (opt) {
-#ifdef RGB_LIGHT_ENABLE  // RGB灯（无控制芯片）控制
-          case RGB_LIGHT_STEP:
-            rgb_light_step();
-            break;
-          case RGB_LIGHT_TOGGLE:
-            rgb_light_toggle();
-            break;
-          case RGB_LIGHT_IHUE:
-            rgb_light_increase_hue();
-            break;
-          case RGB_LIGHT_DHUE:
-            rgb_light_decrease_hue();
-            break;
-          case RGB_LIGHT_ISAT:
-            rgb_light_increase_sat();
-            break;
-          case RGB_LIGHT_DSAT:
-            rgb_light_decrease_sat();
-            break;
-          case RGB_LIGHT_IVAL:
-            rgb_light_increase_val();
-            break;
-          case RGB_LIGHT_DVAL:
-            rgb_light_decrease_val();
-            break;
-          case RGB_LIGHT_TML:
-            rgb_indicator_toggle();
-            break;
+    case RGB_LIGHT_CONTROL:
+        if (record->event.pressed) {
+            switch (opt) {
+#ifdef RGB_LIGHT_ENABLE // RGB灯（无控制芯片）控制
+            case RGB_LIGHT_STEP:
+                rgb_light_step();
+                break;
+            case RGB_LIGHT_TOGGLE:
+                rgb_light_toggle();
+                break;
+            case RGB_LIGHT_IHUE:
+                rgb_light_increase_hue();
+                break;
+            case RGB_LIGHT_DHUE:
+                rgb_light_decrease_hue();
+                break;
+            case RGB_LIGHT_ISAT:
+                rgb_light_increase_sat();
+                break;
+            case RGB_LIGHT_DSAT:
+                rgb_light_decrease_sat();
+                break;
+            case RGB_LIGHT_IVAL:
+                rgb_light_increase_val();
+                break;
+            case RGB_LIGHT_DVAL:
+                rgb_light_decrease_val();
+                break;
+            case RGB_LIGHT_TML:
+                rgb_indicator_toggle();
+                break;
 #endif
-          default:
-            break;
+            default:
+                break;
+            }
         }
     }
-  }
 }
-  FN_HANDLER(custom_fn_handler);
+FN_HANDLER(custom_fn_handler);
