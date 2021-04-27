@@ -136,9 +136,9 @@ static const uint8_t col_bit_pin_array[MATRIX_COL_BITS] = { 17, 16, 15, 14, 13 }
 #define MATRIX_SCAN_DELAY_CYCLE 36 /* 按键扫描等待IO稳定的延时时长 */
 
 // 板载调试器设置
-// #define SWD_CLK_IO INT0
-// #define SWD_CLK_MASK bINT0
-// #define SWD_CLK_PORT P3
-// #define SWD_DAT_IO RXD
-// #define SWD_DAT_MASK bRXD
-// #define SWD_DAT_PORT P3
+#define SWD_CLK_IO UCC2
+#define SWD_CLK_MASK bUCC2
+#define SWD_CLK_PORT P1
+#define SWD_DAT_IO UCC1
+#define SWD_DAT_MASK bUCC1
+#define SWD_DAT_PORT P1
