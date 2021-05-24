@@ -50,3 +50,9 @@ ifeq (yes,$(strip $(SHARED_I2C_DRIVER)))
     SRC_FILES += $(DRIVER_DIR)/i2c/shared_i2c.c
     OPT_DEFS += -DSHARED_I2C_DRIVER
 endif
+
+ifeq (yes,$(strip $(A800_LED_ENABLE)))
+    SRC_FILES += $(DRIVER_DIR)/a800_led/a800_led.c
+    INC_FOLDERS += $(DRIVER_DIR)/a800_led
+    OPT_DEFS += -DA800_LED_ENABLE
+endif

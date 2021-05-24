@@ -21,7 +21,7 @@ BOOTCHECK_ENABLE = yes  # 启用Bootchek
 EXTRAKEY_ENABLE = yes	# 启用媒体键功能
 NKRO_ENABLE = yes	# 启用USB的全键无冲功能
 USB_6KRO_ENABLE = yes # 启用USB的六键无冲功能
-THREE_LED_STATUS_EVT = yes # 启用USB、蓝牙、充电指示灯
+A800_LED_ENABLE = yes # 启用A800指示灯
 ONBOARD_CMSIS_DAP = yes # 启用板载调试器
 
 ########## STOP HERE ##########

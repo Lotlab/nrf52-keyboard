@@ -79,24 +79,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define IS_COMMAND() ( \
     keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)))
 
-// LED 配置
-#define LED_STATUS_R 6 // RGB状态LED
-#define LED_STATUS_G 7 // RGB状态LED
-#define LED_STATUS_B 8 // RGB状态LED
-#define LED_NUM 5
-#define LED_CAPS 4
-#define LED_SCLK LED_STATUS_R
-// #define LED_POSITIVE // LED上拉驱动
-// #define LED_NO_DEINIT // 不要deinit端口，可以避免部分IO灯光无法关闭的问题
-
-// #define LED_STATUS_BLE 22 // 蓝牙连接指示灯
-#define LED_STATUS_CHARGING LED_STATUS_R // 充电指示灯
-#define LED_STATUS_USB LED_STATUS_G // USB连接状态指示灯
+// A800 LED驱动PIN脚配置
+#define A800_LED_DATA 5    // LED数据pin定义(74HC595 DS)
+#define A800_LED_CLK 3     // LED时钟pin定义(74HC595 SHCP)
+#define A800_LED_ON 4      // LED使能pin定义(74HC595 STCP)
 
 // Bootloader 指示灯
-#define LED_DFU_INIT 6
-#define LED_DFU_START 5
-#define LED_DFU_FINISH 4
+// #define LED_DFU_INIT 6
+// #define LED_DFU_START 5
+// #define LED_DFU_FINISH 4
 // #define LED_DFU_POSITIVE // LED上拉驱动
 
 // 多用途 Bootloader 按钮

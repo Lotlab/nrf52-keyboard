@@ -104,6 +104,10 @@
 #include "keyboard/keyboard_matrix.h"
 #include "protocol/usb_comm.h"
 
+#ifdef A800_LED_ENABLE
+#include "a800_led.h"
+#endif
+
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 #define SCHED_MAX_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE /**< Maximum size of scheduler events. */
@@ -317,6 +321,11 @@ bool erase_bonds = false;
  */
 int main(void)
 {
+#ifdef A800_LED_ENABLE
+    a800_led_init();
+    a800_led_all(true);
+#endif
+
 #ifdef NRF_LOG_ENABLED
     APP_ERROR_CHECK(NRF_LOG_INIT(NULL));
     NRF_LOG_DEFAULT_BACKENDS_INIT();
@@ -358,8 +367,9 @@ int main(void)
 
     set_stage(KBD_STATE_INITED);
 
-    LED_SET(LED_CAPS);
-    LED_CLEAR(LED_CAPS);
+#ifdef A800_LED_ENABLE
+    a800_led_all(false);
+#endif
 
     NRF_LOG_INFO( "application startted");
 
