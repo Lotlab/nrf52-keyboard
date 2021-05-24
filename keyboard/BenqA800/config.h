@@ -118,15 +118,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // 按键阵列配置
 #define MATRIX_ROWS 8 /* 硬件阵列行数 */
-#define MATRIX_COLS 19 /* 硬件阵列列数(1列包括功能按键) */
-static const uint8_t row_pin_array[MATRIX_ROWS] = { 3, 31, 30, 29, 28, 27, 26, 25 };
-/* 硬件阵列列地址位数. Benq A800键盘直接驱动扫描按键阵列需要26(8行18列)个IO端口,
-   如果加上功能键(第19列)和状态灯(1个RGB LED + 2个普通LED)总共需要32个IO端口,
-   NRF52832的端口不够用. 因此用3个138译码器进行IO扩展, 只需用5个IO端口作为列地址
-   就能实现最多32列的阵列扫描. */
-#define MATRIX_COL_BITS 5
-// 列地址对应的IO端口. col_bit_pin_array[0]表示列地址第0位对应的IO端口.
-static const uint8_t col_bit_pin_array[MATRIX_COL_BITS] = { 17, 16, 15, 14, 13 };
+#define MATRIX_COLS 17 /* 硬件阵列列数(1列包括功能按键) */
+static const uint8_t row_pin_array[MATRIX_ROWS] = { 2, 31, 30, 29, 28, 27, 26, 25 };
+static const uint8_t col_pin_array[MATRIX_COLS] = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24 };
 // #define ROW_IN // 取消ROW_IN定义表示键盘阵列的电流方向是从ROW->COL
 
 /* define if matrix has ghost */

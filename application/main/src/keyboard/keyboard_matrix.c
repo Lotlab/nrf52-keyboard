@@ -46,21 +46,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 实际的消抖次数
 #define DEBOUNCE_RELOAD ((DEBOUNCE + KEYBOARD_SCAN_INTERVAL - 1) / KEYBOARD_SCAN_INTERVAL)
 
-static uint8_t debouncing = DEBOUNCE_RELOAD;
+static uint8_t debouncing = 0; //DEBOUNCE_RELOAD;
 
 /* matrix state(1:on, 0:off) */
 static matrix_row_t matrix[MATRIX_ROWS];
 static matrix_row_t matrix_debouncing[MATRIX_COLS];
 
-static matrix_row_t read_rows(void);
-static void select_col(uint8_t row);
-static void unselect_cols(void);
+static matrix_row_t read_cols(void);
+static void select_row(uint8_t row);
+static void unselect_rows(void);
 
-#ifdef ROW_IN
-// #define READ_ROW(pin) (nrf_gpio_pin_read(pin))
-#else
-#define READ_ROW(pin) (!nrf_gpio_pin_read(pin))
-#endif
+#define READ_COL(pin) (nrf_gpio_pin_read(pin))
 
 /**
  * @brief 初始化键盘阵列
@@ -68,24 +64,21 @@ static void unselect_cols(void);
  */
 void matrix_init(void) 
 {
-    for (uint_fast8_t i = MATRIX_COL_BITS; i--;) {
+    for (uint_fast8_t i = MATRIX_COLS; i--;) {
+        nrf_gpio_cfg_input((uint32_t)col_pin_array[i], NRF_GPIO_PIN_PULLDOWN);
+    }
+
+    for (uint_fast8_t i = MATRIX_ROWS; i--;) {
         nrf_gpio_cfg(
-            (uint32_t)col_bit_pin_array[i],
+            (uint32_t)row_pin_array[i],
             NRF_GPIO_PIN_DIR_OUTPUT,
             NRF_GPIO_PIN_INPUT_DISCONNECT,
-            NRF_GPIO_PIN_NOPULL,
-#ifdef ROW_IN
-            // NRF_GPIO_PIN_S0D1,
-#else
-            NRF_GPIO_PIN_S0S1,
-#endif
+            NRF_GPIO_PIN_PULLDOWN,
+            NRF_GPIO_PIN_D0S1,
             NRF_GPIO_PIN_NOSENSE);
 
-#ifdef ROW_IN
-        // nrf_gpio_pin_set((uint32_t)col_bit_pin_array[i]);
-#else
-        nrf_gpio_pin_clear((uint32_t)col_bit_pin_array[i]); //Set pin to low
-#endif
+        //Set pin to low
+        nrf_gpio_pin_clear((uint32_t)row_pin_array[i]);
     }
 
     for (uint_fast8_t i = MATRIX_ROWS; i--;) {
@@ -94,42 +87,31 @@ void matrix_init(void)
 #else
         nrf_gpio_cfg_input((uint32_t)row_pin_array[i], NRF_GPIO_PIN_PULLUP); //NRF_GPIO_PIN_PULLDOWN);
 #endif
-    }
 }
-/** read all rows */
-static matrix_row_t read_rows(void)
+
+/** read all cols */
+static matrix_row_t read_cols(void)
 {
     matrix_row_t result = 0;
 
-    for (uint_fast8_t r = 0; r < MATRIX_ROWS; r++) {
-        if (READ_ROW((uint32_t)row_pin_array[r]))
-            result |= 1 << r;
+    for (uint_fast8_t c = 0; c < MATRIX_COLS; c++) {
+        if (READ_COL((uint32_t)col_pin_array[c]))
+            result |= 1 << c;
     }
 
     return result;
 }
 
-static void select_col(uint8_t col)
+static void select_row(uint8_t row)
 {
-// #ifdef ROW_IN
-// #else
-    nrf_gpio_pin_write((uint32_t)col_bit_pin_array[0], (col & 0x01));
-    nrf_gpio_pin_write((uint32_t)col_bit_pin_array[1], ((col >> 1) & 0x01));
-    nrf_gpio_pin_write((uint32_t)col_bit_pin_array[2], ((col >> 2) & 0x01));
-    nrf_gpio_pin_write((uint32_t)col_bit_pin_array[3], ((col >> 3) & 0x01));
-    nrf_gpio_pin_write((uint32_t)col_bit_pin_array[4], ((col >> 4) & 0x01));
-// #endif
+    nrf_gpio_pin_write((uint32_t)row_pin_array[row], 1);
 }
 
-static void unselect_cols(void)
+static void unselect_rows(void)
 {
-//     for (uint_fast8_t i = 0; i < MATRIX_COL_BITS; i++) {
-// #ifdef ROW_IN
-//         // nrf_gpio_pin_set((uint32_t)col_bit_pin_array[i]);
-// #else
-//         nrf_gpio_pin_clear((uint32_t)col_bit_pin_array[i]);
-// #endif
-//     }
+    for (uint_fast8_t i = 0; i < MATRIX_ROWS; i++) {
+        nrf_gpio_pin_write((uint32_t)row_pin_array[i], 0);
+    }
 }
 
 static inline void delay_us(void)
@@ -148,27 +130,32 @@ static inline void delay_us(void)
 
 uint8_t matrix_scan(void)
 {
-    for (uint8_t i = 0; i < MATRIX_COLS; i++) {
-        select_col(i);
+    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
+#ifdef NRF_LOG_ENABLED
+        NRF_LOG_INFO("matrix_scan row=%d", i);
+#endif
+        select_row(i);
 // #ifdef HYBRID_MATRIX
-        // init_cols();
+        // init_rows();
 // #endif
         delay_us(); // wait stable
-        matrix_row_t rows = read_rows();
-        if (rows != 0) {
-                // NRF_LOG_INFO("read_rows row=%d, col=%d", rows, i);
+        matrix_row_t cols = read_cols();
+#ifdef NRF_LOG_ENABLED
+        if (cols != 0) {
+            NRF_LOG_INFO("read_rows row=%d, cols=%d", i, cols);
         }
+#endif
 
-        if (matrix_debouncing[i] != rows) {
-            matrix_debouncing[i] = rows;
+        if (matrix_debouncing[i] != cols) {
+            matrix_debouncing[i] = cols;
             if (debouncing) {
-                dprint("bounce!: ");
-                debug_hex(debouncing);
-                dprint("\n");
+                // dprint("bounce!: ");
+                // debug_hex(debouncing);
+                // dprint("\n");
             }
             debouncing = DEBOUNCE_RELOAD;
         }
-        unselect_cols();
+        unselect_rows();
     }
 
     if (debouncing) {
@@ -176,13 +163,10 @@ uint8_t matrix_scan(void)
             // no need to delay here manually, because we use the clock.
             keyboard_debounce();
         } else {
-            // char buf[64] = {0};
-
-            for (uint8_t j = 0; j < MATRIX_ROWS; j++) {
-                matrix[j] = 0;
-                
+            for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
+                matrix[i] = matrix_debouncing[i];
             }
-
+            
             // 扫描结果转成, TMK需要按行扫描
             for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
                 for (uint8_t j = 0; j < MATRIX_COLS; j++) {
@@ -258,9 +242,18 @@ bool matrix_is_modified(void)
 #else
 inline matrix_row_t matrix_get_row(uint8_t row)
 {
+#ifdef NRF_LOG_ENABLED
     if (matrix[row]) {
-        NRF_LOG_INFO("matrix_get_row row=%d result=%d", row, matrix[row]);
+        uint32_t tt = matrix[row];
+        uint8_t nn = -1;
+        while(tt) {
+            nn++;
+            tt >>= 1;
+        }
+
+        NRF_LOG_INFO("matrix_get_row row=%d col=%d", row, nn);
     }
+#endif
 
     return matrix[row];
 }
@@ -281,8 +274,8 @@ uint8_t matrix_key_count(void)
  */
 void matrix_deinit(void)
 {
-    for (uint8_t i = 0; i < MATRIX_COL_BITS; i++) {
-        nrf_gpio_cfg_default(col_bit_pin_array[i]);
+    for (uint8_t i = 0; i < MATRIX_COLS; i++) {
+        nrf_gpio_cfg_default(col_pin_array[i]);
     }
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         nrf_gpio_cfg_default(row_pin_array[i]);
@@ -296,18 +289,9 @@ void matrix_deinit(void)
 void matrix_wakeup_prepare(void)
 {
 // 这里监听所有按键作为唤醒按键，所以真正的唤醒判断应该在main的初始化过程中
-// #ifdef ROW_IN
-    // for (uint8_t i = 0; i < MATRIX_COL_BITS; i++) {
-    //     nrf_gpio_cfg_output(col_bit_pin_array[i]);
-    //     nrf_gpio_pin_set(col_bit_pin_array[i]);
-    // }
-    // for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-    //     nrf_gpio_cfg_sense_input(row_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
-    // }
-// #else
-    for (uint8_t i = 0; i < MATRIX_COL_BITS; i++) {
-        nrf_gpio_cfg_output(col_bit_pin_array[i]);
-        nrf_gpio_pin_set(col_bit_pin_array[i]);  // 所有列地址线高电平, 3个38译码器都输出高电平
+    for (uint8_t i = 0; i < MATRIX_COLS; i++) {
+        nrf_gpio_cfg_output(col_pin_array[i]);
+        nrf_gpio_pin_set(col_pin_array[i]);
     }
 
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
