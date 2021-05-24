@@ -29,8 +29,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define CONF_PRODUCT_ID 0x0001 /* 配置协议使用的ProductID */
 #define DEVICE_VER 0x0100 /* 硬件版本 V1.0*/
 #define MANUFACTURER "Benq" /* 硬件制造商，用于USB和蓝牙显示 */
-#define PRODUCT "A800" /* 硬件名称，用于USB和蓝牙显示 */
-#define MACADDR_SEPRATOR '_' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
+#define PRODUCT "Benq A800 Keyboard" /* 硬件名称，用于USB和蓝牙显示 */
+// #define MACADDR_SEPRATOR '_' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
 
 /* USB HID report parameter */
 #define KEYBOARD_EPSIZE 8 /* 键盘上传端点大小，请不要修改 */
