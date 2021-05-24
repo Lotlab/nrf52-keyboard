@@ -15,10 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 /**
- * @brief 键盘按键扫描. 由于使用了138译码器作为列IO扩展, 
- *        被选上的列在138译码器上是输出0(低电平), 因此
- *        不支持ROW_IN, 除非在译码器后接反相器.
- * 
  * @file matrix.c
  * @author Jim Jiang
  * @date 2018-05-13
@@ -80,13 +76,6 @@ void matrix_init(void)
         //Set pin to low
         nrf_gpio_pin_clear((uint32_t)row_pin_array[i]);
     }
-
-    for (uint_fast8_t i = MATRIX_ROWS; i--;) {
-#ifdef ROW_IN
-        // nrf_gpio_cfg_input((uint32_t)row_pin_array[i], NRF_GPIO_PIN_PULLUP);
-#else
-        nrf_gpio_cfg_input((uint32_t)row_pin_array[i], NRF_GPIO_PIN_PULLUP); //NRF_GPIO_PIN_PULLDOWN);
-#endif
 }
 
 /** read all cols */
@@ -297,5 +286,4 @@ void matrix_wakeup_prepare(void)
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         nrf_gpio_cfg_sense_input(row_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     }
-// #endif
 }
