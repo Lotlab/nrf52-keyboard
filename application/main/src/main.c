@@ -300,8 +300,6 @@ static void power_management_init(void)
     ret_code_t err_code;
     err_code = nrf_pwr_mgmt_init();
     APP_ERROR_CHECK(err_code);
-
-    sd_power_dcdc_mode_set(1);
 }
 
 /**@brief Function for handling the idle state (main loop).
@@ -345,6 +343,10 @@ int main(void)
     set_stage(KBD_STATE_PRE_INIT);
 
     ble_stack_init();
+#if NRFX_POWER_ENABLED
+    sd_power_dcdc_mode_set(NRF_POWER_DCDC_ENABLE);
+#endif
+
     scheduler_init();
     ble_services_init();
     battery_service_init();
