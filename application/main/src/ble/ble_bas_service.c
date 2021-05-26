@@ -70,15 +70,28 @@ static void bas_init(void)
 
 static void calculate_battery_persentage(struct BatteryInfo* info)
 {
-    if (info->voltage >= 4100)
-        info->percentage = 100;
-    else if (info->voltage >= 3335)
-        info->percentage = 15 + (info->voltage - 3335) / 9;
-    else if (info->voltage >= 2900)
-        info->percentage = (info->voltage - 2900) / 29;
-    else
-        info->percentage = 0;
+    // 电池电量曲线
+    static uint16_t level[] = {2900, 3650, 3700, 3740, 3760, 3795, 3840, 3910, 3980, 4070, 4150};
 
+    if (info->voltage <= level[0])
+    {
+        info->percentage = 0;
+        goto EXIT;
+    }
+
+    for (uint8_t i = 1; i < sizeof(level) / sizeof(uint16_t); ++i)
+    {
+        if (info->voltage < level[i])
+        {
+            info->percentage = 10 * i;
+            info->percentage -= (char)((10 * (level[i] - info->voltage)) / (level[i] - level[i - 1]));
+            goto EXIT;
+        }
+    }
+
+        info->percentage = 100;
+
+EXIT:
     NRF_LOG_INFO("batt voltage=%dmv percentage=%d%%", info->voltage, info->percentage);
 }
 
@@ -99,7 +112,7 @@ static void adc_result_handler(nrf_saadc_value_t value)
         battery_info.voltage = result * 1200 * 122 / 1024 / 22;
         
         // 电量矫正
-        battery_info.voltage = battery_info.voltage * 4000 / 4048;
+        battery_info.voltage = battery_info.voltage * 4000 / 3873;
 
         calculate_battery_persentage(&battery_info);
         battery_level_update(battery_info.percentage);
