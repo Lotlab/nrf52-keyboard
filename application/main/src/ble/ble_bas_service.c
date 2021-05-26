@@ -89,7 +89,7 @@ static void calculate_battery_persentage(struct BatteryInfo* info)
         }
     }
 
-        info->percentage = 100;
+    info->percentage = 100;
 
 EXIT:
     NRF_LOG_INFO("batt voltage=%dmv percentage=%d%%", info->voltage, info->percentage);

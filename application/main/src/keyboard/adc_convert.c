@@ -16,6 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "adc_convert.h"
+#include "events.h"
+#include "keyboard_evt.h"
 
 #include "app_timer.h"
 #include "nrf_saadc.h"
@@ -30,8 +32,8 @@ NRF_SECTION_DEF(adc_channel, struct adc_channel_config*);
 static nrf_saadc_value_t m_buffer_pool[2][TOTAL_SAMPLES_BUFFER];
 
 #define ADC_TIMER_PERIOD 10
-#define ADC_TIMER_INTERVAL APP_TIMER_TICKS(ADC_TIMER_PERIOD)
-APP_TIMER_DEF(adc_timer);
+// #define ADC_TIMER_INTERVAL APP_TIMER_TICKS(ADC_TIMER_PERIOD)
+// APP_TIMER_DEF(adc_timer);
 
 static bool saadc_inited = false;
 
@@ -63,11 +65,11 @@ static void adc_event_callback(nrfx_saadc_evt_t const* p_event)
         for (int i = 0; i < vars_cnt; i++) {
             struct adc_channel_config* channel = ADC_CONFIG_GET(i);
             if (channel->adc_finish != 0) {
-                if (channel->period_pass <= ADC_TIMER_PERIOD) {
+                // if (channel->period_pass <= ADC_TIMER_PERIOD) {
                     channel->adc_finish(results[i]);
                     // reload 周期
-                    channel->period_pass = channel->period;
-                }
+                    // channel->period_pass = channel->period;
+                // }
             }
         }
 
@@ -118,13 +120,13 @@ static void adc_convert(void* context)
     int vars_cnt = ADC_CONFIG_COUNT;
     for (int i = 0; i < vars_cnt; i++) {
         struct adc_channel_config* channel = ADC_CONFIG_GET(i);
-        if (channel->period_pass <= ADC_TIMER_PERIOD) {
+        // if (channel->period_pass <= ADC_TIMER_PERIOD) {
             should_start = true;
             if (channel->adc_start != 0)
                 channel->adc_start();
-        } else {
-            channel->period_pass -= ADC_TIMER_PERIOD;
-        }
+        // } else {
+            // channel->period_pass -= ADC_TIMER_PERIOD;
+        // }
     }
 
     if (should_start) {
@@ -145,10 +147,10 @@ static void adc_convert(void* context)
  */
 void adc_timer_start()
 {
-    ret_code_t err_code;
+    // ret_code_t err_code;
 
-    err_code = app_timer_start(adc_timer, ADC_TIMER_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
+    // err_code = app_timer_start(adc_timer, ADC_TIMER_INTERVAL, NULL);
+    // APP_ERROR_CHECK(err_code);
 }
 
 /**
@@ -157,9 +159,24 @@ void adc_timer_start()
  */
 void adc_init()
 {
-    ret_code_t err_code;
+    // ret_code_t err_code;
 
-    // 创建ADC转换器的计时器
-    err_code = app_timer_create(&adc_timer, APP_TIMER_MODE_REPEATED, adc_convert);
-    APP_ERROR_CHECK(err_code);
+    // // 创建ADC转换器的计时器
+    // err_code = app_timer_create(&adc_timer, APP_TIMER_MODE_REPEATED, adc_convert);
+    // APP_ERROR_CHECK(err_code);
 }
+
+static void adc_evt_handler(enum user_event event, void* arg)
+{
+    // uint8_t arg2 = (uint32_t)arg;
+    switch (event) {
+    case USER_EVT_START_ADC:
+        adc_convert(NULL);
+        break;
+
+    default:
+        break;
+    }
+}
+
+EVENT_HANDLER(adc_evt_handler);

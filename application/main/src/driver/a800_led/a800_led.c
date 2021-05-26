@@ -103,14 +103,25 @@ static inline void delay_us(uint8_t us)
  **/
 static void a800_led_blink_timer_handler(void* context)
 {
+    if (blink_enable)
+    {
     a800_led_blink_led(true);
-
-    if (blink_enable == false)
+    }
+    else
     {
         // 下一次闪烁从亮灯阶段开始
         blink_stage = 0xff;
 
-        app_timer_stop(a800_led_blink_timer);
+        // app_timer_stop(a800_led_blink_timer);
+    }
+
+    // 每2秒触发一次ADC转换操作.
+    static uint8_t n = 0;
+    if (++n * A800_LED_BLINK_INTERVAL > 2000)
+    {
+        nrf_gpio_cfg_default(A800_LED_DATA);
+        trig_event_param(USER_EVT_START_ADC, 0);
+        n = 0;
     }
 }
 
@@ -184,6 +195,8 @@ void a800_led_deinit(void)
  **/
 static void write_led_data(uint8_t data)
 {
+    nrf_gpio_cfg_output(A800_LED_DATA);
+
     // write bit 4
     nrf_gpio_pin_write(A800_LED_CLK,0);
     nrf_gpio_pin_write(A800_LED_DATA, ((data >> 4) & 0x01));
@@ -225,6 +238,8 @@ static void write_led_data(uint8_t data)
     nrf_gpio_pin_write(A800_LED_DATA,0);
     nrf_gpio_pin_write(A800_LED_CLK,0);
     nrf_gpio_pin_write(A800_LED_ON,0);
+
+    nrf_gpio_cfg_default(A800_LED_DATA);
 }
 
 /** 
@@ -297,10 +312,10 @@ static void a800_led_blink_on(uint8_t blink_mask_, uint32_t blink_mult_)
         }
     }
 
-    if (blink_enable == false)
-    {
-        app_timer_start(a800_led_blink_timer, A800_LED_BLINK_INTERVAL, NULL);
-    }
+    // if (blink_enable == false)
+    // {
+    //     app_timer_start(a800_led_blink_timer, APP_TIMER_TICKS(A800_LED_BLINK_INTERVAL), NULL);
+    // }
     blink_enable = true;
 
     // 即刻更新闪烁状态
@@ -441,6 +456,7 @@ static void a800_led_evt_handler(enum user_event event, void* arg)
         switch (arg2) {
         case KBD_STATE_POST_INIT: // 初始化LED
             app_timer_create(&a800_led_blink_timer, APP_TIMER_MODE_REPEATED, a800_led_blink_timer_handler);
+            app_timer_start(a800_led_blink_timer, APP_TIMER_TICKS(A800_LED_BLINK_INTERVAL), NULL);
             break;
         case KBD_STATE_SLEEP: // 准备休眠
             a800_led_deinit();
