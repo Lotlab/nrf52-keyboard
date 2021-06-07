@@ -65,4 +65,18 @@ uint16_t get_led_powersave_timeout(void)
     return data > 0 ? data : LED_AUTOOFF_TIME;
 }
 
+CONFIG_SECTION(config_command_ctrl, 2);
+HID_CONFIG(0x13, config_command_ctrl);
+
+/**
+ * @brief 获取LED省电模式进入时间
+ * 
+ * @return uint16_t 
+ */
+uint16_t get_command_ctrl_key(void)
+{
+    uint16_t data = UINT16_READ(config_command_ctrl.data, 0);
+    return data > 0 ? data : 0;
+}
+
 #endif
