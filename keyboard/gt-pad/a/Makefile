@@ -16,9 +16,17 @@ INC_FOLDERS += \
 	. \
 	$(USER_SRC_DIR) \
 
-SRC_FILES += \
+
+ifeq (yes,$(strip $(ACTIONMAP_ENABLE)))
+	SRC_FILES += \
+	actionmap_plain.c \
+	$(USER_SRC_DIR)/user_fn.c
+else
+	SRC_FILES += \
 	keymap_plain.c \
 	$(USER_SRC_DIR)/user_fn.c
+endif
+
 
 all: default ch554
 
