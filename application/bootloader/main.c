@@ -60,9 +60,7 @@
 #include "nrf_nvmc.h"
 #include "nrf_power.h"
 #include <stdint.h>
-#ifdef CONFIG_H_FILE
-#include CONFIG_H_FILE
-#endif
+
 
 #ifdef LED_POSITIVE
 #define LED_SET(x) nrf_gpio_pin_set(x)

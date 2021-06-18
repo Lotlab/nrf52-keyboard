@@ -26,4 +26,4 @@ pyocd_flash_bootloader:
 
 merge_bootloader_all: bootloader merge_all
 	@echo Merging program, signature, SoftDevice and bootloader to $(OUTPUT_DIRECTORY)/nrf52_all.hex
-	mergehex -m $(OUTPUT_DIRECTORY)/nrf52_bootloader.hex $(OUTPUT_DIRECTORY)/nrf52_kbd_sign_with_sd.hex -o $(OUTPUT_DIRECTORY)/nrf52_all.hex
+	mergehex -m $(OUTPUT_DIRECTORY)/$(NRF_CHIP)_bootloader.hex $(OUTPUT_DIRECTORY)/nrf52_kbd_sign_with_sd.hex -o $(OUTPUT_DIRECTORY)/nrf52_all.hex
