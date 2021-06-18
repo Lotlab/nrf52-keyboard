@@ -16,3 +16,4 @@ endif
 # THREE_LED_STATUS = yes    #启用键盘运行状态灯
 ONBOARD_CMSIS_DAP = yes   # 启用板载调试器
 RGB_LIGHT_ENABLE = yes     #启用RGB轴灯
+ACTIONMAP_ENABLE =yes

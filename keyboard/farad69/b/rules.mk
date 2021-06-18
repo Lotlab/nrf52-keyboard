@@ -15,3 +15,4 @@ WS2812_ENABLE = yes     #启用WS2812灯
 endif
 THREE_LED_STATUS = yes    #启用键盘运行状态灯
 ONBOARD_CMSIS_DAP = yes   # 启用板载调试器
+#ACTIONMAP_ENABLE =yes
