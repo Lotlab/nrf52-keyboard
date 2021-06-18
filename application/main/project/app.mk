@@ -384,6 +384,11 @@ merge_all: setting
 	@echo Merging program, signature and SoftDevice $(SOFTDEVICE_NAME) to $(NRF_MERGE_ALL_NAME)
 	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(NRF_MERGE_ALL_NAME)
 
+pyocd_flash_all: merge_bootloader_all
+	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52_all.hex
+	pyocd flash -t nrf52 -e sector -f 2M $(OUTPUT_DIRECTORY)/nrf52_all.hex
+	pyocd cmd -t nrf52 -c reset
+
 # Erase chip
 erase:
 	nrfjprog -f nrf52 --eraseall
