@@ -213,7 +213,7 @@ static bool command_common(uint8_t code)
     case KC_F:
         rgb_light_decrease_val();
         break;
-#endif
+#else
 #ifdef WS2812_ENABLE //RGB灯（带控制芯片）控制
     case KC_Z:
         ws2812_step();
@@ -239,6 +239,7 @@ static bool command_common(uint8_t code)
     case KC_F:
         ws2812_decrease_val();
         break;
+#endif
 #endif
     case KC_B:
         //重启到DFU模式

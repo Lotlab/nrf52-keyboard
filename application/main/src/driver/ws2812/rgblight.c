@@ -68,7 +68,7 @@ ws2812_config_t ws2812_config;
 LED_TYPE led[WS2812_NUM];
 bool ws2812_timer_enabled = false;
 
-void sethsv(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE* led1)
+void base_sethsv(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE* led1)
 {
     uint8_t r = 0, g = 0, b = 0, base, color;
 
@@ -121,10 +121,10 @@ void sethsv(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE* led1)
     g = pgm_read_byte(&CIE1931_CURVE[g]);
     b = pgm_read_byte(&CIE1931_CURVE[b]);
 
-    setrgb(r, g, b, led1);
+    base_setrgb(r, g, b, led1);
 }
 
-void setrgb(uint8_t r, uint8_t g, uint8_t b, LED_TYPE* led1)
+void base_setrgb(uint8_t r, uint8_t g, uint8_t b, LED_TYPE* led1)
 {
     (*led1).r = r;
     (*led1).g = g;
@@ -374,7 +374,7 @@ void ws2812_enable_noeeprom(void)
 void ws2812_set_val(uint8_t value)
 {
     LED_TYPE tmp_led;
-    sethsv(ws2812_config.hue, ws2812_config.sat, value, &tmp_led);
+    base_sethsv(ws2812_config.hue, ws2812_config.sat, value, &tmp_led);
     ws2812_setrgb(tmp_led.r, tmp_led.g, tmp_led.b);
 }
 
@@ -489,7 +489,7 @@ void ws2812_sethsv_noeeprom_old(uint16_t hue, uint8_t sat, uint8_t val)
 {
     if (ws2812_config.enable) {
         LED_TYPE tmp_led;
-        sethsv(hue, sat, val, &tmp_led);
+        base_sethsv(hue, sat, val, &tmp_led);
         ws2812_setrgb(tmp_led.r, tmp_led.g, tmp_led.b);
     }
 }
@@ -500,7 +500,7 @@ void ws2812_sethsv_eeprom_helper(uint16_t hue, uint8_t sat, uint8_t val, bool wr
         if (ws2812_config.mode == 1) {
             // same static color
             LED_TYPE tmp_led;
-            sethsv(hue, sat, val, &tmp_led);
+            base_sethsv(hue, sat, val, &tmp_led);
             ws2812_setrgb(tmp_led.r, tmp_led.g, tmp_led.b);
         } else {
             // all LEDs in same color
@@ -517,7 +517,7 @@ void ws2812_sethsv_eeprom_helper(uint16_t hue, uint8_t sat, uint8_t val, bool wr
                 uint16_t range = pgm_read_word(&RGBLED_GRADIENT_RANGES[(ws2812_config.mode - 25) / 2]);
                 for (uint8_t i = 0; i < WS2812_NUM; i++) {
                     _hue = (range / WS2812_NUM * i * direction + hue + 360) % 360;
-                    sethsv(_hue, sat, val, (LED_TYPE*)&led[i]);
+                    base_sethsv(_hue, sat, val, (LED_TYPE*)&led[i]);
                 }
                 ws2812_set();
             }
@@ -590,7 +590,7 @@ void ws2812_sethsv_at(uint16_t hue, uint8_t sat, uint8_t val, uint8_t index)
     }
 
     LED_TYPE tmp_led;
-    sethsv(hue, sat, val, &tmp_led);
+    base_sethsv(hue, sat, val, &tmp_led);
     ws2812_setrgb_at(tmp_led.r, tmp_led.g, tmp_led.b, index);
 }
 
@@ -741,7 +741,7 @@ void ws2812_effect_rainbow_swirl(uint8_t interval)
     last_timer = timer_read();
     for (i = 0; i < WS2812_NUM; i++) {
         hue = (360 / WS2812_NUM * i + current_hue) % 360;
-        sethsv(hue, ws2812_config.sat, ws2812_config.val, (LED_TYPE*)&led[i]);
+        base_sethsv(hue, ws2812_config.sat, ws2812_config.val, (LED_TYPE*)&led[i]);
     }
     ws2812_set();
 
@@ -779,7 +779,7 @@ void ws2812_effect_snake(uint8_t interval)
                 k = k + WS2812_NUM;
             }
             if (i == k) {
-                sethsv(ws2812_config.hue, ws2812_config.sat, (uint8_t)(ws2812_config.val * (WS2812_EFFECT_SNAKE_LENGTH - j) / WS2812_EFFECT_SNAKE_LENGTH), (LED_TYPE*)&led[i]);
+                base_sethsv(ws2812_config.hue, ws2812_config.sat, (uint8_t)(ws2812_config.val * (WS2812_EFFECT_SNAKE_LENGTH - j) / WS2812_EFFECT_SNAKE_LENGTH), (LED_TYPE*)&led[i]);
             }
         }
     }
@@ -818,7 +818,7 @@ void ws2812_effect_knight(uint8_t interval)
         cur = (i + WS2812_EFFECT_KNIGHT_OFFSET) % WS2812_NUM;
 
         if (i >= low_bound && i <= high_bound) {
-            sethsv(ws2812_config.hue, ws2812_config.sat, ws2812_config.val, (LED_TYPE*)&led[cur]);
+            base_sethsv(ws2812_config.hue, ws2812_config.sat, ws2812_config.val, (LED_TYPE*)&led[cur]);
         } else {
             led[cur].r = 0;
             led[cur].g = 0;
@@ -850,7 +850,7 @@ void ws2812_effect_christmas(void)
     current_offset = (current_offset + 1) % 2;
     for (i = 0; i < WS2812_NUM; i++) {
         hue = 0 + ((i / WS2812_EFFECT_CHRISTMAS_STEP + current_offset) % 2) * 120;
-        sethsv(hue, ws2812_config.sat, ws2812_config.val, (LED_TYPE*)&led[i]);
+        base_sethsv(hue, ws2812_config.sat, ws2812_config.val, (LED_TYPE*)&led[i]);
     }
     ws2812_set();
 }
@@ -870,7 +870,7 @@ void ws2812_effect_rgbtest(void)
 
     if (maxval == 0) {
         LED_TYPE tmp_led;
-        sethsv(0, 255, WS2812_LIMIT_VAL, &tmp_led);
+        base_sethsv(0, 255, WS2812_LIMIT_VAL, &tmp_led);
         maxval = tmp_led.r;
     }
     last_timer = timer_read();

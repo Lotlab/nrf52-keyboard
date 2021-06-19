@@ -134,8 +134,8 @@ void eeconfig_debug_rgblight(void);
 void rgb_matrix_increase(void);
 void rgb_matrix_decrease(void);
 
-void sethsv(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE *led1);
-void setrgb(uint8_t r, uint8_t g, uint8_t b, LED_TYPE *led1);
+void base_sethsv(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE *led1);
+void base_setrgb(uint8_t r, uint8_t g, uint8_t b, LED_TYPE *led1);
 
 void ws2812_sethsv_noeeprom(uint16_t hue, uint8_t sat, uint8_t val);
 void ws2812_mode_noeeprom(uint8_t mode);
