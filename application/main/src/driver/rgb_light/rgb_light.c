@@ -186,10 +186,22 @@ static void rgb_light_lppwm_init()
  */
 static void rgb_light_lppwm_deinit()
 {
-    rgb_light_lppwm_stop();
     nrf_gpio_cfg_input(LED_RGB_R, NRF_GPIO_PIN_PULLDOWN);
     nrf_gpio_cfg_input(LED_RGB_G, NRF_GPIO_PIN_PULLDOWN);
     nrf_gpio_cfg_input(LED_RGB_B, NRF_GPIO_PIN_PULLDOWN);
+}
+
+//闪烁计时器
+APP_TIMER_DEF(inc_flash_timer);
+
+static void inc_flash_handler(void* p_context)
+{
+    rgb_light_lppwm_stop();
+    rgb_light_lppwm_deinit();
+}
+static void inc_flash_timer_init()
+{
+    app_timer_create(&inc_flash_timer, APP_TIMER_MODE_SINGLE_SHOT, inc_flash_handler);
 }
 
 static void led_status_change()
@@ -335,6 +347,7 @@ void rgb_light_init(void)
         rgb_light_config.raw = eeconfig_read_rgb_light();
     }
     rgb_light_lppwm_init();
+    inc_flash_timer_init();
 #ifdef RGB_LIGHT_ANIMATIONS
         rgb_light_timer_init(); // setup the timer
 #endif
@@ -735,7 +748,20 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
             rgb_light_init();
             break;
         case KBD_STATE_SLEEP: // 准备休眠
-            rgb_light_lppwm_deinit();
+            if (rgb_light_config.ind) {
+                if (!rgb_working) {
+                    rgb_light_lppwm_start(); //如果进入了省电状态（llpwm处于关闭），先启用lppwm
+                }
+                setrgb(0xFF, 0xFF, 0xFF); // 指示灯模式休眠时闪烁白色灯一次
+                app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), NULL); //延迟50ms关闭RGB
+            } else if (!rgb_light_config.enable) {
+                rgb_light_lppwm_start(); 
+                setrgb(0xFF, 0xFF, 0xFF);
+                app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), NULL);
+
+            } else {
+                rgb_light_lppwm_deinit();
+            }
             break;
         default:
             break;
