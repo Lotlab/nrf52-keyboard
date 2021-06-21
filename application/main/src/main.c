@@ -121,11 +121,6 @@ void sleep_delay_timer_init(void)
     app_timer_create(&sleep_delay_timer, APP_TIMER_MODE_SINGLE_SHOT, sleep_delay_handler);
 }
 
-static void set_stage(enum keyboard_state stage)
-{
-    trig_event_param(USER_EVT_STAGE, stage);
-}
-
 /**@brief Callback function for asserts in the SoftDevice.
  *
  * @details This function will be called in case of an assert in the SoftDevice.
@@ -182,7 +177,7 @@ static bool app_shutdown_handler(nrf_pwr_mgmt_evt_t event)
 {
     switch (event) {
     case NRF_PWR_MGMT_EVT_PREPARE_DFU:;
-        set_stage(KBD_STATE_SLEEP);
+        trig_event_param(USER_EVT_STAGE,KBD_STATE_SLEEP);
         reset_prepare();
         break;
 
@@ -236,7 +231,7 @@ static void timers_start(void)
 void notify_sleep(enum sleep_evt_type mode)
 {
     trig_event_param(USER_EVT_SLEEP, mode);
-    set_stage(KBD_STATE_SLEEP);
+    trig_event_param(USER_EVT_STAGE,KBD_STATE_SLEEP);
     app_timer_start(sleep_delay_timer, APP_TIMER_TICKS(200), (void*)(uint32_t)mode); //延迟200ms进入睡眠
 }
 
@@ -351,7 +346,7 @@ int main(void)
     power_management_init();
     storage_init();       //存储初始化
 	
-    set_stage(KBD_STATE_PRE_INIT);
+    trig_event_param(USER_EVT_STAGE, KBD_STATE_PRE_INIT);
 
     ble_stack_init();
 #ifdef APP_TIMER_CONFIG_USE_SCHEDULER
@@ -369,7 +364,7 @@ int main(void)
 #endif
 
     // call custom init function
-    set_stage(KBD_STATE_POST_INIT);
+    trig_event_param(USER_EVT_STAGE, KBD_STATE_POST_INIT);
 
     // Start execution.
     timers_start();
@@ -378,7 +373,7 @@ int main(void)
 #endif
     advertising_start(erase_bonds);
 
-    set_stage(KBD_STATE_INITED);
+    trig_event_param(USER_EVT_STAGE, KBD_STATE_INITED);
 
     // Enter main loop.
     for (;;) {
