@@ -37,7 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #ifdef HAS_USB
 
-#define QUEUE_SIZE 256
+#define QUEUE_SIZE 512
 
 uint8_t keyboard_led_val_usb;
 
