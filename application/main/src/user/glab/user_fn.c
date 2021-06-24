@@ -40,10 +40,8 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
                     tricky_registered = KC_ESC;
                 }
                 register_code(tricky_registered);
-                send_keyboard_report();
             } else {
                 unregister_code(tricky_registered);
-                send_keyboard_report();
             }
             break;
         case AF_TRICKY_SLSH:
@@ -54,10 +52,8 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
                     tricky_registered = KC_DOT;
                 }
                 register_code(tricky_registered);
-                send_keyboard_report();
             } else {
                 unregister_code(tricky_registered);
-                send_keyboard_report();
             }
             break;
         case AF_TRICKY_ENTER:
@@ -68,10 +64,8 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
                     tricky_registered = KC_ENTER;
                 }
                 register_code(tricky_registered);
-                send_keyboard_report();
             } else {
                 unregister_code(tricky_registered);
-                send_keyboard_report();
             }
             break;
         case AF_TRICKY_L:
@@ -82,10 +76,8 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
                     tricky_registered = KC_L;
                 }
                 register_code(tricky_registered);
-                send_keyboard_report();
             } else {
                 unregister_code(tricky_registered);
-                send_keyboard_report();
             }
             break;
         case AF_TRICKY_UP:
@@ -96,10 +88,8 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
                     tricky_registered = KC_UP;
                 }
                 register_code(tricky_registered);
-                send_keyboard_report();
             } else {
                 unregister_code(tricky_registered);
-                send_keyboard_report();
             }
             break;
         case AF_TRICKY_BSPC:
@@ -110,15 +100,14 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
                     tricky_registered = KC_BSPC;
                 }
                 register_code(tricky_registered);
-                send_keyboard_report();
             } else {
                 unregister_code(tricky_registered);
-                send_keyboard_report();
             }
             break;
         default:
             break;
         }
+        break;
     case RGB_LIGHT_CONTROL:
         if (record->event.pressed) {
             switch (opt) {
@@ -155,6 +144,9 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
                 break;
             }
         }
+        break;
+    default:
+        break;
     }
 }
 FN_HANDLER(custom_fn_handler);
