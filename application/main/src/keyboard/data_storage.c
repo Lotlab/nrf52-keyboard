@@ -27,8 +27,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // keymap
 #include "keymap.h"
+#ifndef ACTIONMAP_ENABLE
 #include "keymap_common.h"
-
+#endif
 // actionmap
 #include "actionmap.h"
 
