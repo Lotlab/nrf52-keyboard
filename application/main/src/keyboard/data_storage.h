@@ -12,7 +12,7 @@
 
 #define MAX_LAYER 8 // 存储区域中最大层数
 #define MAX_FN_KEYS 32 // 存储区域最大Fn数目
-#define MAX_MACRO_SIZE 256 // 宏存储区域最大容量
+#define MAX_MACRO_SIZE 1024 // 宏存储区域最大容量
 #define FILE_ID 0x0514
 
 #define KEYMAP_ROW_SIZE (MATRIX_COLS * SINGLE_KEY_SIZE)
