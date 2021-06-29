@@ -19,7 +19,8 @@ INC_FOLDERS += \
 
 SRC_FILES += \
 	actionmap_plain.c \
-	$(USER_SRC_DIR)/user_fn.c
+	$(USER_SRC_DIR)/user_fn.c \
+	custom_led.c \
 
 
 all: default ch554
