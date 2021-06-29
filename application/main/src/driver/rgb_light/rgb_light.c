@@ -66,6 +66,14 @@ static low_power_pwm_t led_r;
 static low_power_pwm_t led_g;
 static low_power_pwm_t led_b;
 
+/**
+ * 闪烁延迟处理事件
+ */
+enum rgb_light_delay_hander_event {
+    INIT_LED,         //初始化
+    SLEEP_LED         //休眠
+};
+
 // Gamma 对应表
 const uint8_t LED_TABLE[] = {
     0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
@@ -196,9 +204,21 @@ APP_TIMER_DEF(inc_flash_timer);
 
 static void inc_flash_handler(void* p_context)
 {
-    rgb_light_lppwm_stop();
-    rgb_light_lppwm_deinit();
+    uint8_t handler_name = (uint32_t)p_context;
+    switch (handler_name) {
+    case SLEEP_LED:
+        rgb_light_lppwm_stop();
+        rgb_light_lppwm_deinit();
+        break;
+    case INIT_LED:
+        setrgb(0, 0, 0);
+        rgb_light_lppwm_stop();
+        break;
+    default:
+        break;
+    }
 }
+
 static void inc_flash_timer_init()
 {
     app_timer_create(&inc_flash_timer, APP_TIMER_MODE_SINGLE_SHOT, inc_flash_handler);
@@ -746,6 +766,11 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
         switch (arg2) {
         case KBD_STATE_POST_INIT: // 初始化LED
             rgb_light_init();
+            if (!rgb_light_config.ind && !rgb_light_config.enable) {
+                rgb_light_lppwm_start(); 
+                setrgb(0xFF, 0xFF, 0xFF); // 闪烁白色灯一次
+                app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), (void*)(uint32_t)INIT_LED); //延迟50ms关闭RGB
+            }
             break;
         case KBD_STATE_SLEEP: // 准备休眠
             if (rgb_light_config.ind) {
@@ -753,11 +778,11 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
                     rgb_light_lppwm_start(); //如果进入了省电状态（llpwm处于关闭），先启用lppwm
                 }
                 setrgb(0xFF, 0xFF, 0xFF); // 指示灯模式休眠时闪烁白色灯一次
-                app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), NULL); //延迟50ms关闭RGB
+                app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), (void*)(uint32_t)SLEEP_LED); //延迟50ms关闭RGB
             } else if (!rgb_light_config.enable) {
                 rgb_light_lppwm_start(); 
                 setrgb(0xFF, 0xFF, 0xFF);
-                app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), NULL);
+                app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), (void*)(uint32_t)SLEEP_LED);
 
             } else {
                 rgb_light_lppwm_deinit();
