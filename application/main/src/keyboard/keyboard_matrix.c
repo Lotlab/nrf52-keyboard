@@ -302,6 +302,9 @@ void matrix_deinit(void)
 void matrix_wakeup_prepare(void)
 {
 // 这里监听所有按键作为唤醒按键，所以真正的唤醒判断应该在main的初始化过程中
+#ifdef LESS_IO
+    matrix_deinit();
+#else
 #ifdef ROW_IN
     for (uint8_t i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_cfg_output(column_pin_array[i]);
@@ -318,6 +321,7 @@ void matrix_wakeup_prepare(void)
         nrf_gpio_cfg_output(row_pin_array[i]);
         nrf_gpio_pin_set(row_pin_array[i]);
     }
+#endif
 #endif
 #ifdef ROTARY_BUTTON
     nrf_gpio_cfg_sense_input(ROTARY_BUTTON,
