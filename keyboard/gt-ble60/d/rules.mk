@@ -14,3 +14,4 @@ ifeq (nrf52832,$(strip $(NRF_CHIP)))
 # WS2812_ENABLE = yes       #启用WS2812灯
 endif
 THREE_LED_STATUS = yes  #启用键盘运行状态灯
+ACTIONMAP_ENABLE =yes
