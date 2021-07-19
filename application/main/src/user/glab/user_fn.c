@@ -21,6 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifdef RGB_LIGHT_ENABLE
 #include "rgb_light.h"
 #endif
+#ifdef WS2812_ENABLE
+#include "rgblight.h"
+#endif
 
 #define MODS_SHIFT_MASK (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT))
 #define MODS_RSHIFT_MASK (MOD_BIT(KC_RSHIFT))
@@ -138,6 +141,40 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
                 break;
             case RGB_LIGHT_TML:
                 rgb_indicator_toggle();
+                break;
+#endif
+            default:
+                break;
+            }
+        }
+        break;
+    case WS2812_CONTROL:
+        if (record->event.pressed) {
+            switch (opt) {
+#ifdef WS2812_ENABLE // RGB灯（无控制芯片）控制
+            case WS2812_STEP:
+                ws2812_step();
+                break;
+            case WS2812_TOGGLE:
+                ws2812_toggle();
+                break;
+            case WS2812_IHUE:
+                ws2812_increase_hue();
+                break;
+            case WS2812_DHUE:
+                ws2812_decrease_hue();
+                break;
+            case WS2812_ISAT:
+                ws2812_increase_sat();
+                break;
+            case WS2812_DSAT:
+                ws2812_decrease_sat();
+                break;
+            case WS2812_IVAL:
+                ws2812_increase_val();
+                break;
+            case WS2812_DVAL:
+                ws2812_decrease_val();
                 break;
 #endif
             default:
