@@ -295,6 +295,7 @@ void sleep(enum SLEEP_REASON reason)
         notify_sleep(SLEEP_EVT_MANUAL_NO_MATRIX_WAKEUP);
         break;
     case SLEEP_NOT_PWRON:
+        matrix_deinit();
         sleep_mode_enter(true);
         break;
     default:
@@ -352,17 +353,17 @@ int main(void)
 #ifdef APP_TIMER_CONFIG_USE_SCHEDULER
     scheduler_init();
 #endif
-    ble_services_init();
-    battery_service_init();
-    hid_service_init(service_error_handler);
-    adc_init();
     ble_keyboard_init();
 
 #if !defined(BOOTMAGIC_ENABLE) && defined(BOOTCHECK_ENABLE)
     // use internal function to check if should boot.
     boot_check();
+if (!sleep_flag) {
 #endif
-
+    ble_services_init();
+    battery_service_init();
+    hid_service_init(service_error_handler);
+    adc_init();
     // call custom init function
     trig_event_param(USER_EVT_STAGE, KBD_STATE_POST_INIT);
 
@@ -374,7 +375,9 @@ int main(void)
     advertising_start(erase_bonds);
 
     trig_event_param(USER_EVT_STAGE, KBD_STATE_INITED);
-
+#if !defined(BOOTMAGIC_ENABLE) && defined(BOOTCHECK_ENABLE)
+}
+#endif
     // Enter main loop.
     for (;;) {
         idle_state_handle();

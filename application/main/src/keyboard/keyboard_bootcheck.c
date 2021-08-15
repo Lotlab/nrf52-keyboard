@@ -42,6 +42,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define BOOTMAGIC_KEY_BOOT_TRAP4 KC_I
 #endif
 
+bool sleep_flag = false;
+
 static bool scan_key(uint16_t code)
 {
     for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
@@ -73,11 +75,6 @@ static bool keypress_check()
         matrix_scan();
         nrf_delay_ms(1);
     }
-
-#ifdef BOOTMAGIC_KEY_ERASE_BOND
-    // 检查取消绑定的按钮
-    erase_bonds = bootcheck_scan_key(BOOTMAGIC_KEY_ERASE_BOND);
-#endif
 
 #ifdef BOOTMAGIC_KEY_BOOT
     // 检查开机按钮
@@ -121,17 +118,18 @@ void bootcheck_flag_toggle(void)
 
 __attribute__((weak)) void boot_check()
 {
+
+    // 自动休眠不需要检测，直接退出
+    if (sleep_reason_get())
+        return;
+#ifdef HAS_USB
+#endif
     if (bootcheck_flag_get()) {
-        bool sleep_flag = true;
+        sleep_flag = true;
 #ifdef DEBUG_SKIP_PWRON_CHECK
         // debug状态下自动开机
         sleep_flag = false;
 #endif
-
-        // 自动休眠则不需要需要使用BOOT按键开机
-        if (sleep_reason_get())
-            sleep_flag = false;
-
         // 如果以上条件均不满足则尝试检测开机按键
         if (sleep_flag) {
             sleep_flag = !keypress_check();
