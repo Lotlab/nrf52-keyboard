@@ -30,10 +30,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "matrix.h"
 
 #ifndef BOOTMAGIC_KEY_BOOT_TRAP
-#define BOOTMAGIC_KEY_BOOT_TRAP KC_J
+#define BOOTMAGIC_KEY_BOOT_TRAP KC_Y
 #endif
 #ifndef BOOTMAGIC_KEY_BOOT_TRAP2
-#define BOOTMAGIC_KEY_BOOT_TRAP2 KC_H
+#define BOOTMAGIC_KEY_BOOT_TRAP2 KC_J
+#endif
+#ifndef BOOTMAGIC_KEY_BOOT_TRAP3
+#define BOOTMAGIC_KEY_BOOT_TRAP3 KC_N
+#endif
+#ifndef BOOTMAGIC_KEY_BOOT_TRAP4
+#define BOOTMAGIC_KEY_BOOT_TRAP4 KC_I
 #endif
 
 static bool scan_key(uint16_t code)
@@ -77,7 +83,9 @@ static bool keypress_check()
     // 检查开机按钮
     return bootcheck_scan_key(BOOTMAGIC_KEY_BOOT)
         && !bootcheck_scan_key(BOOTMAGIC_KEY_BOOT_TRAP)
-        && !bootcheck_scan_key(BOOTMAGIC_KEY_BOOT_TRAP2);
+        && !bootcheck_scan_key(BOOTMAGIC_KEY_BOOT_TRAP2)
+        && !bootcheck_scan_key(BOOTMAGIC_KEY_BOOT_TRAP3)
+        && !bootcheck_scan_key(BOOTMAGIC_KEY_BOOT_TRAP4);
 #else
     return true;
 #endif
