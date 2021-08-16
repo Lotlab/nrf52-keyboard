@@ -1,0 +1,46 @@
+name: Release 
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Release Firmware
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get source
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Install Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install python3-pip python3-setuptools
+        sudo pip3 install --upgrade pip
+        sudo pip3 install nrfutil
+        wget https://sourceforge.net/projects/sdcc/files/sdcc-linux-amd64/4.0.0/sdcc-4.0.0-amd64-unknown-linux2.5.tar.bz2 -O /tmp/sdcc-4.0.0-amd64-unknown-linux2.5.tar.bz2
+        tar xf /tmp/sdcc-4.0.0-amd64-unknown-linux2.5.tar.bz2 -C /tmp
+        sudo cp -r /tmp/sdcc-4.0.0/* /usr/local
+        wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2 -O /tmp/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
+        tar xf /tmp/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2 -C /tmp
+        wget https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-command-line-tools/sw/Versions-10-x-x/10-12-1/nRFCommandLineTools10121Linuxamd64.tar.gz -O /tmp/nRF-command-line-tools.tar.gz
+        mkdir /tmp/tools
+        tar xf /tmp/nRF-command-line-tools.tar.gz -C /tmp/tools
+        tar xf /tmp/tools/nRF-Command-Line-Tools_10_12_1.tar -C /tmp/tools
+        sudo cp -r /tmp/tools/mergehex /opt
+        sudo ln -s /opt/mergehex/mergehex /usr/local/bin/mergehex
+        cp template/Makefile.posix.template template/Makefile.posix
+        sed -i "s/\/usr\/local/\/tmp/g" template/Makefile.posix
+    - name: Make
+      run: |
+        cd keyboard
+        make -j4
+        cd ../
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref }}
+        files: |
+          /home/runner/work/nrf52-keyboard/nrf52-keyboard/keyboard/_build/*.zip
+          /home/runner/work/nrf52-keyboard/nrf52-keyboard/keyboard/_build/*.hex
