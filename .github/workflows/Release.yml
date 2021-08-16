@@ -1,0 +1,55 @@
+name: Release Build 
+
+on:
+  push:
+    tags: *
+
+jobs:
+  build:
+    name: Release Firmware
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get source
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Install Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install python3-pip python3-setuptools
+        sudo pip3 install --upgrade pip
+        sudo pip3 install nrfutil
+        wget https://sourceforge.net/projects/sdcc/files/sdcc-linux-amd64/4.0.0/sdcc-4.0.0-amd64-unknown-linux2.5.tar.bz2 -O /tmp/sdcc-4.0.0-amd64-unknown-linux2.5.tar.bz2
+        tar xf /tmp/sdcc-4.0.0-amd64-unknown-linux2.5.tar.bz2 -C /tmp
+        sudo cp -r /tmp/sdcc-4.0.0/* /usr/local
+        wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2 -O /tmp/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
+        tar xf /tmp/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2 -C /tmp
+        wget http://developer.nordicsemi.com/nRF5_SDK/nRF5_SDK_v15.x.x/nRF5_SDK_15.3.0_59ac345.zip -O /tmp/nRF5_SDK_15.3.0_59ac345.zip
+        mkdir /tmp/sdk
+        unzip -q /tmp/nRF5_SDK_15.3.0_59ac345.zip -d /tmp/sdk
+        wget https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-command-line-tools/sw/Versions-10-x-x/10-12-1/nRFCommandLineTools10121Linuxamd64.tar.gz -O /tmp/nRF-command-line-tools.tar.gz
+        mkdir /tmp/tools
+        tar xf /tmp/nRF-command-line-tools.tar.gz -C /tmp/tools
+        tar xf /tmp/tools/nRF-Command-Line-Tools_10_12_1.tar -C /tmp/tools
+        sudo cp -r /tmp/tools/mergehex /opt
+        sudo ln -s /opt/mergehex/mergehex /usr/local/bin/mergehex
+        cp template/Makefile.posix.template template/Makefile.posix
+        sed -i "s/\/usr\/local/\/tmp/g" template/Makefile.posix
+        cp -r /tmp/sdk/nRF5_SDK_15.3.0_59ac345/* SDK/
+        rm -r tmk/tmk_core/protocol/usb_hid/USB_Host_Shield_2.0-tmk/
+        cd tmk/ && git reset --hard
+        cd ../
+    - name: Build
+      run: |
+        cd keyboard
+        make -j
+        cd ../
+    - name: Upload
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref }}
+        files: |
+          keyboard/_build/*.zip
+          keyboard/_build/*.hex
+          keyboard/_build/*.bin
