@@ -46,6 +46,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef ADB_MOUSE_ENABLE
 #include "adb.h"
 #endif
+#ifdef RGBLIGHT_ENABLE
+#    include "rgblight.h"
+#endif
+#ifdef RGB_MATRIX_ENABLE
+#include "rgb_matrix.h"
+#endif
+
 
 
 #ifdef MATRIX_HAS_GHOST
@@ -92,6 +99,23 @@ void keyboard_init(void)
 
 #ifdef BACKLIGHT_ENABLE
     backlight_init();
+#endif
+#ifdef RGBLIGHT_ENABLE
+    rgblight_init();
+#endif
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_init();
+#endif
+}
+
+/** \brief key_event_task
+ *
+ * This function is responsible for calling into other systems when they need to respond to electrical switch press events.
+ * This is differnet than keycode events as no layer processing, or filtering occurs.
+ */
+void switch_events(uint8_t row, uint8_t col, bool pressed) {  //GENO
+#if defined(RGB_MATRIX_ENABLE)
+    process_rgb_matrix(row, col, pressed);
 #endif
 }
 
@@ -142,6 +166,8 @@ void keyboard_task(void)
                     // record a processed key
                     matrix_prev[r] ^= col_mask;
 
+                    switch_events(r, c, (matrix_row & col_mask));
+
                     // This can miss stroke when scan matrix takes long like Topre
                     // process a key per task call
                     //goto MATRIX_LOOP_END;
@@ -171,6 +197,12 @@ void keyboard_task(void)
 
 #ifdef ADB_MOUSE_ENABLE
         adb_mouse_task();
+#endif
+#if defined(RGBLIGHT_ENABLE) //GENO
+    rgblight_task();
+#endif
+#ifdef RGB_MATRIX_ENABLE  //GENO
+    rgb_matrix_task();
 #endif
 
     // update LED
