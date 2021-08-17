@@ -71,11 +71,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_CAPS 4  //caps led ：5 ； led1、2、3、4：19、20、27、26
 
 // ws2812 RGB 配置
-#define WS2812_DI_PIN 10
-#define WS2812_NUM 8
-#define WS2812_ANIMATIONS
-#define WS2812_PWR_PIN 17 // P-mos
-//#define WS2812_PWR_PIN_REVERSE 12 // N-mos
+#define RGB_DI_PIN 10
+#define RGBLED_NUM 8
+#define RGBLIGHT_ANIMATIONS
+#define RGB_PWR_PIN 17 // P-mos
+//#define RGB_PWR_PIN_REVERSE 12 // N-mos
 
 // 3灯指示配置引脚
 #define LED_STATUS_BLE 19
