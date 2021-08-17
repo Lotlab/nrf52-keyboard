@@ -98,8 +98,8 @@ void eeconfig_update_rgb_light(uint32_t val);
 void eeconfig_update_rgb_light_default(void);
 void eeconfig_debug_rgb_light(void);
 
-void sethsv(uint16_t hue, uint8_t sat, uint8_t val);
-void setrgb(uint8_t r, uint8_t g, uint8_t b);
+void light_sethsv(uint16_t hue, uint8_t sat, uint8_t val);
+void light_setrgb(uint8_t r, uint8_t g, uint8_t b);
 
 void rgb_light_sethsv_noeeprom(uint16_t hue, uint8_t sat, uint8_t val);
 void rgb_light_mode_noeeprom(uint8_t mode);
@@ -121,23 +121,23 @@ void rgb_light_effect_breathing(uint8_t interval);
 void rgb_light_effect_rainbow_mood(uint8_t interval);
 
 /*                            SET RGB List                            */
-#define rgb_light_setrgb_white()       setrgb (0xFF, 0xFF, 0xFF)
-#define rgb_light_setrgb_red()         setrgb (0xFF, 0x00, 0x00)
-#define rgb_light_setrgb_coral()       setrgb (0xFF, 0x7C, 0x4D)
-#define rgb_light_setrgb_orange()      setrgb (0xFF, 0x80, 0x00)
-#define rgb_light_setrgb_goldenrod()   setrgb (0xD9, 0xA5, 0x21)
-#define rgb_light_setrgb_gold()        setrgb (0xFF, 0xD9, 0x00)
-#define rgb_light_setrgb_yellow()      setrgb (0xFF, 0xFF, 0x00)
-#define rgb_light_setrgb_chartreuse()  setrgb (0x80, 0xFF, 0x00)
-#define rgb_light_setrgb_green()       setrgb (0x00, 0xFF, 0x00)
-#define rgb_light_setrgb_springgreen() setrgb (0x00, 0xFF, 0x80)
-#define rgb_light_setrgb_turquoise()   setrgb (0x47, 0x6E, 0x6A)
-#define rgb_light_setrgb_teal()        setrgb (0x00, 0x80, 0x80)
-#define rgb_light_setrgb_cyan()        setrgb (0x00, 0xFF, 0xFF)
-#define rgb_light_setrgb_azure()       setrgb (0x99, 0xf5, 0xFF)
-#define rgb_light_setrgb_blue()        setrgb (0x00, 0x00, 0xFF)
-#define rgb_light_setrgb_purple()      setrgb (0x7A, 0x00, 0xFF)
-#define rgb_light_setrgb_magenta()     setrgb (0xFF, 0x00, 0xFF)
-#define rgb_light_setrgb_pink()        setrgb (0xFF, 0x80, 0xBF)
+#define rgb_light_setrgb_white()       light_setrgb (0xFF, 0xFF, 0xFF)
+#define rgb_light_setrgb_red()         light_setrgb (0xFF, 0x00, 0x00)
+#define rgb_light_setrgb_coral()       light_setrgb (0xFF, 0x7C, 0x4D)
+#define rgb_light_setrgb_orange()      light_setrgb (0xFF, 0x80, 0x00)
+#define rgb_light_setrgb_goldenrod()   light_setrgb (0xD9, 0xA5, 0x21)
+#define rgb_light_setrgb_gold()        light_setrgb (0xFF, 0xD9, 0x00)
+#define rgb_light_setrgb_yellow()      light_setrgb (0xFF, 0xFF, 0x00)
+#define rgb_light_setrgb_chartreuse()  light_setrgb (0x80, 0xFF, 0x00)
+#define rgb_light_setrgb_green()       light_setrgb (0x00, 0xFF, 0x00)
+#define rgb_light_setrgb_springgreen() light_setrgb (0x00, 0xFF, 0x80)
+#define rgb_light_setrgb_turquoise()   light_setrgb (0x47, 0x6E, 0x6A)
+#define rgb_light_setrgb_teal()        light_setrgb (0x00, 0x80, 0x80)
+#define rgb_light_setrgb_cyan()        light_setrgb (0x00, 0xFF, 0xFF)
+#define rgb_light_setrgb_azure()       light_setrgb (0x99, 0xf5, 0xFF)
+#define rgb_light_setrgb_blue()        light_setrgb (0x00, 0x00, 0xFF)
+#define rgb_light_setrgb_purple()      light_setrgb (0x7A, 0x00, 0xFF)
+#define rgb_light_setrgb_magenta()     light_setrgb (0xFF, 0x00, 0xFF)
+#define rgb_light_setrgb_pink()        light_setrgb (0xFF, 0x80, 0xBF)
 
 #endif

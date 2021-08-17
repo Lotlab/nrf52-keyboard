@@ -211,7 +211,7 @@ static void inc_flash_handler(void* p_context)
         rgb_light_lppwm_deinit();
         break;
     case INIT_LED:
-        setrgb(0, 0, 0);
+        light_setrgb(0, 0, 0);
         rgb_light_lppwm_stop();
         break;
     default:
@@ -235,16 +235,16 @@ static void led_status_change()
             } else {
                 switch (ble_channel) {
                 case 0:
-                    setrgb(0xFF, 0x10, 0x20); //粉色
+                    light_setrgb(0xFF, 0x10, 0x20); //粉色
                     break;
                 case 1:
-                    setrgb(0xFF, 0x60, 0x00); //黄色
+                    light_setrgb(0xFF, 0x60, 0x00); //黄色
                     break;
                 case 2:
-                    setrgb(0xFF, 0x00, 0x00); //红色
+                    light_setrgb(0xFF, 0x00, 0x00); //红色
                     break;
                 default:
-                    setrgb(0, 0, 0);
+                    light_setrgb(0, 0, 0);
                     break;
                 }
             }
@@ -253,7 +253,7 @@ static void led_status_change()
     }
 }
 
-void sethsv(uint16_t hue, uint8_t sat, uint8_t val)
+void light_sethsv(uint16_t hue, uint8_t sat, uint8_t val)
 {
     uint8_t r = 0, g = 0, b = 0, base, color;
 
@@ -306,10 +306,10 @@ void sethsv(uint16_t hue, uint8_t sat, uint8_t val)
     g = pgm_read_byte(&LED_TABLE[g]);
     b = pgm_read_byte(&LED_TABLE[b]);
 
-    setrgb(r, g, b);
+    light_setrgb(r, g, b);
 }
 
-void setrgb(uint8_t r, uint8_t g, uint8_t b)
+void light_setrgb(uint8_t r, uint8_t g, uint8_t b)
 {
     // 可通过灯阻校准颜色，如：R-220R  B-510R  G-330R
     led_val_set(&led_r, r);
@@ -494,7 +494,7 @@ void rgb_indicator_toggle(void)
         rgb_light_mode_eeprom_helper(rgb_light_config.mode, false);
       } else {
         if (rgb_working) {  //如果llpwm开启才需要关闭
-          setrgb(0, 0, 0);
+          light_setrgb(0, 0, 0);
           rgb_light_lppwm_stop();
         }
       }
@@ -534,7 +534,7 @@ void rgb_light_disable(void)
 #ifdef RGB_LIGHT_ANIMATIONS
     rgb_light_timer_disable();
 #endif
-    setrgb(0, 0, 0);
+    light_setrgb(0, 0, 0);
     rgb_light_lppwm_stop();
     rgb_light_config.enable = 0;
     eeconfig_update_rgb_light(rgb_light_config.raw);
@@ -545,7 +545,7 @@ void rgb_light_disable_noeeprom(void)
 #ifdef RGB_LIGHT_ANIMATIONS
     rgb_light_timer_disable();
 #endif
-    setrgb(0, 0, 0);
+    light_setrgb(0, 0, 0);
     rgb_light_lppwm_stop();
     rgb_light_config.enable = 0;
 }
@@ -628,7 +628,7 @@ void rgb_light_decrease_val(void)
 void rgb_light_sethsv_noeeprom_old(uint16_t hue, uint8_t sat, uint8_t val)
 {
     if (rgb_light_config.enable && !rgb_light_config.ind) {
-        sethsv(hue, sat, val);
+        light_sethsv(hue, sat, val);
     }
 }
 
@@ -637,7 +637,7 @@ void rgb_light_sethsv_eeprom_helper(uint16_t hue, uint8_t sat, uint8_t val, bool
     if (rgb_light_config.enable && !rgb_light_config.ind) {
         if (rgb_light_config.mode == 1) {
             // same static color
-            sethsv(hue, sat, val);
+            light_sethsv(hue, sat, val);
         } else {
             // all LEDs in same color
             if (rgb_light_config.mode >= 2 && rgb_light_config.mode <= 5) {
@@ -768,7 +768,7 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
             rgb_light_init();
             if (!rgb_light_config.ind && !rgb_light_config.enable) {
                 rgb_light_lppwm_start(); 
-                setrgb(0xFF, 0xFF, 0xFF); // 闪烁白色灯一次
+                light_setrgb(0xFF, 0xFF, 0xFF); // 闪烁白色灯一次
                 app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), (void*)(uint32_t)INIT_LED); //延迟50ms关闭RGB
             }
             break;
@@ -777,11 +777,11 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
                 if (!rgb_working) {
                     rgb_light_lppwm_start(); //如果进入了省电状态（llpwm处于关闭），先启用lppwm
                 }
-                setrgb(0xFF, 0xFF, 0xFF); // 指示灯模式休眠时闪烁白色灯一次
+                light_setrgb(0xFF, 0xFF, 0xFF); // 指示灯模式休眠时闪烁白色灯一次
                 app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), (void*)(uint32_t)SLEEP_LED); //延迟50ms关闭RGB
             } else if (!rgb_light_config.enable) {
                 rgb_light_lppwm_start(); 
-                setrgb(0xFF, 0xFF, 0xFF);
+                light_setrgb(0xFF, 0xFF, 0xFF);
                 app_timer_start(inc_flash_timer, APP_TIMER_TICKS(50), (void*)(uint32_t)SLEEP_LED);
 
             } else {
@@ -796,7 +796,7 @@ static void status_rgb_light_evt_handler(enum user_event event, void* arg)
         switch (arg2) {
         case PWR_SAVE_ENTER: // 进入省电模式
             if (rgb_light_config.ind) {
-                setrgb(0, 0, 0);
+                light_setrgb(0, 0, 0);
                 rgb_light_lppwm_stop();
             }
             break;
