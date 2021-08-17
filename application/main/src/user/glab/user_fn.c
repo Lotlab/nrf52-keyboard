@@ -21,8 +21,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifdef RGB_LIGHT_ENABLE
 #include "rgb_light.h"
 #endif
-#ifdef WS2812_ENABLE
+#ifdef RGBLIGHT_ENABLE
 #include "rgblight.h"
+#endif
+#ifdef RGB_MATRIX_ENABLE
+#include "rgb_matrix.h"
 #endif
 
 #define MODS_SHIFT_MASK (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT))
@@ -148,33 +151,33 @@ void custom_fn_handler(keyrecord_t* record, uint8_t id, uint8_t opt)
             }
         }
         break;
-    case WS2812_CONTROL:
-        if (record->event.pressed) {
+    case RGBLIGHT_CONTROL:
+            if (record->event.pressed) {
             switch (opt) {
-#ifdef WS2812_ENABLE // RGB灯（无控制芯片）控制
-            case WS2812_STEP:
-                ws2812_step();
+#if defined(RGB_MATRIX_ENABLE) || defined(RGBLIGHT_ENABLE) //WS2812 RGB Light（矩阵）控制
+            case RGBLIGHT_STEP:
+                rgblight_step();
                 break;
-            case WS2812_TOGGLE:
-                ws2812_toggle();
+            case RGBLIGHT_TOGGLE:
+                rgblight_toggle();
                 break;
-            case WS2812_IHUE:
-                ws2812_increase_hue();
+            case RGBLIGHT_IHUE:
+                rgblight_increase_hue();
                 break;
-            case WS2812_DHUE:
-                ws2812_decrease_hue();
+            case RGBLIGHT_DHUE:
+                rgblight_decrease_hue();
                 break;
-            case WS2812_ISAT:
-                ws2812_increase_sat();
+            case RGBLIGHT_ISAT:
+                rgblight_increase_sat();
                 break;
-            case WS2812_DSAT:
-                ws2812_decrease_sat();
+            case RGBLIGHT_DSAT:
+                rgblight_decrease_sat();
                 break;
-            case WS2812_IVAL:
-                ws2812_increase_val();
+            case RGBLIGHT_IVAL:
+                rgblight_increase_val();
                 break;
-            case WS2812_DVAL:
-                ws2812_decrease_val();
+            case RGBLIGHT_DVAL:
+                rgblight_decrease_val();
                 break;
 #endif
             default:

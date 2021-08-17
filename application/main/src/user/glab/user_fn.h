@@ -3,7 +3,7 @@
 enum fn_user_functions {
 	TRICKY_KEY = 0x10, //0x0F以前为系统保留，自定义从0x10开始；
 	RGB_LIGHT_CONTROL = 0x11,
-	WS2812_CONTROL = 0x12,
+	RGBLIGHT_CONTROL = 0x12,
 };
 
 enum fn_user_fn_key {
@@ -27,13 +27,13 @@ enum fn_rgb_light_control {
     RGB_LIGHT_TML,
 };
 
-enum fn_ws2812_control {
-    WS2812_STEP,
-    WS2812_TOGGLE,
-    WS2812_IHUE,
-    WS2812_DHUE,
-    WS2812_ISAT,
-    WS2812_DSAT,
-    WS2812_IVAL,
-    WS2812_DVAL,
+enum fn_rgblight_control {
+    RGBLIGHT_STEP,
+    RGBLIGHT_TOGGLE,
+    RGBLIGHT_IHUE,
+    RGBLIGHT_DHUE,
+    RGBLIGHT_ISAT,
+    RGBLIGHT_DSAT,
+    RGBLIGHT_IVAL,
+    RGBLIGHT_DVAL,
 };
