@@ -16,7 +16,7 @@ enum SLEEP_REASON {
     // 手动关机休眠
     SLEEP_MANUALLY,
     // 手动关机休眠，并禁用按键唤醒
-    SLEEP_MANUALLY_NO_MATRIX_WAKEUP,
+    SLEEP_MANUALLY_NO_WAKEUP,
     // 非开机唤醒后休眠
     SLEEP_NOT_PWRON
 };

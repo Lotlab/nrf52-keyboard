@@ -270,7 +270,7 @@ static void sleep_delay_handler(void* p_context)
     case SLEEP_EVT_MANUAL:
         sleep_mode_enter(true);
         break;
-    case SLEEP_EVT_MANUAL_NO_MATRIX_WAKEUP:
+    case SLEEP_EVT_MANUAL_NO_WAKEUP:
         sleep_mode_enter(false);
         break;
     }
@@ -291,8 +291,8 @@ void sleep(enum SLEEP_REASON reason)
     case SLEEP_MANUALLY:
         notify_sleep(SLEEP_EVT_MANUAL);
         break;
-    case SLEEP_MANUALLY_NO_MATRIX_WAKEUP:
-        notify_sleep(SLEEP_EVT_MANUAL_NO_MATRIX_WAKEUP);
+    case SLEEP_MANUALLY_NO_WAKEUP:
+        notify_sleep(SLEEP_EVT_MANUAL_NO_WAKEUP);
         break;
     case SLEEP_NOT_PWRON:
         matrix_deinit();

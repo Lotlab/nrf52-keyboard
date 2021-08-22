@@ -45,7 +45,7 @@ static void button_handler(void)
         //1~4秒关机
         if (button_count > 1 && button_count <= 4) {
             button_count = 0;
-            sleep(SLEEP_MANUALLY_NO_MATRIX_WAKEUP);
+            sleep(SLEEP_MANUALLY_NO_WAKEUP);
         }
         //5~9秒启动DFU
         if (button_count > 4 && button_count <= 9) {

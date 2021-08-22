@@ -112,7 +112,7 @@ enum ble_device_channel {
 enum sleep_evt_type {
     SLEEP_EVT_MANUAL, // 手工休眠
     SLEEP_EVT_AUTO, // 自动睡眠
-    SLEEP_EVT_MANUAL_NO_MATRIX_WAKEUP, // 手工休眠并禁用按键唤醒
+    SLEEP_EVT_MANUAL_NO_WAKEUP, // 手工休眠并禁用按键唤醒
 };
 
 /**

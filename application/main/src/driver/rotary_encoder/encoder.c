@@ -107,14 +107,34 @@ static void encoder_init()
 
 static void encoder_event_handler(enum user_event event, void* arg)
 {
-    uint8_t param = (uint32_t)arg;
-    if (event == USER_EVT_STAGE) {
-        if (param == KBD_STATE_INITED) {
+    uint8_t arg2 = (uint32_t)arg;
+    switch (event) {
+    case USER_EVT_STAGE:
+        switch (arg2) {
+        case KBD_STATE_INITED: // 初始化ENCODER
             encoder_init();
-        } else if (param == KBD_STATE_SLEEP) {
+            break;
+        default:
+            break;
+        }
+        break;
+    case USER_EVT_SLEEP: // 蓝牙状态事件
+        switch (arg2) {
+        case SLEEP_EVT_MANUAL:
+        case SLEEP_EVT_AUTO:
             nrf_gpio_cfg_sense_input(ROTARY_ENCODER_A, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
             nrf_gpio_cfg_sense_input(ROTARY_ENCODER_B, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+            break;
+        case SLEEP_EVT_MANUAL_NO_WAKEUP:
+            nrf_gpio_cfg_default(ROTARY_ENCODER_A);
+            nrf_gpio_cfg_default(ROTARY_ENCODER_B);
+            break;
+        default:
+            break;
         }
+        break;
+    default:
+        break;
     }
 }
 
