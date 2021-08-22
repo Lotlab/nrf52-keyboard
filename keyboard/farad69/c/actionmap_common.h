@@ -34,11 +34,11 @@ extern const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS];
  * 第二组为按键实际矩阵
  */
 #define ACTIONMAP( \
-	K00, K01, K02, K03, K04, K05, K06, K07, K08, K09, K0A, K0B, K0C, K0D, \
-	K10, K11, K12, K13, K14, K15, K16, K17, K18, K19, K1A, K1B, K1C, K1D, \
-	K20, K21, K22, K23, K24, K25, K26, K27, K28, K29, K2A, K2B, K2C, K2D, \
-	K30, K31, K32, K33, K34, K35, K36, K37, K38, K39, K3A, K3B, K3C, K3D, \
-	K40, K41, K42, K43, K44, K45, K46, K47, K48, K49, K4A, K4B, K4C  \
+	K00, K01, K02, K03, K04, K05, K06, K07, K08, K09, K0A, K0B, K0C, K0D, K4C, \
+	K10, K11, K12, K13, K14, K15, K16, K17, K18, K19, K1A, K1B, K1C, K1D, K4B, \
+	K20, K21, K22, K23, K24, K25, K26, K27, K28, K29,      K2A, K2B, K2C, K2D, \
+	K30,      K31, K32, K33, K34, K35, K36, K37, K38, K39, K3A, K3B, K3C, K3D, \
+	K40, K41, K42,      K43,      K44,      K45, K46, K47, K48, K49, K4A  \
 ) { \
 	{ AC_##K00,    AC_##K01,    AC_##K02,    AC_##K03,    AC_##K04,    AC_##K05,    AC_##K06,    AC_##K07,    AC_##K08,    AC_##K09,    AC_##K0A,    AC_##K0B,    AC_##K0C,    AC_##K0D,    AC_NO }, \
 	{ AC_##K10,    AC_##K11,    AC_##K12,    AC_##K13,    AC_##K14,    AC_##K15,    AC_##K16,    AC_##K17,    AC_##K18,    AC_##K19,    AC_##K1A,    AC_##K1B,    AC_##K1C,    AC_##K1D,    AC_NO }, \
@@ -49,11 +49,11 @@ extern const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS];
 }
 
 #define ACTIONMAP_ROT( \
-	K00, K01, K02, K03, K04, K05, K06, K07, K08, K09, K0A, K0B, K0C, K0D, \
-	K10, K11, K12, K13, K14, K15, K16, K17, K18, K19, K1A, K1B, K1C, K1D, \
-	K20, K21, K22, K23, K24, K25, K26, K27, K28, K29, K2A, K2B, K2C, K2D, \
-	K30, K31, K32, K33, K34, K35, K36, K37, K38, K39, K3A, K3B, K3C, K3D, \
-	K40, K41, K42, K43, K44, K45, K46, K47, K48, K49, K4A, K4B, K4C,  \
+	K00, K01, K02, K03, K04, K05, K06, K07, K08, K09, K0A, K0B, K0C, K0D, K4C, \
+	K10, K11, K12, K13, K14, K15, K16, K17, K18, K19, K1A, K1B, K1C, K1D, K4B, \
+	K20, K21, K22, K23, K24, K25, K26, K27, K28, K29,      K2A, K2B, K2C, K2D, \
+	K30,      K31, K32, K33, K34, K35, K36, K37, K38, K39, K3A, K3B, K3C, K3D, \
+	K40, K41, K42,      K43,      K44,      K45, K46, K47, K48, K49, K4A,  \
 	R0P, R0N, K4E \
 ) { \
 	{ AC_##K00,    AC_##K01,    AC_##K02,    AC_##K03,    AC_##K04,    AC_##K05,    AC_##K06,    AC_##K07,    AC_##K08,    AC_##K09,    AC_##K0A,    AC_##K0B,    AC_##K0C,    AC_##K0D,    AC_NO }, \
