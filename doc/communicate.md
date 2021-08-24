@@ -74,18 +74,28 @@ PRODUCT[2] 产品ID (0xab60)
 HWVER[1] 硬件版本 (3)
 PROTOCOL_VER[1] 通信协议版本 (1)
 FIRMWARE_VER[4] 固件版本 (0xcb4cde53)
-BUILD_DATE[4] 构建日期 (20191226)
+BUILD_DATE[4] 构建时间 (UNIX时间戳)
 FUNCTION_TABLE[4] 支持（启用）的功能
 ```
 
 Function Table:
 ```
+/* 0-7 底层基础功能 */
 0: 是否启用BootMagic
 1: 是否启用MouseKey
 2: 是否启用多媒体和系统键
 3: 是否启用NKRO
-...
+/* 4-7 留做后续使用 */
+
+/* 8-15 附加功能 */
 8: 是否启用Keymap存储
+9: 是否使用的是Action Map
+10: 是否启用宏
+11: 是否启用配置存储
+
+/* 16-31 额外驱动功能 */
+16: RGB Light
+17: RGB Matrix
 ...
 ```
 

@@ -41,6 +41,7 @@ ifeq (yes,$(strip $(RGBLIGHT_ENABLE)))
     SRC_FILES +=$(DRIVER_DIR)/ws2812/ws2812.c \
 	            $(DRIVER_DIR)/ws2812/rgblight.c \
 	            $(DRIVER_DIR)/ws2812/led_tables.c \
+	            $(DRIVER_DIR)/ws2812/rgblight_ctrl.c \
 	            $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_pwm.c
     OPT_DEFS += -DNRFX_PWM_ENABLED=1 -DNRFX_PWM0_ENABLED=1 -DPWM_ENABLED=1 -DPWM0_ENABLED=1 -DRGBLIGHT_ENABLE
 endif

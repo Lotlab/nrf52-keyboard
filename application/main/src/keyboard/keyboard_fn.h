@@ -5,6 +5,8 @@
 enum fn_functions {
     KEYBOARD_CONTROL,
     SWITCH_DEVICE,
+    RGBLIGHT_CONTROL = 4, // RGB灯光相关
+    RGBMATRIX_CONTROL, // RGB阵列灯光
 };
 
 enum fn_keyboard_control {
