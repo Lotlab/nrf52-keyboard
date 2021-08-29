@@ -48,7 +48,7 @@ const uint8_t ssd1306_init_commands[] = {
     SSD1306_SETSTARTLINE, /* set display start line */
     SSD1306_PAGESTARTADDR, /* set page address */
     SSD1306_SETCONTRAST, /* contract control */
-    0xff, /* 128 */
+    0xFF, /* 128 */
 #ifdef SSD1306_ROTATE_180
     SSD1306_SEGREMAP_RESET, /* set segment remap */
 #else
@@ -56,7 +56,11 @@ const uint8_t ssd1306_init_commands[] = {
 #endif
     SSD1306_NORMALDISPLAY, /* normal / reverse */
     SSD1306_SETMULTIPLEX, /* multiplex ratio */
+#if SSD1306_LCDHEIGHT == 64
+    0x3F, /* duty = 1/32 */
+#else
     0x1F, /* duty = 1/32 */
+#endif
 #ifdef SSD1306_ROTATE_180
     SSD1306_COMSCANINC, /* Com scan direction */
 #else
@@ -67,9 +71,13 @@ const uint8_t ssd1306_init_commands[] = {
     SSD1306_SETDISPLAYCLOCKDIV, /* set osc division */
     0x80,
     SSD1306_SETPRECHARGE, /* set pre-charge period */
-    0x1f,
+    0xF1,
     SSD1306_SETCOMPINS, /* set COM pins */
-    0x00,
+#if SSD1306_LCDHEIGHT == 64
+    0x12, /* duty = 1/32 */
+#else
+    0x02, /* duty = 1/32 */
+#endif
     SSD1306_SETVCOMDETECT, /* set vcomh */
     0x40,
     SSD1306_CHARGEPUMP, /* set charge pump enable */
@@ -79,11 +87,15 @@ const uint8_t ssd1306_init_commands[] = {
     0x7F,
     SSD1306_PAGEADDR,
     0x00,
+#if SSD1306_LCDHEIGHT == 64
+    0x07,
+#else
     0x03,
+#endif
     SSD1306_DISPLAYON, /* display ON */
 };
 
-uint8_t ssd1306_display_buffer[128 * 4] = SSD1306_INIT_BUFF;
+uint8_t ssd1306_display_buffer[128 * SSD1306_LCDHEIGHT / 8] = SSD1306_INIT_BUFF;
 
 /**
  * @brief 发送命令或数据
@@ -183,6 +195,9 @@ static void ssd1306_wake()
 bool ssd1306_buff_dirty[SSD1306_ROWS];
 
 static enum connection_type conn_type = 0;
+#ifdef ESB_COMM
+static enum esb_keyboard_role esb_status = 0;
+#endif
 static bool pwr_attach = false, usb_conn = false, ble_conn = false;
 static bool passkey_req = false;
 static uint8_t keyboard_led = 0;
@@ -252,6 +267,7 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
         case KBD_STATE_POST_INIT: // 初始化
             ssd1306_twi_init();
             ssd1306_oled_init();
+            ssd1306_clr();
             ssd1306_inited = true;
             break;
         case KBD_STATE_INITED: // 显示Buff
