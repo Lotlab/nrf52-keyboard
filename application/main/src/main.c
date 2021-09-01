@@ -101,7 +101,7 @@
 #include "protocol/usb_comm.h"
 
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
-#ifdef APP_TIMER_CONFIG_USE_SCHEDULER
+#if APP_TIMER_CONFIG_USE_SCHEDULER == 1
 #define SCHED_MAX_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE /**< Maximum size of scheduler events. */
 #ifdef SVCALL_AS_NORMAL_FUNCTION
 #define SCHED_QUEUE_SIZE 30 /**< Maximum number of events in the scheduler queue. More is needed in case of Serialization. */
@@ -303,7 +303,7 @@ void sleep(enum SLEEP_REASON reason)
     }
 }
 
-#ifdef APP_TIMER_CONFIG_USE_SCHEDULER
+#if APP_TIMER_CONFIG_USE_SCHEDULER == 1
 /**@brief Function for the Event Scheduler initialization.
  */
 static void scheduler_init(void)
@@ -329,7 +329,7 @@ static void power_management_init(void)
  */
 static void idle_state_handle(void)
 {
-#ifdef APP_TIMER_CONFIG_USE_SCHEDULER
+#if APP_TIMER_CONFIG_USE_SCHEDULER == 1
     app_sched_execute();
 #endif
     execute_event();
@@ -350,7 +350,7 @@ int main(void)
     trig_event_param(USER_EVT_STAGE, KBD_STATE_PRE_INIT);
 
     ble_stack_init();
-#ifdef APP_TIMER_CONFIG_USE_SCHEDULER
+#if APP_TIMER_CONFIG_USE_SCHEDULER == 1
     scheduler_init();
 #endif
     keyboard_services_init(); //键盘功能初始化

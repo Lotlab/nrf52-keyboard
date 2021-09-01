@@ -222,17 +222,22 @@ static void update_status_bar()
 
     status_dirty = false;
 }
-
+#if APP_TIMER_CONFIG_USE_SCHEDULER == 1
 static void status_bar_handler(void* p_event_data, uint16_t event_size)
 {
     update_status_bar();
 }
+#endif
 
 static void status_mark_dirty()
 {
     if (!status_dirty) {
         status_dirty = true;
+#if APP_TIMER_CONFIG_USE_SCHEDULER == 1
         app_sched_event_put(NULL, 0, status_bar_handler);
+#else
+        update_status_bar();
+#endif
     }
 }
 
