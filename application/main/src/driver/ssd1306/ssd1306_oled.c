@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_scheduler.h"
 #include "nrf_delay.h"
 
-#include "../../ble/ble_bas_service.h"
+#include "keyboard_battery.h"
 #include "events.h"
 #include "keyboard_evt.h"
 #include "passkey.h"

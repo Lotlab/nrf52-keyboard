@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "host.h"
 #include "keymap.h"
 #include "ble_services.h"
-#include "ble_bas_service.h"
+#include "keyboard_battery.h"
 
 #ifdef NKRO_ENABLE
 

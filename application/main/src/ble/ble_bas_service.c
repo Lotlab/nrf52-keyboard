@@ -18,21 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ble_bas_service.h"
 #include <string.h>
 
-#include "action.h"
-#include "action_util.h"
 #include "ble_bas.h"
 #include "ble_config.h"
-#include "nrf_delay.h"
+#include "keyboard_battery.h"
+#include "keyboard_evt.h"
 
 #include "../config/keyboard_config.h"
-#include "adc_convert.h"
 
-#define ADC_BUFFER_SIZE 6
-struct BatteryInfo battery_info;
 BLE_BAS_DEF(m_bas); /**< Structure used to identify the battery service. */
-
-uint16_t adc_buffer[ADC_BUFFER_SIZE];
-uint8_t adc_buffer_index;
 
 /**@brief Function for performing a battery measurement, and update the Battery Level characteristic in the Battery Service.
  */
@@ -48,7 +41,7 @@ static void battery_level_update(uint8_t battery_level)
 
 /**@brief Function for initializing Battery Service.
  */
-static void bas_init(void)
+void battery_service_init(void)
 {
     ret_code_t err_code;
     ble_bas_init_t bas_init_obj;
@@ -68,85 +61,21 @@ static void bas_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-static void calculate_battery_persentage(struct BatteryInfo* info)
+static void battery_service_event_handler(enum user_event event, void* arg)
 {
-    if (info->voltage >= 4100)
-        info->percentage = 100;
-    else if (info->voltage >= 3335)
-        info->percentage = 15 + (info->voltage - 3335) / 9;
-    else if (info->voltage >= 2900)
-        info->percentage = (info->voltage - 2900) / 29;
-    else
-        info->percentage = 0;
-}
-
-static void adc_result_handler(nrf_saadc_value_t value)
-{
-    adc_buffer[adc_buffer_index++] = value;
-    if (adc_buffer_index >= ADC_BUFFER_SIZE) {
-        adc_buffer_index = 0;
-
-        uint32_t result = 0;
-        for (uint8_t i = 0; i < ADC_BUFFER_SIZE; i++) {
-            result += adc_buffer[i];
+    switch (event) {
+    case USER_EVT_INTERNAL:
+        switch ((uint32_t)arg) {
+        case INTERNAL_EVT_BATTERY_INFO_REFRESH:
+            battery_level_update(battery_info.percentage);
+            break;
+        default:
+            break;
         }
-        result /= ADC_BUFFER_SIZE;
-        // RESULT = [V(P) – V(N) ] * GAIN/REFERENCE * 2 ^ (RESOLUTION - m)
-        // value  = V_in / 1.2 * 1024
-        // V_in   = V_bat * 2.2 / 12.2
-        battery_info.voltage = result * 1200 * 122 / 1024 / 22;
-        calculate_battery_persentage(&battery_info);
-        battery_level_update(battery_info.percentage);
+        break;
+    default:
+        break;
     }
 }
 
-static nrf_saadc_channel_config_t channel_config = {
-    .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
-    .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
-    .gain = NRF_SAADC_GAIN1_2,
-    .reference = NRF_SAADC_REFERENCE_INTERNAL,
-    .acq_time = NRF_SAADC_ACQTIME_10US,
-    .mode = NRF_SAADC_MODE_SINGLE_ENDED,
-    .burst = NRF_SAADC_BURST_DISABLED,
-    .pin_p = (nrf_saadc_input_t)(BATTERY_ADC_PIN),
-    .pin_n = NRF_SAADC_INPUT_DISABLED
-};
-
-static struct adc_channel_config batt_channel = {
-    .adc_start = 0,
-    .adc_finish = &adc_result_handler,
-    .period = 2000,
-    .config = &channel_config,
-};
-
-ADC_CONVERT_CHANNEL(batt_channel);
-
-void battery_service_init(void)
-{
-    bas_init();
-}
-
-/**
- * @brief 输出电池剩余电量.
- *
- */
-void print_battery_percentage()
-{
-    int digits[10] = { KC_0, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9 };
-    char percentage = battery_info.percentage;
-
-    if (percentage == 0) {
-        type_code(KC_N);
-    } else if (percentage == 100) {
-        type_code(KC_F);
-    } else {
-        int factor = 100;
-        do {
-            if (percentage >= factor) {
-                int index = (percentage / factor) % 10;
-                int keycode = digits[index];
-                type_code(keycode);
-            }
-        } while ((factor /= 10) >= 1);
-    }
-}
+EVENT_HANDLER(battery_service_event_handler);
