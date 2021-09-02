@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ble_keyboard.h"
+#include "keyboard_services.h"
 #include "keyboard_evt.h"
 #include "keyboard_led.h"
 #include "nrf_delay.h"

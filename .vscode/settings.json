@@ -57,7 +57,7 @@
         "usb_descriptor.h": "c",
         "endpoints.h": "c",
         "custom_hook.h": "c",
-        "ble_keyboard.h": "c",
+        "keyboard_services.h": "c",
         "led_rgb.h": "c",
         "ch554_sdcc.h": "c",
         "compiler.h": "c",

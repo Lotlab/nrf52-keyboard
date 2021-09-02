@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "keyboard_evt.h"
 #include "../ble/ble_hid_service.h"
 #include "../ble/ble_services.h"
-#include "ble_keyboard.h"
+#include "keyboard_services.h"
 #include "host.h"
 #include "passkey.h"
 #include "power_save.h"
@@ -121,7 +121,7 @@ static void internal_event_handler(enum user_event event, void* arg)
         // 接入和断开电源后，禁用和启用省电模式
         power_attached = subEvent > 0;
         power_save_set_mode(!power_attached);
-        ble_keyboard_powersave(!power_attached);
+        keyboard_powersave(!power_attached);
         break;
     case USER_EVT_BLE_STATE_CHANGE:
         // 长时间没有连接，若没有接通电源则睡眠

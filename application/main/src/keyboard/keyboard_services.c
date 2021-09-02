@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "ble_keyboard.h" // self
+#include "keyboard_services.h" // self
 #include "../config/keyboard_config.h"
 #include "app_timer.h" // nordic
 #include "keyboard.h" // tmk
@@ -187,7 +187,7 @@ void keyboard_debounce(void)
  * @brief 启动键盘计时器
  * 
  */
-void ble_keyboard_timer_start(void)
+void keyboard_timer_start(void)
 {
     ret_code_t err_code = app_timer_start(m_keyboard_scan_timer, FAST_SCAN_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -201,7 +201,7 @@ void ble_keyboard_timer_start(void)
  * 
  * @param save 
  */
-void ble_keyboard_powersave(bool save)
+void keyboard_powersave(bool save)
 {
     if (save != powersave) {
         powersave = save;
@@ -215,7 +215,7 @@ void ble_keyboard_powersave(bool save)
  * @brief 初始化键盘所需的各项东西
  * 
  */
-void ble_keyboard_init(void)
+void keyboard_services_init(void)
 {
     keyboard_setup(); // 初始化各按键阵列
     // - martix_setup();

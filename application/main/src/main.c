@@ -91,7 +91,7 @@
 #include "main.h"
 
 #include "keyboard/adc_convert.h"
-#include "keyboard/ble_keyboard.h"
+#include "keyboard/keyboard_services.h"
 #include "keyboard/data_storage.h"
 #include "keyboard/keyboard_bootcheck.h"
 #include "keyboard/keyboard_command.h"
@@ -216,7 +216,7 @@ static void timers_init(void)
  */
 static void timers_start(void)
 {
-    ble_keyboard_timer_start();
+    keyboard_timer_start();
 #ifdef HAS_USB
     usb_comm_timer_start();
 #endif
@@ -353,7 +353,7 @@ int main(void)
 #ifdef APP_TIMER_CONFIG_USE_SCHEDULER
     scheduler_init();
 #endif
-    ble_keyboard_init();
+    keyboard_services_init(); //键盘功能初始化
 
 #if !defined(BOOTMAGIC_ENABLE) && defined(BOOTCHECK_ENABLE)
     // use internal function to check if should boot.

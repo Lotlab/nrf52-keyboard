@@ -27,7 +27,7 @@
 #include "wait.h"
 #include <math.h>
 
-#include <ble_keyboard.h>
+#include <keyboard_services.h>
 
 #ifndef RGB_LIGHT_LIMIT_VAL
 #define RGB_LIGHT_LIMIT_VAL 255

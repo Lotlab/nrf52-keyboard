@@ -17,7 +17,7 @@ endif
 # project specific files
 SRC_FILES += $(APP_SRC_DIR)/keyboard/keyboard_matrix.c \
     $(APP_SRC_DIR)/keyboard/host_driver.c \
-    $(APP_SRC_DIR)/keyboard/ble_keyboard.c \
+    $(APP_SRC_DIR)/keyboard/keyboard_services.c \
     $(APP_SRC_DIR)/tmk/keyboard_timer.c \
     $(APP_SRC_DIR)/tmk/glue_layer.c \
     $(APP_SRC_DIR)/keyboard/keyboard_fn.c \

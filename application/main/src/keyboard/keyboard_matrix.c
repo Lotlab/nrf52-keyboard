@@ -29,7 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nrf_gpio.h"
 
 #include "../config/keyboard_config.h"
-#include "ble_keyboard.h"
+#include "keyboard_services.h"
 #include "debug.h"
 #include "keyboard_matrix.h"
 #include "matrix.h"
