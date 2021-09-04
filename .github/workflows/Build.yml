@@ -45,3 +45,4 @@ jobs:
         path: |
           /home/runner/work/nrf52-keyboard/nrf52-keyboard/keyboard/_build/*.zip
           /home/runner/work/nrf52-keyboard/nrf52-keyboard/keyboard/_build/*.hex
+          /home/runner/work/nrf52-keyboard/nrf52-keyboard/keyboard/_build/*.bin
