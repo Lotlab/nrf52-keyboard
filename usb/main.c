@@ -233,11 +233,14 @@ static void main()
     IE_TKEY = 1; // 运行Timer
 
     USBDeviceInit(); //USB设备模式初始化
+    DelayMs(10);
+    EA = 1; //允许单片机中断
+    DelayMs(10);
     EnableWatchDog();
 #ifdef ONBOARD_CMSIS_DAP
     Dap_Init();
 #endif
-    EA = 1; //允许单片机中断
+    DelayMs(10);
     UEP1_T_LEN = 0; //预使用发送长度一定要清空
     UEP2_T_LEN = 0; //预使用发送长度一定要清空
     UEP3_T_LEN = 0;
