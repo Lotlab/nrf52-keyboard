@@ -40,11 +40,11 @@ uint8_t button_count = 0;
 static void button_handler(void)
 {
 
-    if (!nrf_gpio_pin_read(POWER_BUTTON)) //如果BUTTON输入低电平(按下)，则启动计数
+    if (!nrf_gpio_pin_read(POWER_BUTTON) && button_count < 10) //如果BUTTON输入低电平(按下)，同时计数小于10，则仅计数
     {
         button_count++;
         return;
-    } else {
+    } else {                                                   //如果BUTTON释放，或计数大于等于10，则根据计数进行关机、进入DFU、重置
         //1~4秒关机
         if (button_count > 1 && button_count <= 4) {
             button_count = 0;
@@ -57,10 +57,15 @@ static void button_handler(void)
         }
         //10秒以上重置
         if (button_count >= 10) {
-            button_count = 0;
+            if (button_count == 10) {
             delete_bonds();
             storage_delete(0x0F);
             storage_read(0x0F);
+            }
+            if (button_count >= 15) {
+            NVIC_SystemReset();
+            }
+            button_count++;
         }
         //上述判断最大误差1秒
     }

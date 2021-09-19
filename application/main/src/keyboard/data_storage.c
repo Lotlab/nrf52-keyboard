@@ -18,16 +18,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "data_storage.h"
 
-#include "app_scheduler.h"
 #include "fds.h"
 #include "nrf.h"
 #include "queue.h"
 #include "util.h"
+#include "nrf_sdh.h"
 
 // keymap
 #include "keymap.h"
+#ifndef ACTIONMAP_ENABLE
 #include "keymap_common.h"
-
+#endif
 // actionmap
 #include "actionmap.h"
 
@@ -197,9 +198,6 @@ static void storage_callback(fds_evt_t const* p_evt)
         if (p_evt->result == FDS_SUCCESS) {
             s_fds_initialized = true;
         }
-        if (p_evt->result == FDS_ERR_NO_PAGES) {
-            fstorage_clear();
-        }
         break;
     case FDS_EVT_GC:
         // GC完毕事件
@@ -258,7 +256,16 @@ static void storage_callback_init()
     APP_ERROR_CHECK(err_code);
     while (!s_fds_initialized)             // 等待初始化完成
     {
-        sd_app_evt_wait();                 // 等待过程中待机
+        // 等待过程中待机
+#ifdef SOFTDEVICE_PRESENT
+        if (nrf_sdh_is_enabled()) {
+            sd_app_evt_wait();
+        } else
+#endif // SOFTDEVICE_PRESENT
+        {
+            // Wait for an event.
+            __WFE();
+        }
     }
 }
 
@@ -526,31 +533,3 @@ uint16_t storage_write_data(enum storage_type type, uint16_t offset, uint16_t le
     return len;
 }
 
-static uint32_t get_storage_end_addr()
-{
-    uint32_t const bootloader_addr = BOOTLOADER_ADDRESS;
-    uint32_t const page_sz = NRF_FICR->CODEPAGESIZE;
-
-#if defined(NRF52810_XXAA) || defined(NRF52811_XXAA)
-    // Hardcode the number of flash pages, necessary for SoC emulation.
-    // nRF52810 on nRF52832 and
-    // nRF52811 on nRF52840
-    uint32_t const code_sz = 48;
-#else
-    uint32_t const code_sz = NRF_FICR->CODESIZE;
-#endif
-
-    return (bootloader_addr != 0xFFFFFFFF) ? bootloader_addr : (code_sz * page_sz);
-}
-
-/**
- * @brief 删除所有已有的存储
- * 
- */
-void fstorage_clear(void)
-{
-    uint32_t end_page = get_storage_end_addr() / NRF_FICR->CODEPAGESIZE - 1;
-    for (uint8_t i = 0; i < FDS_VIRTUAL_PAGES; i++) {
-        sd_flash_page_erase(end_page - i);
-    }
-}
