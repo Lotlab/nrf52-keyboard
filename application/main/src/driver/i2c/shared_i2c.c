@@ -153,7 +153,7 @@ nrfx_twi_t* shared_i2c_init(uint8_t sda, uint8_t scl)
     };
     
     channels[i2c_channel_count].sda = sda;
-    channels[i2c_channel_count].scl = sda;
+    channels[i2c_channel_count].scl = scl;
     switch (i2c_channel_count)
     {
     case 0:
