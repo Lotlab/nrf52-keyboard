@@ -319,6 +319,7 @@ static void status_led_evt_handler(enum user_event event, void* arg)
         status_led_usb(arg2 == USB_WORKING);
         break;
     case USER_EVT_BLE_DEVICE_SWITCH: // 蓝牙设备通道切换事件
+        status_led_set_internal(0);  //先关闭所有指示灯
         blink_led_id = arg2;
         break;
     case USER_EVT_BLE_STATE_CHANGE: // 蓝牙状态事件
