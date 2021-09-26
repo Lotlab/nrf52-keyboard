@@ -20,6 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "app_timer.h"
 #include "nrf_saadc.h"
 #include "nrfx_saadc.h"
+#include "../driver/ssd1306/oled_graph.h"
+#include "../ble/ble_bas_service.h"
 
 NRF_SECTION_DEF(adc_channel, struct adc_channel_config*);
 
@@ -43,6 +45,7 @@ static bool saadc_inited = false;
 static void adc_event_callback(nrfx_saadc_evt_t const* p_event)
 {
     nrf_saadc_value_t results[8] = { 0 };
+    static uint8_t callback_times;
 
     if (p_event->type == NRFX_SAADC_EVT_DONE) {
         ret_code_t err_code;
@@ -61,14 +64,21 @@ static void adc_event_callback(nrfx_saadc_evt_t const* p_event)
 
         // 然后将各个通道的结果发送给接收者
         for (int i = 0; i < vars_cnt; i++) {
-            struct adc_channel_config* channel = ADC_CONFIG_GET(i);
-            if (channel->adc_finish != 0) {
-                if (channel->period_pass <= ADC_TIMER_PERIOD) {
-                    channel->adc_finish(results[i]);
-                    // reload 周期
-                    channel->period_pass = channel->period;
-                }
-            }
+	    struct adc_channel_config* channel = ADC_CONFIG_GET(i);
+	    if (channel->adc_finish != 0) {
+	        if (channel->period_pass <= ADC_TIMER_PERIOD) {
+	            channel->adc_finish(results[i]);
+		    // 尽快显示,短路评估,因此callback_times不会溢出
+	    	    if (!channel->period_pass && callback_times++ >= ADC_BUFFER_SIZE) {
+	    	    	update_status_bar();
+	            	// reload 周期
+	            	channel->period_pass = channel->period;
+			//char str[40];
+			//sprintf(str, "%d%%,%d", battery_info.percentage, callback_times);
+        		//oled_draw_text_16(2, TEXT_ALIGN_CENTER, 0, str);
+		    }
+	        }
+	    }
         }
 
         // 关闭saadc节省电量

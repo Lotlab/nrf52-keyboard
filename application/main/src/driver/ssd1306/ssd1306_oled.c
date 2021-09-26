@@ -206,7 +206,7 @@ void ssd1306_show_dirty_block()
  * @brief 更新状态栏
  * 
  */
-static void update_status_bar()
+void update_status_bar()
 {
     power_save_reset();
 
@@ -263,6 +263,18 @@ static void ssd1306_event_handler(enum user_event event, void* arg)
             break;
         }
         break;
+	
+    /* TODO:处理超时睡眠时间（蓝牙长时间未连接，长时间无操作 */
+    case USER_EVT_SLEEP:
+   	switch(param) {
+        case SLEEP_EVT_AUTO:
+            ssd1306_sleep();
+            break;
+        default:
+            break;
+	}
+        break;
+
     case USER_EVT_POWERSAVE: // 处理省电模式
         switch (param) {
         case PWR_SAVE_ENTER:

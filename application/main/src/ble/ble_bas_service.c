@@ -26,7 +26,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../config/keyboard_config.h"
 #include "adc_convert.h"
 
-#define ADC_BUFFER_SIZE 6
 struct BatteryInfo battery_info;
 BLE_BAS_DEF(m_bas); /**< Structure used to identify the battery service. */
 
@@ -115,6 +114,7 @@ static struct adc_channel_config batt_channel = {
     .adc_start = 0,
     .adc_finish = &adc_result_handler,
     .period = 2000,
+    .period_pass = 0,
     .config = &channel_config,
 };
 
