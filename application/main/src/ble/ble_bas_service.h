@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+#define ADC_BUFFER_SIZE 6
+
 void battery_service_init(void);
 
 struct BatteryInfo {
