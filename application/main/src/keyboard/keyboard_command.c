@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "action_layer.h"
 #include "action_util.h"
 #include "app_timer.h"
-#include "ble_bas_service.h"
+#include "keyboard_battery.h"
 #include "ble_services.h"
 #include "bootloader.h"
 #include "command.h"
