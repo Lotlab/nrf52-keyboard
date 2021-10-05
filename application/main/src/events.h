@@ -75,6 +75,7 @@ enum user_event {
  */
 enum internal_event {
     INTERNAL_EVT_GATTS_TX_COMPLETE, // 蓝牙GATTS发送成功（启用加密情况下表示连接成功）
+    INTERNAL_EVT_BATTERY_INFO_REFRESH, //电池电量检测刷新
 };
 
 /**
