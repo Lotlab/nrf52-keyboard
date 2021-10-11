@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+void matrix_init_and_scan_once_for_wakeup(void);
+
 void matrix_deinit(void);
 void matrix_wakeup_prepare(void);
 

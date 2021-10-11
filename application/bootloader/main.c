@@ -60,6 +60,10 @@
 #include "nrf_nvmc.h"
 #include "nrf_power.h"
 #include <stdint.h>
+#ifdef A800_LED_ENABLE
+#include "a800_led.h"
+#endif
+
 #ifdef CONFIG_H_FILE
 #include CONFIG_H_FILE
 #endif
@@ -111,6 +115,11 @@ static void dfu_observer(nrf_dfu_evt_type_t evt_type)
 #endif
         break;
     case NRF_DFU_EVT_DFU_STARTED:
+#ifdef A800_LED_ENABLE
+        a800_led_r(false);
+        a800_led_blink_on(R_MASK, MAKE_BLINK_MULT(R_CHANNEL, 10));
+#endif
+
 #ifdef LED_DFU_INIT
         LED_CLEAR(LED_DFU_INIT);
 #endif
@@ -127,6 +136,10 @@ static void dfu_observer(nrf_dfu_evt_type_t evt_type)
     case NRF_DFU_EVT_DFU_FAILED:
     case NRF_DFU_EVT_DFU_ABORTED:
     case NRF_DFU_EVT_DFU_COMPLETED:
+#ifdef A800_LED_ENABLE
+        a800_led_blink_off(R_MASK);
+#endif
+
 #ifdef LED_DFU_INIT
         LED_CLEAR(LED_DFU_START);
 #endif
@@ -204,21 +217,21 @@ static void dfu_multi_role_btn()
 }
 #endif
 
-static void leds_init()
-{
-#ifdef LED_DFU_INIT
-    nrf_gpio_cfg_output(LED_DFU_INIT);
-    LED_CLEAR(LED_DFU_INIT);
-#endif
-#ifdef LED_DFU_START
-    nrf_gpio_cfg_output(LED_DFU_START);
-    LED_CLEAR(LED_DFU_START);
-#endif
-#ifdef LED_DFU_FINISH
-    nrf_gpio_cfg_output(LED_DFU_FINISH);
-    LED_CLEAR(LED_DFU_FINISH);
-#endif
-}
+// static void leds_init()
+// {
+// #ifdef LED_DFU_INIT
+//     nrf_gpio_cfg_output(LED_DFU_INIT);
+//     LED_CLEAR(LED_DFU_INIT);
+// #endif
+// #ifdef LED_DFU_START
+//     nrf_gpio_cfg_output(LED_DFU_START);
+//     LED_CLEAR(LED_DFU_START);
+// #endif
+// #ifdef LED_DFU_FINISH
+//     nrf_gpio_cfg_output(LED_DFU_FINISH);
+//     LED_CLEAR(LED_DFU_FINISH);
+// #endif
+// }
 
 static void erase_check()
 {
@@ -248,9 +261,31 @@ static void erase_check()
 #endif
 }
 
+#ifdef A800_LED_ENABLE
+/**@brief Function for the Timer initialization.
+ *
+ * @details Initializes the timer module.
+ */
+static void timers_init(void)
+{
+    ret_code_t err_code;
+
+    err_code = app_timer_init();
+    APP_ERROR_CHECK(err_code);
+}
+#endif
+
 /**@brief Function for application main entry. */
 int main(void)
 {
+#ifdef A800_LED_ENABLE
+    timers_init();
+    
+    a800_led_init();
+    a800_led_r(true);
+
+#endif
+
     uint32_t ret_val;
 
     // Protect MBR and bootloader code from being overwritten.
@@ -263,7 +298,7 @@ int main(void)
     dfu_multi_role_btn();
 #endif
     erase_check();
-    leds_init();
+    // leds_init();
 
     ret_val = nrf_bootloader_init(dfu_observer);
     APP_ERROR_CHECK(ret_val);

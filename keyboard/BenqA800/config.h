@@ -42,18 +42,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // 键盘省电参数
 #define SLEEP_SLOW_TIMEOUT 15 // 键盘闲置多久后转入慢速扫描模式 (s)
-#define SLEEP_OFF_TIMEOUT 600 // 键盘闲置多久后转入自动关机 (s)
+#define SLEEP_OFF_TIMEOUT 3600 // 键盘闲置多久后转入自动关机 (s)
 #define KEYBOARD_SCAN_INTERVAL 1 // 键盘最小时间单位TICK (ms)
 #define KEYBOARD_FAST_SCAN_INTERVAL 10 // 通常模式下，多久扫描一次键盘 (ms)
 #define KEYBOARD_SLOW_SCAN_INTERVAL 100 // 慢速模式下，多久扫描一次键盘 (ms)
 #define LED_AUTOOFF_TIME 5 /* LED自动熄灭时长(s)，设为0则不自动熄灭 */
 
 // 键盘额外功能
-#define DYNAMIC_TX_POWER /* 启用自动发射功率调整 */
+// #define DYNAMIC_TX_POWER /* 启用自动发射功率调整 */
 // #define PASSKEY_REQUIRED /* 需要输入配对码 */
 #define ENABLE_WATCHDOG /* 启用看门狗 */
-//#define HIGH_TX_POWER /* 更改发射功率到+4dBm */
-// #define MULTI_DEVICE_SWITCH  /*启用多设备切换 */
+// #define HIGH_TX_POWER /* 更改发射功率到+4dBm */
+#define MULTI_DEVICE_SWITCH  /*启用多设备切换 */
 #define KEYMAP_STORAGE /* 启用keymap存储 */
 // #define MACRO_BLOCKING_MODE /* 在宏播放时禁用其他按键输入 */
 #define MACRO_STORAGE /* 启用宏存储功能 */
@@ -101,7 +101,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define UART_BAUDRATE NRF_UART_BAUDRATE_115200 // 通信波特率，请不要修改
 
 // 电量检测配置
-#define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0 // 电量检测引脚
+#define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN3 // 电量检测引脚
 
 // 充电检测配置
 #define PIN_CHARGING !P3_3  // CH554的充电检测。当P3.3拉低时表示正在充电。若不配置则禁用USB下发充电事件

@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include "nrfx_uart.h"
+#include "nrf_log.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -169,6 +170,8 @@ static void uart_on_recv()
                 bool usb_status = buff & 0x04;
                 bool protocol = buff & 0x08;
 
+                NRF_LOG_INFO("UART usb=%d charging=%d protocol=%d", usb_status, charging_status, protocol);
+                
                 // 设置当前状态
                 set_state(usb_status, charging_status, protocol);
 
@@ -184,6 +187,10 @@ static void uart_on_recv()
                 }
                 status.uart_checked = true;
             }
+
+            if (buff >= 0x10) {
+                NRF_LOG_INFO("uart update state, cmd=%d", buff);
+            }
         } else {
             recv_index++;
             if (recv_index >= recv_len) {
@@ -192,8 +199,11 @@ static void uart_on_recv()
                 if (sum == recv_buf[recv_len - 1]) {
                     // U_CMD H_CMD H_LEN H_DAT... U_SUM
                     hid_on_recv(recv_buf[1], recv_len - 4, &recv_buf[3]);
+
+                    NRF_LOG_INFO("hid_on_recv data_len=%d", recv_len - 4);
                 } else {
                     hid_response_generic(HID_RESP_UART_CHECKSUM_ERROR);
+                    NRF_LOG_INFO("hid_on_recv checksum error");
                 }
                 recv_len = 0;
             }
@@ -227,6 +237,8 @@ static void uart_to_idle()
 static void uart_init_hardware();
 static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
 {
+    NRF_LOG_INFO("uart_evt_handler event=%d", (uint32_t)(p_app_uart_event->evt_type));
+
     switch (p_app_uart_event->evt_type) {
     case APP_UART_DATA:
     case APP_UART_DATA_READY:
@@ -237,6 +249,8 @@ static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
         break;
 
     case APP_UART_COMMUNICATION_ERROR:
+        NRF_LOG_INFO("uart_init_hardware from uart_evt_handler");
+
         app_uart_close();
         uart_init_hardware();
         break;
@@ -254,6 +268,8 @@ static void uart_evt_handler(app_uart_evt_t* p_app_uart_event)
  */
 static void uart_init_hardware()
 {
+    
+
     uint32_t err_code;
     const app_uart_comm_params_t config = {
         .baud_rate = UART_BAUDRATE,
@@ -275,17 +291,23 @@ static void uart_task(void* context)
     if (status.state != UART_STATE_IDLE) {
         // 已经连接状态，检查是否断开
         if (!status.uart_checked) {
+            NRF_LOG_INFO("uart_to_idle from uart_task");
             uart_to_idle();
         } else {
             status.uart_checked = false;
+            NRF_LOG_INFO("status.uart_checked = false");
         }
     } else {
         // 未连接状态，检查是否连接
 #ifdef UART_DET
         if (!nrf_gpio_pin_read(UART_DET)) {
+            NRF_LOG_INFO("uart_task UART_DET");
+
 #else
         if (nrf_gpio_pin_read(UART_RXD)) {
+            NRF_LOG_INFO("uart_task UART_RXD");
 #endif
+            NRF_LOG_INFO("uart_init_hardware from uart_task");
             uart_init_hardware();
         }
     }
@@ -311,6 +333,8 @@ bool usb_working(void)
  */
 void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 {
+    NRF_LOG_INFO("usb send key index=%d len=%d", index, len);
+
     if (len > 61)
         return;
 
@@ -329,6 +353,8 @@ void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
  */
 void uart_send_conf(uint8_t len, uint8_t* data)
 {
+    NRF_LOG_INFO("usb send conf len=%d", len);
+
     if (len > 62)
         return;
 
@@ -362,6 +388,8 @@ void usb_comm_init()
     nrf_gpio_cfg_input(UART_RXD, NRF_GPIO_PIN_PULLDOWN);
     if (nrf_gpio_pin_read(UART_RXD)) {
 #endif
+        NRF_LOG_INFO("uart_init_hardware from usb_comm_init");
+
         // 初始化时启用UART尝试接收事件，若没有主机则在超时处关闭
         uart_init_hardware();
     }
@@ -383,6 +411,8 @@ void usb_comm_timer_start()
  */
 void usb_comm_sleep_prepare()
 {
+    NRF_LOG_INFO("uart_to_idle from usb_comm_sleep_prepare");
+
     uart_to_idle();
 #ifdef UART_DET
     nrf_gpio_cfg_sense_input(UART_DET, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
@@ -400,6 +430,8 @@ void usb_comm_switch()
     if ((status.state == UART_STATE_WORKING) && status.host_connected) {
         status.usb_disable = !status.usb_disable;
         send_event(USER_EVT_USB, status.usb_disable ? USB_NOT_WORKING : USB_WORKING);
+
+        NRF_LOG_INFO("usb_comm_switch usb_disable=%d", status.usb_disable);
     }
 }
 

@@ -104,6 +104,8 @@
 #include "keyboard/keyboard_matrix.h"
 #include "protocol/usb_comm.h"
 
+#include "matrix.h"
+
 #ifdef A800_LED_ENABLE
 #include "a800_led.h"
 #endif
@@ -319,21 +321,19 @@ bool erase_bonds = false;
  */
 int main(void)
 {
+    //matrix_init_and_scan_once_for_wakeup();
+
 #ifdef A800_LED_ENABLE
+    uint8_t startup_led = CAP_MASK | NUM_MASK | R_MASK;
     a800_led_init();
-    a800_led_all(true);
+    a800_led_set(true, startup_led);
 #endif
 
 #ifdef NRF_LOG_ENABLED
     APP_ERROR_CHECK(NRF_LOG_INIT(NULL));
     NRF_LOG_DEFAULT_BACKENDS_INIT();
-    NRF_LOG_INFO( "application startting");
 #endif
-
-    nrf_gpio_cfg_output(LED_CAPS);
-    nrf_gpio_cfg_output(LED_NUM);
-    LED_SET(LED_CAPS);
-    LED_CLEAR(LED_NUM);
+    NRF_LOG_INFO("application startting");
 
     // Initialize.
     timers_init();
@@ -346,7 +346,6 @@ int main(void)
 #if NRFX_POWER_ENABLED
     sd_power_dcdc_mode_set(NRF_POWER_DCDC_ENABLE);
 #endif
-
     scheduler_init();
     ble_services_init();
     battery_service_init();
@@ -370,7 +369,7 @@ int main(void)
     set_stage(KBD_STATE_INITED);
 
 #ifdef A800_LED_ENABLE
-    a800_led_all(false);
+    a800_led_set(false, startup_led);
 #endif
 
     NRF_LOG_INFO( "application startted");

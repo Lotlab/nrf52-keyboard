@@ -1,5 +1,6 @@
 PROJECT_NAME     := secure_bootloader_ble_s112_pca10040e
 TARGETS          := nrf52_bootloader
+A800_LED_ENABLE  := no
 
 ifndef OUTPUT_DIRECTORY
 OUTPUT_DIRECTORY := _build
@@ -140,6 +141,7 @@ INC_FOLDERS += \
 	$(SDK_ROOT)/components/libraries/crypto \
 	$(SDK_ROOT)/components/libraries/crypto/backend/optiga \
 	$(SDK_ROOT)/components/libraries/scheduler \
+	$(SDK_ROOT)/components/libraries/timer \
 	$(SDK_ROOT)/modules/nrfx/hal \
 	$(SDK_ROOT)/components/toolchain/cmsis/include \
 	$(SDK_ROOT)/components/libraries/balloc \
@@ -158,12 +160,17 @@ ifdef CONFIG_H_DIR
 	INC_FOLDERS += $(CONFIG_H_DIR)
 endif
 
+ifeq (yes,$(strip $(A800_LED_ENABLE)))
+    SRC_FILES += $(PROJ_DIR)/../main/src/driver/a800_led/a800_led.c
+    INC_FOLDERS += $(PROJ_DIR)/../main/src/driver/a800_led
+    OPT += -DA800_LED_ENABLE
+endif
 
 # Optimization flags
 ifeq (yes,$(strip $(DEBUG)))
-	OPT = -Os -g
+	OPT += -Os -g
 else
-	OPT = -Os -g3
+	OPT += -Os -g3
 endif
 
 # Uncomment the line below to enable link time optimization

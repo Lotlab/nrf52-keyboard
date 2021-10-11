@@ -110,7 +110,7 @@ void command_timer_init(void)
 
 static bool command_common(uint8_t code);
 
-static void switch_default_layer(uint8_t layer);
+// static void switch_default_layer(uint8_t layer);
 
 command_state_t command_state = ONESHOT;
 
@@ -151,19 +151,19 @@ static bool command_common(uint8_t code)
         keyboard_nkro = !keyboard_nkro;
         break;
 #endif
-    case KC_0:
-    case KC_F10:
-        //切换默认层
-        switch_default_layer(0);
-        break;
-    case KC_1 ... KC_9:
-        //切换默认层
-        switch_default_layer((code - KC_1) + 1);
-        break;
-    case KC_F1 ... KC_F9:
-        //切换默认层
-        switch_default_layer((code - KC_F1) + 1);
-        break;
+    // case KC_0:
+    // case KC_F10:
+    //     //切换默认层
+    //     switch_default_layer(0);
+    //     break;
+    // case KC_1 ... KC_9:
+    //     //切换默认层
+    //     switch_default_layer((code - KC_1) + 1);
+    //     break;
+    // case KC_F1 ... KC_F9:
+    //     //切换默认层
+    //     switch_default_layer((code - KC_F1) + 1);
+    //     break;
     case KC_M:
 #ifdef HAS_USB
         //USB与蓝牙输入模式切换
@@ -171,29 +171,29 @@ static bool command_common(uint8_t code)
         usb_comm_switch();
 #endif
         break;
-    case KC_O:
+    case KC_0:
         //清空绑定数据
         clear_keyboard();
         app_timer_start(command_run_timer, APP_TIMER_TICKS(200), (void*)(uint32_t)COMMAND_BOND);
         break;
 #ifdef MULTI_DEVICE_SWITCH //多设备切换：支持3台设备切换
-    case KC_Q:
+    case KC_1:
         clear_keyboard();
         devices_id = 0;
         app_timer_start(command_run_timer, APP_TIMER_TICKS(100), (void*)(uint32_t)COMMAND_SWITCH);
         break;
-    case KC_W:
+    case KC_2:
         clear_keyboard();
         devices_id = 1;
         app_timer_start(command_run_timer, APP_TIMER_TICKS(100), (void*)(uint32_t)COMMAND_SWITCH);
         break;
-    case KC_E:
+    case KC_3:
         clear_keyboard();
         devices_id = 2;
         app_timer_start(command_run_timer, APP_TIMER_TICKS(100), (void*)(uint32_t)COMMAND_SWITCH);
         break;
 #endif
-    case KC_R:
+    case KC_A:
         clear_keyboard();
         advertising_restart(BLE_ADV_MODE_FAST, false);
         break;
@@ -223,7 +223,7 @@ static bool command_common(uint8_t code)
         rgblight_decrease_val();
         break;
 #endif
-    case KC_B:
+    case KC_U:
         //重启到DFU模式
         clear_keyboard();
 #ifdef RGBLIGHT_ENABLE
@@ -248,7 +248,7 @@ static bool command_common(uint8_t code)
 #endif
         app_timer_start(command_run_timer, APP_TIMER_TICKS(1000), (void*)(uint32_t)COMMAND_SYSTEMOFF);
         break;
-    case KC_H:
+    case KC_B:
         clear_keyboard();
         print_battery_percentage();
         break;
@@ -257,7 +257,7 @@ static bool command_common(uint8_t code)
         leds_switch();
         break;
 #endif
-    case KC_I:
+    case KC_R:
         //重置键盘
         clear_keyboard();
         app_timer_start(command_run_timer, APP_TIMER_TICKS(200), (void*)(uint32_t)COMMAND_DEL_STORAGE);
@@ -268,8 +268,8 @@ static bool command_common(uint8_t code)
     return true;
 }
 
-static void switch_default_layer(uint8_t layer)
-{
-    default_layer_set(1UL << layer);
-    clear_keyboard();
-}
+// static void switch_default_layer(uint8_t layer)
+// {
+//     default_layer_set(1UL << layer);
+//     clear_keyboard();
+// }

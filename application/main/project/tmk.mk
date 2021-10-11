@@ -50,6 +50,8 @@ ifeq (yes,$(strip $(EXTRAKEY_ENABLE)))
 endif
 
 ifeq (yes,$(strip $(CONSOLE_ENABLE)))
+    SRC_FILES += $(COMMON_DIR)/mbed/xprintf.cpp
+    INC_FOLDERS += $(TMK_CORE_DIR)/tool/mbed/mbed-sdk/libraries/mbed/api
     OPT_DEFS += -DCONSOLE_ENABLE
 else
     OPT_DEFS += -DNO_PRINT

@@ -31,6 +31,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ble_keyboard.h"
 #include "debug.h"
 #include "keyboard_matrix.h"
+#include "keyboard_evt.h"
+#include "events.h"
 #include "matrix.h"
 #include "print.h"
 #include "util.h"
@@ -44,6 +46,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 static uint8_t debouncing = 0; //DEBOUNCE_RELOAD;
 
+static bool scan_for_wakeup = false;
+matrix_row_t row_for_wakeup = -1;
+matrix_row_t cols_for_wakeup = -1;
+
 /* matrix state(1:on, 0:off) */
 static matrix_row_t matrix[MATRIX_ROWS];
 static matrix_row_t matrix_debouncing[MATRIX_COLS];
@@ -53,6 +59,25 @@ static void select_row(uint8_t row);
 static void unselect_rows(void);
 
 #define READ_COL(pin) (nrf_gpio_pin_read(pin))
+
+// 只在键盘链接后才发生唤醒按键
+static bool keyboard_connected = false;
+
+/**
+ * @brief 键盘唤醒后, 快速扫描一次按键, 获取唤醒键盘的按键.
+ *        解决按一个建唤醒键盘后, 再按一次才发送该键的问题.
+ */
+void matrix_init_and_scan_once_for_wakeup(void)
+{
+    scan_for_wakeup = true;
+    row_for_wakeup = 0;
+    cols_for_wakeup = 0;
+    matrix_init();
+    matrix_scan();
+
+    if (cols_for_wakeup == 0)
+        scan_for_wakeup = false;
+}
 
 /**
  * @brief 初始化键盘阵列
@@ -142,7 +167,8 @@ uint8_t matrix_scan(void)
                 // debug_hex(debouncing);
                 // dprint("\n");
             }
-            debouncing = DEBOUNCE_RELOAD;
+            // 扫描唤醒按键时只消抖1次
+            debouncing = scan_for_wakeup ? 1 : DEBOUNCE_RELOAD;
         }
         unselect_rows();
     }
@@ -155,11 +181,14 @@ uint8_t matrix_scan(void)
             for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
                 matrix[i] = matrix_debouncing[i];
             }
-            
-            // 扫描结果转成, TMK需要按行扫描
-            for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-                for (uint8_t j = 0; j < MATRIX_COLS; j++) {
-                    matrix[i] |= (((matrix_debouncing[j] >> i) & 0x01) << j);
+
+            if (scan_for_wakeup) {
+                for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
+                    if (matrix[i]) {
+                        row_for_wakeup = i;
+                        cols_for_wakeup = matrix[i];
+                        break;
+                    }
                 }
             }
         }
@@ -231,6 +260,19 @@ bool matrix_is_modified(void)
 #else
 inline matrix_row_t matrix_get_row(uint8_t row)
 {
+    static uint16_t n = 0;
+    if (row == row_for_wakeup && scan_for_wakeup && keyboard_connected && (++n % 70) == 0)
+    {
+        // 唤醒按键只发送一次
+        scan_for_wakeup = false;
+
+#ifdef NRF_LOG_ENABLED
+        NRF_LOG_INFO("matrix_get_row for wakeup row=%d col=%05x", row, cols_for_wakeup);
+#endif
+
+        return cols_for_wakeup;
+    }
+
 #ifdef NRF_LOG_ENABLED
     if (matrix[row]) {
         uint32_t tt = matrix[row];
@@ -287,3 +329,20 @@ void matrix_wakeup_prepare(void)
         nrf_gpio_cfg_sense_input(row_pin_array[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     }
 }
+
+static void keyboard_matrix_evt_handler(enum user_event event, void* arg)
+{
+    uint8_t arg2 = (uint32_t)arg;
+    switch (event) {
+    case USER_EVT_USB: // USB事件
+        keyboard_connected |= (arg2 == USB_WORKING);
+        break;
+    case USER_EVT_BLE_STATE_CHANGE: // 蓝牙状态事件
+        keyboard_connected |= (arg2 == BLE_STATE_CONNECTED);
+        break;
+    default:
+        break;
+    }
+}
+
+EVENT_HANDLER(keyboard_matrix_evt_handler);

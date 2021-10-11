@@ -2,7 +2,7 @@
 #include "app_timer.h"
 #include "config.h"
 
-#include "data_storage.h"
+// #include "data_storage.h"
 #include "keyboard_evt.h"
 #include "keyboard_led.h"
 #include "nrf.h"
@@ -13,48 +13,15 @@
 static void write_led_data(uint8_t data);
 static void a800_led_blink_led(bool toggle);
 
-// A800 LED驱动PIN脚配置
-#ifndef A800_LED_DATA
-#define A800_LED_DATA 5    // LED数据pin定义(74HC595 DS)
-#endif
-#ifndef A800_LED_CLK
-#define A800_LED_CLK 3     // LED时钟pin定义(74HC595 SHCP)
-#endif
-#ifndef A800_LED_ON
-#define A800_LED_ON 4      // LED使能pin定义(74HC595 STCP)
-#endif
-
 static uint8_t led_data = 0;
-// LED通道配置
-#define LED_CHANNEL_NUM 5
-#define CAP_CHANNEL 0
-#define NUM_CHANNEL 1
-#define G_CHANNEL 2
-#define R_CHANNEL 3
-#define B_CHANNEL 4
-#define CAP_MASK (1 << CAP_CHANNEL)
-#define NUM_MASK (1 << NUM_CHANNEL)
-#define R_MASK (1 << R_CHANNEL)
-#define G_MASK (1 << G_CHANNEL)
-#define B_MASK (1 << B_CHANNEL)
-// BLE, USB, CHARGING状态指示灯复用RGB指示灯
-#define BLE_CHANNEL B_CHANNEL
-#define USB_CHANNEL R_CHANNEL
-#define CHARGING_CHANNEL NUM_CHANNEL
-#define BLE_MASK (1 << BLE_CHANNEL)
-#define USB_MASK (1 << USB_CHANNEL)
-#define CHARGING_MASK (1 << CHARGING_CHANNEL)
 
 // LED指示灯闪烁控制
-#define A800_LED_BLINK_INTERVAL APP_TIMER_TICKS(100)    // 闪烁速度(ms)
 APP_TIMER_DEF(a800_led_blink_timer); // 闪烁定时器
 static bool blink_enable = false;    // 开启闪烁
 static uint8_t blink_mask = 0;       // 需要闪烁的灯对应位置1
 static uint8_t blink_stage = 0xff;   // 闪烁阶段控制. 对应位置1为亮灯阶段, 对应位置0为关灯阶段
 static uint32_t blink_mult = 0U;     // 通过倍频方式控制闪烁频率. 每5位为一个通道, 每个通道最大倍频取值0x1f
 static uint32_t blink_mult_counting = 0U;   // 倍频计数器
-#define MAKE_BLINK_MULT(CHANNEL, VAL) ((VAL & 0x1f) << (CHANNEL * LED_CHANNEL_NUM))
-#define GET_BLINK_MULT(CHANNEL, MULT) ((MULT >> (CHANNEL * LED_CHANNEL_NUM)) & 0x1f)
 
 static uint8_t ble_device_id;
 
@@ -105,7 +72,7 @@ static void a800_led_blink_timer_handler(void* context)
 {
     if (blink_enable)
     {
-    a800_led_blink_led(true);
+        a800_led_blink_led(true);
     }
     else
     {
@@ -293,7 +260,7 @@ void a800_led_all(bool state)
  * @brief 开启闪烁灯
  * 
  */
-static void a800_led_blink_on(uint8_t blink_mask_, uint32_t blink_mult_)
+void a800_led_blink_on(uint8_t blink_mask_, uint32_t blink_mult_)
 {
     if (blink_mask_ == 0) return;
 
@@ -326,7 +293,7 @@ static void a800_led_blink_on(uint8_t blink_mask_, uint32_t blink_mult_)
  * @brief 关闭闪烁灯
  * 
  */
-static void a800_led_blink_off(uint8_t blink_mask_)
+void a800_led_blink_off(uint8_t blink_mask_)
 {
     if (blink_mask_ == 0) return;
 
@@ -347,7 +314,7 @@ static void a800_led_blink_off(uint8_t blink_mask_)
     }
 }
 
-static void a800_led_set(bool state, uint8_t mask)
+void a800_led_set(bool state, uint8_t mask)
 {
     led_data = (state ? led_data | mask : led_data & ~mask);
     write_led_data(led_data);
@@ -488,9 +455,9 @@ static void a800_led_evt_handler(enum user_event event, void* arg)
         break;
     case USER_EVT_BLE_STATE_CHANGE: // 蓝牙状态事件
         if (arg2 == BLE_STATE_FAST_ADV) {
-            uint32_t mult = 1;
-            if (ble_device_id ==1) mult = 4;
-            if (ble_device_id ==2) mult = 8;
+            uint32_t mult = 5;
+            // if (ble_device_id ==1) mult = 4;
+            // if (ble_device_id ==2) mult = 8;
 
             a800_led_blink_on(BLE_MASK, MAKE_BLINK_MULT(BLE_CHANNEL, mult));
         } else {
