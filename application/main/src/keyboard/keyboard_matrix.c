@@ -56,7 +56,7 @@ static matrix_row_t matrix_debouncing[MATRIX_COLS];
 
 static matrix_row_t read_cols(void);
 static void select_row(uint8_t row);
-static void unselect_rows(void);
+static void unselect_rows(uint8_t row);
 
 #define READ_COL(pin) (nrf_gpio_pin_read(pin))
 
@@ -121,7 +121,7 @@ static void select_row(uint8_t row)
     nrf_gpio_pin_write((uint32_t)row_pin_array[row], 1);
 }
 
-static void unselect_rows(void)
+static void unselect_rows(uint8_t row)
 {
     for (uint_fast8_t i = 0; i < MATRIX_ROWS; i++) {
         nrf_gpio_pin_write((uint32_t)row_pin_array[i], 0);
@@ -170,7 +170,7 @@ uint8_t matrix_scan(void)
             // 扫描唤醒按键时只消抖1次
             debouncing = scan_for_wakeup ? 1 : DEBOUNCE_RELOAD;
         }
-        unselect_rows();
+        unselect_rows(i);
     }
 
     if (debouncing) {
