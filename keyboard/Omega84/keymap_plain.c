@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "keymap_common.h"
-#include "keyboard_fn.h"
+#include "fn_define.h"
 
 #define KC_____ KC_TRNS
 

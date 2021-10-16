@@ -21,7 +21,7 @@
 #define VERSION 00000000
 #endif
 
-#define APP_VERSION CONCAT_2(0x, VERSION)
+#define APP_VERSION VERSION
 
 const uint32_t keyboard_function_table =
 #ifdef BOOTMAGIC_ENABLE

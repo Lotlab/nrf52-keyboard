@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "keymap_common.h"
-#include "keyboard_fn.h"
+#include "fn_define.h"
 
 const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* 0: qwerty */
