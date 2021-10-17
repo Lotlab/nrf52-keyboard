@@ -1,6 +1,7 @@
 /ble_app_hids_keyboard.eww
 /hex
 _build
+_build_usb
 /release
 JLinkLog.txt
 JLinkSettings.ini

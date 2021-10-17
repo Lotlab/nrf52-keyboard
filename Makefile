@@ -1,8 +1,10 @@
 ROOT_DIR := .
 APP_SRC_DIR := $(ROOT_DIR)/src
+USB_SRC_DIR := $(ROOT_DIR)/usb
 
 TARGET_DIR = keyboard/$(TARGET)
 BUILD_DIR = $(TARGET_DIR)/_build
+USB_BUILD_DIR = $(TARGET_DIR)/_build_usb
 
 DIST_DIR := _build
 
@@ -11,6 +13,10 @@ default_action: all
 item_build : $(BUILD_DIR)/Makefile
 	@echo Build 
 	${MAKE} -C $(BUILD_DIR)
+
+usb_build : $(USB_BUILD_DIR)/Makefile
+	@echo Build 
+	${MAKE} -C $(USB_BUILD_DIR)
 
 item_setup : $(BUILD_DIR)/Makefile
 
@@ -21,8 +27,16 @@ $(BUILD_DIR)/Makefile : ${APP_SRC_DIR}/CMakeLists.txt item_check
 		    -G "Unix Makefiles" \
 			-DEXTERNAL_INC_DIR=$(abspath $(TARGET_DIR)) \
 			-DEXTERNAL_CMAKE_FILE=$(abspath $(TARGET_DIR)/rules.cmake) \
-		    -DTOOLCHAIN_PREFIX=$(TOOLCHAIN_PREFIX) \
 			$(abspath ${APP_SRC_DIR})
+
+$(USB_BUILD_DIR)/Makefile : ${USB_SRC_DIR}/CMakeLists.txt item_check
+	if [ ! -d $(USB_BUILD_DIR) ] ; then mkdir $(USB_BUILD_DIR) ; fi
+	cd $(USB_BUILD_DIR);  \
+		cmake \
+		    -G "Unix Makefiles" \
+			-DEXTERNAL_INC_DIR=$(abspath $(TARGET_DIR)) \
+			-DEXTERNAL_CMAKE_FILE=$(abspath $(TARGET_DIR)/rules.cmake) \
+			$(abspath ${USB_SRC_DIR})
 
 item_clean: item_check
 	rm -rf $(BUILD_DIR)
