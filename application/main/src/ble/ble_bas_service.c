@@ -64,14 +64,8 @@ void battery_service_init(void)
 static void battery_service_event_handler(enum user_event event, void* arg)
 {
     switch (event) {
-    case USER_EVT_INTERNAL:
-        switch ((uint32_t)arg) {
-        case INTERNAL_EVT_BATTERY_INFO_REFRESH:
-            battery_level_update(battery_info.percentage);
-            break;
-        default:
-            break;
-        }
+    case USER_EVT_BATTERY_INFO_REFRESH:
+        battery_level_update(battery_info.percentage);
         break;
     default:
         break;

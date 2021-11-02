@@ -25,12 +25,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "keyboard_evt.h"
 
 #define ADC_BUFFER_SIZE 6
-struct BatteryInfo battery_info;
+battery_info_t battery_info;
 
 uint16_t adc_buffer[ADC_BUFFER_SIZE];
 uint8_t adc_buffer_index;
 
-static void calculate_battery_persentage(struct BatteryInfo* info)
+static void calculate_battery_persentage(battery_info_t* info)
 {
     if (info->voltage >= 4100)
         info->percentage = 100;
@@ -58,7 +58,7 @@ static void adc_result_handler(nrf_saadc_value_t value)
         // V_in   = V_bat * 2.2 / 12.2
         battery_info.voltage = result * 1200 * 122 / 1024 / 22;
         calculate_battery_persentage(&battery_info);
-        trig_event_param(USER_EVT_INTERNAL, INTERNAL_EVT_BATTERY_INFO_REFRESH);
+        trig_event_param(USER_EVT_BATTERY_INFO_REFRESH, battery_info.percentage);
     }
 }
 
