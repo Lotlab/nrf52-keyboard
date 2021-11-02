@@ -58,7 +58,7 @@ static void adc_result_handler(nrf_saadc_value_t value)
         // V_in   = V_bat * 2.2 / 12.2
         battery_info.voltage = result * 1200 * 122 / 1024 / 22;
         calculate_battery_persentage(&battery_info);
-        trig_event_param(USER_EVT_INTERNAL, INTERNAL_EVT_BATTERY_INFO_REFRESH);
+        trig_event_param(USER_EVT_BATTERY_INFO_REFRESH, battery_info.percentage);
     }
 }
 
