@@ -25,6 +25,10 @@ ifndef NRF_SIGN_HEX_NAME
 	NRF_SIGN_HEX_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_sign.hex
 endif
 
+ifndef NRF_WITH_SD_HEX_NAME
+	NRF_WITH_SD_HEX_NAME := $(OUTPUT_DIRECTORY)/nrf52_kbd_with_sd.hex
+endif
+
 $(OUTPUT_DIRECTORY)/nrf52_kbd.out: \
 	LINKER_SCRIPT  := $(APP_PROJ_DIR)/$(LD_NAME)
 
@@ -363,12 +367,12 @@ pyocd_flash_softdevice:
 
 # Merge Package for download
 merge_setting: setting
-	@echo Merging program with signature to $(NRF_SIGN_HEX_NAME)/nrf52_kbd_sign.hex
+	@echo Merging program with signature to $(NRF_SIGN_HEX_NAME)
 	mergehex -m $(OUTPUT_DIRECTORY)/nrf52_settings.hex $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(NRF_SIGN_HEX_NAME)
 
 merge_softdevice: default
-	@echo Merging program and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/nrf52_kbd_with_sd.hex
-	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(OUTPUT_DIRECTORY)/nrf52_kbd_with_sd.hex
+	@echo Merging program and SoftDevice $(SOFTDEVICE_NAME) to $(NRF_WITH_SD_HEX_NAME)
+	mergehex -m $(SOFTDEVICE_PATH) $(OUTPUT_DIRECTORY)/nrf52_kbd.hex -o $(NRF_WITH_SD_HEX_NAME)
 
 merge_all: setting
 	@echo Merging program, signature and SoftDevice $(SOFTDEVICE_NAME) to $(OUTPUT_DIRECTORY)/nrf52_kbd_sign_with_sd.hex

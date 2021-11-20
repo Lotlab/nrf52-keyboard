@@ -76,8 +76,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 启用多设备切换
 // #define MULTI_DEVICE_SWITCH
 
-#define BUTTONLESS_DFU /* 启用免按钮DFU */
-
 // 启用看门狗
 #define ENABLE_WATCHDOG
 
@@ -103,10 +101,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define LED_POSITIVE // LED上拉驱动
 
-#define FDS_VIRTUAL_PAGES 2 // 缩减FDS的页面数，防止出现问题
-
 #define NRF_BL_ERASE_PIN UART_RXD
 #define NRF_BL_DFU_ENTER_METHOD_PINRESET 1
+
+#if defined(HARDWARE_REV_C) || defined(HARDWARE_REV_E) || defined(HARDWARE_REV_F)
+#define BUTTONLESS_DFU /* 启用免按钮DFU */
+#define FDS_VIRTUAL_PAGES 2 // 缩减FDS的页面数，防止出现问题
+#else
+#define FDS_VIRTUAL_PAGES 4 // 缩减FDS的页面数，防止出现问题
+#endif
 
 #ifdef HARDWARE_REV_C
 #include "config.rev_c.h"
