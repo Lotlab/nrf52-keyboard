@@ -49,7 +49,6 @@ jobs:
     - name: Upload
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
         files: |
           keyboard/_build/*.zip
           keyboard/_build/*.hex
