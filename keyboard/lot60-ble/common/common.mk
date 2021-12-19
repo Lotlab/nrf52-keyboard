@@ -52,6 +52,7 @@ ifeq (REV_G,$(strip $(HARDWARE_VERSION)))
 	# 启用RESET PIN
 	CONFIG_GPIO_AS_PINRESET = yes
 	ONBOARD_CMSIS_DAP = yes
+	MOUSEKEY_ENABLE = yes # 启用鼠标键功能
 else
 ifeq (REV_G_ALT,$(strip $(HARDWARE_VERSION)))
 	OPT_DEFS += -DHARDWARE_REV_G
@@ -59,6 +60,7 @@ ifeq (REV_G_ALT,$(strip $(HARDWARE_VERSION)))
 	# 启用RESET PIN
 	CONFIG_GPIO_AS_PINRESET = yes
 	ONBOARD_CMSIS_DAP = yes
+	MOUSEKEY_ENABLE = yes # 启用鼠标键功能
 
 	NRF_CHIP = nrf52832
 else
