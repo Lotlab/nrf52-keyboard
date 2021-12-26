@@ -62,6 +62,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KEYBOARD_SCAN_INTERVAL 1 // 键盘最小时间单位TICK (ms)
 #define KEYBOARD_FAST_SCAN_INTERVAL 10 // 通常模式下，多久扫描一次键盘 (ms)
 #define KEYBOARD_SLOW_SCAN_INTERVAL 100 // 慢速模式下，多久扫描一次键盘 (ms)
+#define DCDC_ENABLED // 启用DC-DC以降低功耗
 
 // 功率相关
 // #define DYNAMIC_TX_POWER // 自动发射功率调整
