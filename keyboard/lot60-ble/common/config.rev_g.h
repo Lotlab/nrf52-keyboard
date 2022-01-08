@@ -33,3 +33,6 @@ static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 2
 #define LED_DFU_START 23
 #define LED_DFU_FINISH 24
 // #define LED_DFU_POSITIVE
+
+// 不存在Bootloader，设置Bootloader的地址到更高的区域以防止出现问题
+#define CUSTOM_BOOTLOADER_ADDR 0x2F000

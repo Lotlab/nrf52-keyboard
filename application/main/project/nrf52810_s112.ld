@@ -7,10 +7,17 @@ MEMORY
 {
   FLASH (rx) : ORIGIN = 0x19000, LENGTH = 0x17000
   RAM (rwx) :  ORIGIN = 0x20001b48, LENGTH = 0x44b8
+  MBR_BOOTLOADER_ADDR (r): ORIGIN = 0xFF8, LENGTH = 0x4
 }
 
 SECTIONS
 {
+  .mbr_bootloader_addr :
+  {
+    PROVIDE(__start_mbr_bootloader_addr = .);
+    KEEP(*(SORT(.mbr_bootloader_addr*)))
+    PROVIDE(__mbr_bootloader_addr = .);
+  } > MBR_BOOTLOADER_ADDR
 }
 
 /* Module init section */

@@ -109,6 +109,11 @@
 #define SCHED_QUEUE_SIZE 20 /**< Maximum number of events in the scheduler queue. */
 #endif
 
+// 自定义Bootloader地址的设置
+#ifdef CUSTOM_BOOTLOADER_ADDR
+uint32_t bootloader_addr __attribute__((section(".mbr_bootloader_addr"))) __attribute__((used)) = CUSTOM_BOOTLOADER_ADDR;
+#endif
+
 static void set_stage(enum keyboard_state stage)
 {
     trig_event_param(USER_EVT_STAGE, stage);
