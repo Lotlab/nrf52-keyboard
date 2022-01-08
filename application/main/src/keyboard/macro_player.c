@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app_timer.h"
 #include "keyboard_host_driver.h"
 #include "queue.h"
+#include "mousekey.h"
 
 #define MACRO_PLAY_INTERVAL APP_TIMER_TICKS(1)
 APP_TIMER_DEF(m_keyboard_macro_timer);
@@ -122,6 +123,11 @@ static void action_macro_replay(void* p_context)
         if (IS_MOD(*current_macro)) {
             add_weak_mods(MOD_BIT(*current_macro));
             send_keyboard_report();
+#ifdef MOUSEKEY_ENABLE
+        } else if (IS_MOUSEKEY(*current_macro)) {
+            mousekey_on(*current_macro);
+            mousekey_send();
+#endif
         } else {
             register_code(*current_macro);
         }
@@ -132,6 +138,11 @@ static void action_macro_replay(void* p_context)
         if (IS_MOD(*current_macro)) {
             del_weak_mods(MOD_BIT(*current_macro));
             send_keyboard_report();
+#ifdef MOUSEKEY_ENABLE
+        } else if (IS_MOUSEKEY(*current_macro)) {
+            mousekey_off(*current_macro);
+            mousekey_send();
+#endif
         } else {
             unregister_code(*current_macro);
         }
