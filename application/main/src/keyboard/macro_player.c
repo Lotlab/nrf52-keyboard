@@ -26,8 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "action_util.h"
 #include "app_timer.h"
 #include "keyboard_host_driver.h"
-#include "queue.h"
 #include "mousekey.h"
+#include "queue.h"
 
 #define MACRO_PLAY_INTERVAL APP_TIMER_TICKS(1)
 APP_TIMER_DEF(m_keyboard_macro_timer);
@@ -85,16 +85,19 @@ void action_macro_play(const macro_t* macro_p)
 static void action_macro_replay(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
+    const uint8_t timer_interval = 1;
 
     // 等待WAIT命令的毫秒数
-    if (macro_delay >= 1) {
-        macro_delay -= 1;
+    if (macro_delay >= timer_interval) {
+        macro_delay -= timer_interval;
         return;
     }
+
     // 等待设置的两个宏之间的间隔秒数
-    if (macro_interval >= 1) {
-        macro_interval -= 1;
-        return;
+    if (macro_interval >= timer_interval) {
+        macro_interval -= timer_interval;
+    } else {
+        macro_interval = 0;
     }
 
     // 重载下一个等待播放的宏
@@ -112,11 +115,47 @@ static void action_macro_replay(void* p_context)
         }
     }
 
+    // 首先处理不需要等待按键间隔命令
+    switch (*current_macro) {
+    case WAIT:
+        macro_delay = *++current_macro;
+        current_macro++;
+        return;
+    case INTERVAL:
+        macro_interval_reload = *++current_macro;
+        current_macro++;
+        return;
+    case MOD_STORE:
+        mod_storage = get_mods();
+        current_macro++;
+        return;
+    case REPEAT:
+        // 重复宏：直接重放这个宏
+        current_macro = *macro_queue_peek();
+        macro_repeaet = true;
+        return;
+    case END:
+        // 出队，重置当前宏的设置
+        macro_queue_pop();
+        current_macro = 0;
+        macro_repeaet = false;
+        macro_interval_reload = DEFAULT_MACRO_INTERVAL;
+        macro_interval = macro_interval_reload;
+        mod_storage = 0;
+        return;
+    default:
+        break;
+    }
+
+    // 等待按键间隔
+    if (macro_interval > 0)
+        return;
+
     // 当前发送队列不为空，等待空
     if (!keys_queue_empty())
         return;
 
-    // 播放宏
+    // 处理宏按键
     switch (*current_macro) {
     case KEY_DOWN:
         current_macro++;
@@ -148,18 +187,6 @@ static void action_macro_replay(void* p_context)
         }
         current_macro++;
         break;
-    case WAIT:
-        macro_delay = *++current_macro;
-        current_macro++;
-        break;
-    case INTERVAL:
-        macro_interval_reload = *++current_macro;
-        current_macro++;
-        break;
-    case MOD_STORE:
-        mod_storage = get_mods();
-        current_macro++;
-        break;
     case MOD_RESTORE:
         set_mods(mod_storage);
         send_keyboard_report();
@@ -177,19 +204,6 @@ static void action_macro_replay(void* p_context)
     case 0x84 ... 0xF3:
         unregister_code(*current_macro & 0x7F);
         current_macro++;
-        break;
-    case REPEAT:
-        // 重复宏：直接重放这个宏
-        current_macro = *macro_queue_peek();
-        macro_repeaet = true;
-        break;
-    case END:
-        // 出队，重置当前宏的设置
-        macro_queue_pop();
-        current_macro = 0;
-        macro_repeaet = false;
-        macro_interval_reload = DEFAULT_MACRO_INTERVAL;
-        mod_storage = 0;
         break;
     default:
         return;
