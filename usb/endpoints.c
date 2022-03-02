@@ -96,7 +96,7 @@ void EP0_OUT()
         break;
     case SETUP_STATE_OUT:
         // 重置端点状态，等待下次传输
-        EP0_RESET();
+        UEP0_CTRL ^= bUEP_R_TOG;                                     //同步标志位翻转
         usb_state.setup_state = SETUP_IDLE;
         break;
     case SETUP_DATA_OUT:
@@ -104,7 +104,7 @@ void EP0_OUT()
         break;
     default:
         // ERROR
-        EP0_RESET();
+        UEP0_CTRL ^= bUEP_R_TOG;                                     //同步标志位翻转
         usb_state.setup_state = SETUP_IDLE;
         break;
     }
