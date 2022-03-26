@@ -1,6 +1,6 @@
 # Overview
 
-本程序为混合授权。
+本程序为混合授权。测试
 
 程序内的所有文件在 GNU Public License V3 or Later 许可下授权，除此之外，
 还有部分文件额外附加 Nordic License，请参见以下信息：
