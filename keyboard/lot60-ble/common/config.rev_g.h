@@ -17,7 +17,7 @@
 #define BATTERY_ADC_PIN NRF_SAADC_INPUT_AIN0
 
 static const uint8_t row_pin_array[MATRIX_ROWS] = { 25, 28, 29, 30, 26 };
-static const uint8_t column_pin_array[MATRIX_COLS] = { 16, 15, 14, 13, 12, 11, 27, 3, 4, 5, 6, 7, 8, 9 };
+static const uint8_t column_pin_array[MATRIX_COLS] = { 27, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16 };
 
 #define ROW_IN // 二极管方向是从COL->ROW
 
