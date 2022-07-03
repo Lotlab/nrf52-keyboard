@@ -2,10 +2,12 @@
 
 移植自QMK的WS2812驱动，修改适配NRF52芯片
 
+### 源文件
+- rgb.h
+
 ### 启用配置
 ```
 RGBLIGHT_ENABLE = yes
-
 ```
 
 ### Config 配置项目
@@ -15,5 +17,4 @@ RGBLIGHT_ENABLE = yes
 #define RGBLIGHT_ANIMATIONS  //开启RGB动态灯效
 #define RGB_PWR_PIN 12           //POWER控制针脚-采用P MOS
 #define RGB_PWR_PIN_REVERSE 12   //POWER控制针脚-采用N MOS
-
 ```
