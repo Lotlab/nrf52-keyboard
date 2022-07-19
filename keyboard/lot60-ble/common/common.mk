@@ -32,7 +32,9 @@ endif
 # 控制各个硬件版本的差异
 ifeq (REV_C,$(strip $(HARDWARE_VERSION)))
 	OPT_DEFS += -DHARDWARE_REV_C
+	ONBOARD_CMSIS_DAP = yes
 	SDCC_CFLAGS += -DHARDWARE_REV_C
+	MOUSEKEY_ENABLE = yes # 启用鼠标键功能
 else 
 ifeq (REV_E,$(strip $(HARDWARE_VERSION)))
 	OPT_DEFS += -DHARDWARE_REV_E

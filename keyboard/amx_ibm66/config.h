@@ -23,13 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* USB和蓝牙的显示参数 */
 // USB的VID和PID，自行修改
 #define VENDOR_ID 0x1209 /* USB VID */
-#define PRODUCT_ID 0x1228 /* USB PID */
+#define PRODUCT_ID 0x1229 /* USB PID */
 // 配置协议使用的VID和PID，自行修改。ID组合不得重复。
 #define CONF_VENDOR_ID 0x3613 /* 配置协议使用的VendorID */
-#define CONF_PRODUCT_ID 0x1228 /* 配置协议使用的ProductID */
+#define CONF_PRODUCT_ID 0x1229 /* 配置协议使用的ProductID */
 #define DEVICE_VER 0x0000 /* 硬件版本 */
 #define MANUFACTURER "AMX123" /* 硬件制造商，用于USB和蓝牙显示 */
-#define PRODUCT "2HKB60" /* 硬件名称，用于USB和蓝牙显示 */
+#define PRODUCT "IBM66" /* 硬件名称，用于USB和蓝牙显示 */
 #define MACADDR_SEPRATOR '_' /* 蓝牙名称后地址的分隔符。若不设置则不显示蓝牙名称后面的地址 */
 
 /* USB HID report parameter */
@@ -81,26 +81,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // LED 配置
 // #define LED_NUM 22
-#define LED_CAPS 5
+#define LED_CAPS 4
 // #define LED_SCLK 23
-#define LED_STATUS_BLE 7
-#define LED_STATUS_USB 6
+#define LED_RGB_R 5
+#define LED_RGB_G 6
+#define LED_RGB_B 7
 #define LED_POSITIVE // LED上拉驱动
 // #define LED_NO_DEINIT // 不要deinit端口，可以避免部分IO灯光无法关闭的问题
 
 // Bootloader 指示灯
-// #define LED_DFU_INIT 5
-// #define LED_DFU_START 6
-// #define LED_DFU_FINISH 7
-#define LED_DFU_POSITIVE // LED上拉驱动
+#define RGB_DI_PIN 10   //WS2812 RGB信号输入
+#define RGBLED_NUM 4   //WS2812灯数量
+#define RGBLIGHT_ANIMATIONS  //开启RGB动态灯效
 
 // 多用途 Bootloader 按钮
 #define NRF_BL_DFU_MULTI_ROLE_BTN 3 
 
 // USB UART 传输配置
 #define HAS_USB // 启用与CH554的通信支持
-#define UART_RXD 9 // UART_RX口IO
-#define UART_TXD 8 // UART_TX口IO
+#define UART_RXD 8 // UART_RX口IO
+#define UART_TXD 9 // UART_TX口IO
 // #define UART_DET 19 // UART 检测引脚，若此脚被拉低，则说明USB正在工作。若不配置则使用RX口作为检测引脚
 #define UART_BAUDRATE NRF_UART_BAUDRATE_115200 // 通信波特率，请不要修改
 
@@ -114,8 +114,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 按键阵列配置
 #define MATRIX_ROWS 5 /* 硬件阵列行数 */
 #define MATRIX_COLS 15 /* 硬件阵列列数 */
-static const uint8_t row_pin_array[MATRIX_ROWS] = { 20, 19, 18, 13, 12 };
-static const uint8_t column_pin_array[MATRIX_COLS] = { 17, 21, 22, 23, 24, 25, 28, 29, 30, 26, 27, 4, 10, 14, 15 };
+static const uint8_t row_pin_array[MATRIX_ROWS] = { 27, 26, 30, 29, 28 };
+static const uint8_t column_pin_array[MATRIX_COLS] = { 21, 22, 23, 24, 25, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11 };
 #define ROW_IN // 键盘阵列的二极管方向是从COL->ROW
 
 /* define if matrix has ghost */
