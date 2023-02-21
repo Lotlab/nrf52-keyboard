@@ -134,7 +134,7 @@ static void uart_send_status()
     if (!IS_CHARGING) // 是否充满
         data |= 0x02;
 #endif
-    if (usb_state.is_ready && !usb_state.is_sleep) // 是否连接主机
+    if (usb_state.is_ready || usb_state.remote_wake) // 是否连接主机
         data |= 0x04;
     if (usb_state.protocol)
         data |= 0x08;

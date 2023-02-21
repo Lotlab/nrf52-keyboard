@@ -60,18 +60,6 @@ static INTERRUPT_USING(DeviceInterrupt, INT_NO_USB, 1) //USB中断服务程序,�
 }
 
 /**
- * @brief 按键发送事件
- *
- */
-static void UsbOnKeySend()
-{
-    if (usb_state.is_sleep && usb_state.remote_wake) {
-        usb_state.is_sleep = false;
-        CH554USBDevWakeup();
-    }
-}
-
-/**
  * @brief 上传键盘通常按键数据包
  *
  * @param packet 数据包
@@ -81,12 +69,14 @@ void KeyboardGenericUpload(uint8_t* packet, uint8_t len)
 {
     if (len != 8)
         return;
-    UsbOnKeySend();
-
-    usb_state.is_busy = true;
-    memcpy(&Ep1Buffer[64], packet, len);
-    UEP1_T_LEN = len;
-    UEP1_CTRL = UEP1_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
+    if ((USB_MIS_ST & bUMS_SUSPEND) && usb_state.remote_wake) {
+        CH554USBDevWakeup();
+    } else {
+        usb_state.is_busy = true;
+        memcpy(&Ep1Buffer[64], packet, len);
+        UEP1_T_LEN = len;
+        UEP1_CTRL = UEP1_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
+    }
 }
 
 /**
@@ -97,12 +87,14 @@ void KeyboardGenericUpload(uint8_t* packet, uint8_t len)
  */
 void KeyboardExtraUpload(uint8_t* packet, uint8_t len)
 {
-    UsbOnKeySend();
-
-    usb_state.is_busy = true;
-    memcpy(Ep2Buffer, packet, len);
-    UEP2_T_LEN = len;
-    UEP2_CTRL = UEP2_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
+    if ((USB_MIS_ST & bUMS_SUSPEND) && usb_state.remote_wake) {
+        CH554USBDevWakeup();
+    } else {
+        usb_state.is_busy = true;
+        memcpy(Ep2Buffer, packet, len);
+        UEP2_T_LEN = len;
+        UEP2_CTRL = UEP2_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
+    }
 }
 
 /**
