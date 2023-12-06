@@ -49,10 +49,6 @@ static uint8_t debouncing = DEBOUNCE_RELOAD;
 static matrix_row_t matrix[MATRIX_ROWS];
 static matrix_row_t matrix_debouncing[MATRIX_ROWS];
 
-static matrix_row_t read_cols(void);
-static void select_row(uint8_t row);
-static void unselect_rows(uint8_t row);
-
 #ifdef ROW_IN
 #define READ_COL(pin) (!nrf_gpio_pin_read(pin))
 #else
@@ -63,7 +59,7 @@ static void unselect_rows(uint8_t row);
  * @brief 初始化键盘阵列
  * 
  */
-void matrix_init(void)
+__attribute__((weak)) void matrix_init(void)
 {
     for (uint_fast8_t i = MATRIX_COLS; i--;) {
 #ifdef ROW_IN
@@ -74,7 +70,7 @@ void matrix_init(void)
     }
 }
 /** read all rows */
-static matrix_row_t read_cols(void)
+__attribute__((weak)) matrix_row_t read_cols(void)
 {
     matrix_row_t result = 0;
 
@@ -86,7 +82,7 @@ static matrix_row_t read_cols(void)
     return result;
 }
 
-static void select_row(uint8_t row)
+__attribute__((weak)) void select_row(uint8_t row)
 {
     if ((uint32_t)row_pin_array[row] > 31 )
         return;
@@ -108,7 +104,7 @@ nrf_gpio_cfg(
 #endif
 }
 
-static void unselect_rows(uint8_t row)
+__attribute__((weak)) void unselect_rows(uint8_t row)
 {
     if ((uint32_t)row_pin_array[row] > 31 )
         return;
@@ -133,7 +129,7 @@ static inline void delay_us(void)
     }
 }
 
-uint8_t matrix_scan(void)
+__attribute__((weak)) uint8_t matrix_scan(void)
 {
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         select_row(i);
@@ -165,7 +161,7 @@ uint8_t matrix_scan(void)
     return 1;
 }
 
-bool matrix_is_modified(void)
+__attribute__((weak)) bool matrix_is_modified(void)
 {
     if (debouncing)
         return false;
@@ -245,7 +241,7 @@ uint8_t matrix_key_count(void)
  * @brief 禁用所有阵列针脚
  * 
  */
-void matrix_deinit(void)
+__attribute__((weak)) void matrix_deinit(void)
 {
     for (uint8_t i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_cfg_default(column_pin_array[i]);
@@ -259,7 +255,7 @@ void matrix_deinit(void)
  * @brief 阵列准备睡眠
  * 
  */
-void matrix_wakeup_prepare(void)
+__attribute__((weak)) void matrix_wakeup_prepare(void)
 {
 // 这里监听所有按键作为唤醒按键，所以真正的唤醒判断应该在main的初始化过程中
 #ifdef ROW_IN
