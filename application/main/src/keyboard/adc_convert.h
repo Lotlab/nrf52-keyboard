@@ -39,3 +39,4 @@ struct adc_channel_config {
 
 void adc_timer_start(void);
 void adc_init(void);
+nrf_saadc_value_t adc_read_sync(uint8_t channel_index);
