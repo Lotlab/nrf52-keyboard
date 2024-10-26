@@ -111,13 +111,25 @@ static void uart_data_parser(void)
         uint8_t index = recv_buff[1];
         uint8_t kplen = (command & 0x3F);
         if (index == 0) {
+            if (USB_MIS_ST & bUMS_SUSPEND) {
+                usb_state.is_busy = true;
+                CH554USBDevWakeup();
+                usb_state.is_busy = false;
+            } else if(usb_state.is_ready) {
             // 通常键盘数据包
             KeyboardGenericUpload(&recv_buff[2], kplen);
+            }
             last_success = true;
         } else {
             // 附加数据包
             // 发过来的包的id和reportID一致，不用处理
+            if (USB_MIS_ST & bUMS_SUSPEND) {
+                usb_state.is_busy = true;
+                CH554USBDevWakeup();
+                usb_state.is_busy = false;
+            } else if(usb_state.is_ready) {
             KeyboardExtraUpload(&recv_buff[1], kplen + 1);
+            }
             last_success = true;
         }
     }
@@ -133,8 +145,11 @@ static void uart_send_status()
 #ifdef PIN_CHARGING
     if (!IS_CHARGING) // 是否充满
         data |= 0x02;
+#else
+    if ((USB_MIS_ST & bUMS_SUSPEND) && RESET_KEEP) //曾经枚举成功，当前连接中断-->已连接但进入休眠
+        data |= 0x02; 
 #endif
-    if (usb_state.is_ready || usb_state.remote_wake) // 是否连接主机
+    if (RESET_KEEP) // 是否连接主机
         data |= 0x04;
     if (usb_state.protocol)
         data |= 0x08;
