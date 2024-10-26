@@ -163,3 +163,19 @@ void adc_init()
     err_code = app_timer_create(&adc_timer, APP_TIMER_MODE_REPEATED, adc_convert);
     APP_ERROR_CHECK(err_code);
 }
+
+/**
+ * @brief 阻塞式读取 ADC 值
+ * 
+ * @param channel_index
+ */
+nrf_saadc_value_t adc_read_sync(uint8_t channel_index)
+{
+    nrf_saadc_value_t result_sync = 0;
+    ret_code_t err_code;
+
+    err_code = nrfx_saadc_sample_convert(channel_index, &result_sync);
+    APP_ERROR_CHECK(err_code);
+
+    return result_sync;
+}
