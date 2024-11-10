@@ -458,8 +458,8 @@ uint8_t const report_desc_HID1[]=
 
 uint8_t const report_desc_HID2[]=
 {
-    0x06, 0x00, 0xff,    // Usage Page (Vendor Defined)
-    0x09, 0x01,    // Usage Page (Vendor Defined)
+    0x06, 0xea, 0xff,    // Usage Page (Vendor Defined)
+    0x09, 0x72,    // Usage Page (Vendor Defined)
     0xa1, 0x01,    // COLLECTION (Application)
     0x85, 0x3f,    // Report ID (Vendor Defined)
     0x95, MAX_PACKET_SIZE-1,    // Report Count
