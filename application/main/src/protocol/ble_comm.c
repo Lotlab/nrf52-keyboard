@@ -51,6 +51,7 @@ static struct host_driver ble_driver = {
     .queue_empty = &hid_queue_empty,
     .send_packet = &ble_send_packet,
     .driver_working = &ble_host_working,
+    .mtu = 20,
 };
 
 // 以一个较低优先级注册蓝牙通信

@@ -97,6 +97,7 @@ static struct host_driver custom_driver = {
     .queue_empty = &queue_empty, // 发送队列是否为空
     .send_packet = &custom_driver_send, // 发送数据包
     .driver_working = &custom_driver_working, // 当前驱动是否工作
+    .mtu = 62, // 当前驱动支持的最大传输长度，用于配置工具的通信
 };
 
 // 以优先级3注册此驱动。

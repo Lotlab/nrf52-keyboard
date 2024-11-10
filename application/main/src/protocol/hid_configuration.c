@@ -5,13 +5,14 @@
 #include "nordic_common.h"
 #include "usb_comm.h"
 #include "util.h"
+#include "ble_gap.h"
 
 #include "action.h"
 #include "data_storage.h"
 #include "keymap.h"
 
-#define HID_PROTOCOL 4
-#define MAX_HID_PACKET_SIZE 56
+#define HID_PROTOCOL 5
+#define MAX_HID_PACKET_SIZE current_packet_size
 
 #ifndef BUILD_TIME
 #define BUILD_TIME 0
@@ -78,6 +79,9 @@ static struct hid_config_section* hid_config_get(uint8_t id)
 }
 #endif
 
+static const struct host_driver* last_driver = NULL;
+static uint8_t current_packet_size = 56;
+
 /**
  * @brief 响应HID成功命令
  * 
@@ -86,11 +90,14 @@ static struct hid_config_section* hid_config_get(uint8_t id)
  */
 void hid_response_success(uint8_t len, uint8_t* data)
 {
+    if (last_driver == NULL || !last_driver->driver_working())
+        return;
+
     uint8_t buff[63];
     buff[0] = 0x00;
     buff[1] = len;
     memcpy(&buff[2], data, len);
-    uart_send_conf(len + 2, buff);
+    last_driver->send_packet(PACKET_CONF, len + 2, buff);
 }
 
 /**
@@ -100,7 +107,10 @@ void hid_response_success(uint8_t len, uint8_t* data)
  */
 void hid_response_generic(enum hid_response response)
 {
-    uart_send_conf(1, &response);
+    if (last_driver == NULL || !last_driver->driver_working())
+        return;
+
+    last_driver->send_packet(PACKET_CONF, 1, &response);
 }
 
 /**
@@ -119,6 +129,24 @@ static void send_information()
         UINT32_SEQ(keyboard_function_table), // FUNCTION_TABLE
     };
     hid_response_success(sizeof(info), (uint8_t*)info);
+}
+
+static uint8_t get_trunk_size(uint8_t mtu)
+{
+    return (mtu - 3) / 4 * 4;
+}
+
+static void send_information_sub_1()
+{
+    uint8_t info[8] = { 0 };
+
+    ble_gap_addr_t ble_addr;
+    sd_ble_gap_addr_get(&ble_addr);
+    memcpy(info, ble_addr.addr, sizeof(ble_addr));
+
+    info[6] = current_packet_size;
+    info[7] = 0;
+    hid_response_success(sizeof(info), info);
 }
 
 /**
@@ -397,15 +425,30 @@ static void reset_data(uint8_t type)
  * @param len 额外数据长度
  * @param data 额外数据
  */
-void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data)
+void hid_on_recv(const struct host_driver* driver, uint8_t command, uint8_t len, uint8_t* data)
 {
+    last_driver = driver;
+    current_packet_size = get_trunk_size(driver->mtu);
+
     switch (command) {
-    case HID_CMD_GET_INFORMATION:
-        if (len != 0)
-            hid_response_generic(HID_RESP_PARAMETER_ERROR);
-        else
+    case HID_CMD_GET_INFORMATION: {
+        uint8_t type = 0;
+        if (len == 1)
+            type = data[0];
+
+        switch (type) {
+        case 0:
             send_information();
+            break;
+        case 1:
+            send_information_sub_1();
+            break;
+        default:
+            hid_response_generic(HID_RESP_PARAMETER_ERROR);
+            break;
+        }
         break;
+    }
     case HID_CMD_GET_SINGLE_KEY:
         if (len != 3)
             hid_response_generic(HID_RESP_PARAMETER_ERROR);

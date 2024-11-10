@@ -60,6 +60,7 @@ struct usb_status {
     enum uart_usb_state state; // 当前 UART 所属状态
 };
 
+static struct host_driver usb_driver;
 static struct usb_status status;
 
 MIXED_QUEUE(uint8_t, uart_queue, QUEUE_SIZE);
@@ -191,7 +192,7 @@ static void uart_on_recv()
                 uint8_t sum = checksum(recv_buf, recv_len - 1);
                 if (sum == recv_buf[recv_len - 1]) {
                     // U_CMD H_CMD H_LEN H_DAT... U_SUM
-                    hid_on_recv(recv_buf[1], recv_len - 4, &recv_buf[3]);
+                    hid_on_recv(&usb_driver, recv_buf[1], recv_len - 4, &recv_buf[3]);
                 } else {
                     hid_response_generic(HID_RESP_UART_CHECKSUM_ERROR);
                 }
@@ -311,6 +312,12 @@ bool usb_working(void)
  */
 void usb_send(uint8_t index, uint8_t len, uint8_t* pattern)
 {
+    if (index == PACKET_CONF)
+    {
+        uart_send_conf(len, pattern);
+        return;
+    }
+
     if (len > 61)
         return;
 
@@ -422,6 +429,7 @@ static struct host_driver usb_driver = {
     .queue_empty = &uart_queue_empty,
     .send_packet = &usb_send,
     .driver_working = &usb_working,
+    .mtu = 62,
 };
 
 // 以一个较高优先级注册USB驱动

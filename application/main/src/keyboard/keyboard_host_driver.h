@@ -32,6 +32,7 @@ enum packet_type {
     PACKET_MOUSE = REPORT_ID_MOUSE,
     PACKET_SYSTEM = REPORT_ID_SYSTEM,
     PACKET_CONSUMER = REPORT_ID_CONSUMER,
+    PACKET_CONF = 0x3F,
     PACKET_NKRO = 0x80,
 };
 
@@ -60,6 +61,11 @@ struct host_driver {
      * 
      */
     bool (*driver_working)(void);
+    /**
+     * @brief 最大传输长度（不包括packet_type）
+     * 
+     */
+    uint8_t mtu;
 };
 
 #include "nrf_section_iter.h"

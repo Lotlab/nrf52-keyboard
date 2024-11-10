@@ -1,6 +1,7 @@
 #pragma once
 #include "data_storage.h"
 #include "nrf_section.h"
+#include "keyboard_host_driver.h"
 #include <stdint.h>
 
 enum hid_command {
@@ -59,7 +60,7 @@ enum hid_response {
     HID_RESP_UART_CHECKSUM_ERROR,
 };
 
-void hid_on_recv(uint8_t command, uint8_t len, uint8_t* data);
+void hid_on_recv(const struct host_driver* driver, uint8_t command, uint8_t len, uint8_t* data);
 void hid_response_success(uint8_t len, uint8_t* data);
 void hid_response_generic(enum hid_response response);
 
