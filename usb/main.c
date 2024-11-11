@@ -45,11 +45,14 @@ static void CH554SoftReset()
 /** \brief CH554设备模式唤醒主机，发送K信号
  *
  */
-static void CH554USBDevWakeup()
+void CH554USBDevWakeup()
 {
+    if (usb_state.is_sleep && usb_state.remote_wake) {
+        usb_state.is_sleep = false;
     UDEV_CTRL |= bUD_LOW_SPEED;
     DelayMs(2);
     UDEV_CTRL &= ~bUD_LOW_SPEED;
+    }
 }
 
 /** \brief CH559USB中断处理函数
@@ -57,18 +60,6 @@ static void CH554USBDevWakeup()
 static INTERRUPT_USING(DeviceInterrupt, INT_NO_USB, 1) //USB中断服务程序,使用寄存器组1
 {
     UsbIsr();
-}
-
-/**
- * @brief 按键发送事件
- *
- */
-static void UsbOnKeySend()
-{
-    if (usb_state.is_sleep && usb_state.remote_wake) {
-        usb_state.is_sleep = false;
-        CH554USBDevWakeup();
-    }
 }
 
 /**
@@ -81,12 +72,10 @@ void KeyboardGenericUpload(uint8_t* packet, uint8_t len)
 {
     if (len != 8)
         return;
-    UsbOnKeySend();
-
-    usb_state.is_busy = true;
-    memcpy(&Ep1Buffer[64], packet, len);
-    UEP1_T_LEN = len;
-    UEP1_CTRL = UEP1_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
+        usb_state.is_busy = true;
+        memcpy(&Ep1Buffer[64], packet, len);
+        UEP1_T_LEN = len;
+        UEP1_CTRL = UEP1_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
 }
 
 /**
@@ -97,12 +86,10 @@ void KeyboardGenericUpload(uint8_t* packet, uint8_t len)
  */
 void KeyboardExtraUpload(uint8_t* packet, uint8_t len)
 {
-    UsbOnKeySend();
-
-    usb_state.is_busy = true;
-    memcpy(Ep2Buffer, packet, len);
-    UEP2_T_LEN = len;
-    UEP2_CTRL = UEP2_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
+        usb_state.is_busy = true;
+        memcpy(Ep2Buffer, packet, len);
+        UEP2_T_LEN = len;
+        UEP2_CTRL = UEP2_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK;
 }
 
 /**
@@ -233,14 +220,11 @@ static void main()
     IE_TKEY = 1; // 运行Timer
 
     USBDeviceInit(); //USB设备模式初始化
-    DelayMs(10);
     EA = 1; //允许单片机中断
-    DelayMs(10);
     EnableWatchDog();
 #ifdef ONBOARD_CMSIS_DAP
     Dap_Init();
 #endif
-    DelayMs(10);
     UEP1_T_LEN = 0; //预使用发送长度一定要清空
     UEP2_T_LEN = 0; //预使用发送长度一定要清空
     UEP3_T_LEN = 0;

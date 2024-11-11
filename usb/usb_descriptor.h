@@ -45,7 +45,7 @@ enum StringDescriptor {
 uint8_t const DeviceDescriptor[] = {
     sizeof(DeviceDescriptor),               // Length of this descriptor
     0x01,                                   // Type code of this descriptor
-    0x10, 0x01,                             // Release of USB spec
+    0x00, 0x02,                             // Release of USB spec
     0x00,                                   // Device's base class code
     0x00,                                   // Device's sub class code
     0x00,                                   // Device's protocol type code
@@ -65,7 +65,7 @@ uint8_t const DeviceDescriptor[] = {
 #else
 #define USB_NUM_INTERFACES                  0x03
 #endif
-#define USB_SUPPORT_REM_WAKE                0x00    // 0x20 support, 0x00 not support
+#define USB_SUPPORT_REM_WAKE                0x20    // 0x20 support, 0x00 not support
 #define USB_SUPPORT_SELF_POWERED            0x80    // not self-powered
 #define USB_MAX_POWER                       0xfa    // 500 mA
 
