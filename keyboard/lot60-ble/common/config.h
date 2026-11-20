@@ -65,8 +65,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DCDC_ENABLED // 启用DC-DC以降低功耗
 
 // 功率相关
-// #define DYNAMIC_TX_POWER // 自动发射功率调整
-#define HIGH_TX_POWER // 高发射功率
+#define DYNAMIC_TX_POWER // 自动发射功率调整
+// #define HIGH_TX_POWER // 高发射功率
 
 // LED自动熄灭时长(s)，设为0则不自动熄灭
 #define LED_AUTOOFF_TIME 5

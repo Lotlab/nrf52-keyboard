@@ -72,15 +72,44 @@ void matrix_init(void)
         nrf_gpio_cfg_input((uint32_t)column_pin_array[i], NRF_GPIO_PIN_PULLDOWN);
 #endif
     }
+    for (uint_fast8_t i = 0; i < MATRIX_ROWS; i++) {
+        uint32_t pin = (uint32_t)row_pin_array[i];
+        if (pin > 31)
+            continue;
+        nrf_gpio_cfg(
+            pin,
+            NRF_GPIO_PIN_DIR_OUTPUT,
+            NRF_GPIO_PIN_INPUT_DISCONNECT,
+            NRF_GPIO_PIN_NOPULL,
+            NRF_GPIO_PIN_S0S1,
+            NRF_GPIO_PIN_NOSENSE);
+#ifdef ROW_IN
+        nrf_gpio_pin_set(pin);
+#else
+        nrf_gpio_pin_clear(pin);
+#endif
+    }
 }
 /** read all rows */
 static matrix_row_t read_cols(void)
 {
     matrix_row_t result = 0;
+    uint32_t port_in = NRF_P0->IN;
 
     for (uint_fast8_t c = 0; c < MATRIX_COLS; c++) {
-        if (READ_COL((uint32_t)column_pin_array[c]))
-            result |= 1 << c;
+        uint32_t pin = (uint32_t)column_pin_array[c];
+        bool active;
+        if (pin < 32) {
+#ifdef ROW_IN
+            active = ((port_in & (1UL << pin)) == 0);
+#else
+            active = ((port_in & (1UL << pin)) != 0);
+#endif
+        } else {
+            active = READ_COL(pin);
+        }
+        if (active)
+            result |= (matrix_row_t)(1U << c);
     }
 
     return result;
@@ -88,23 +117,13 @@ static matrix_row_t read_cols(void)
 
 static void select_row(uint8_t row)
 {
-    if ((uint32_t)row_pin_array[row] > 31 )
+    uint32_t pin = (uint32_t)row_pin_array[row];
+    if (pin > 31)
         return;
-nrf_gpio_cfg(
-            (uint32_t)row_pin_array[row],
-            NRF_GPIO_PIN_DIR_OUTPUT,
-            NRF_GPIO_PIN_INPUT_DISCONNECT,
-            NRF_GPIO_PIN_NOPULL,
 #ifdef ROW_IN
-            NRF_GPIO_PIN_H0H1,
+    nrf_gpio_pin_clear(pin);
 #else
-            NRF_GPIO_PIN_S0S1,
-#endif
-            NRF_GPIO_PIN_NOSENSE);
-#ifdef ROW_IN
-    nrf_gpio_pin_clear((uint32_t)row_pin_array[row]);
-#else
-    nrf_gpio_pin_set((uint32_t)row_pin_array[row]);
+    nrf_gpio_pin_set(pin);
 #endif
 }
 

@@ -156,12 +156,20 @@ static void uart_on_recv()
     // CMD DAT ... DAT SUM
     uint8_t buff;
     while (app_uart_get(&buff) == NRF_SUCCESS) {
+        if (recv_index >= sizeof(recv_buf)) {
+            recv_index = 0;
+            recv_len = 0;
+        }
         recv_buf[recv_index] = buff;
         if (!recv_index) {
             if (buff >= 0x80) { // 配置下发
-                recv_len = buff - 0x80 + 2; // CMD 和 SUM 各占 1 byte
-                if (recv_len > 2) // 如果是只有命令的包，则忽略
+                uint16_t packet_len = (uint16_t)(buff - 0x80) + 2; // CMD 和 SUM 各占 1 byte
+                if (packet_len >= 4 && packet_len <= sizeof(recv_buf)) {
+                    recv_len = (uint8_t)packet_len;
                     recv_index++;
+                } else {
+                    recv_len = 0;
+                }
             } else if (buff >= 0x20) { // led
                 keyboard_led_val_usb = buff & 0x1F; // 5bit
             } else if (buff >= 0x10) { // status

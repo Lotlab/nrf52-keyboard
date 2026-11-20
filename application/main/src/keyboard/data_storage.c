@@ -72,7 +72,7 @@ static void check_keymap()
 #ifndef ACTIONMAP_ENABLE
 uint8_t keymap_key_to_keycode(uint8_t layer, keypos_t key)
 {
-    if (layer >= KEYMAP_LAYER_SIZE || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS)
+    if (layer >= MAX_LAYER || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS)
         return KC_NO;
     if (USE_KEYMAP)
         return keymap_block[layer * KEYMAP_LAYER_SIZE + key.row * MATRIX_COLS + key.col];
@@ -84,7 +84,7 @@ extern const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS];
 
 action_t action_for_key(uint8_t layer, keypos_t key)
 {
-    if (layer >= KEYMAP_LAYER_SIZE || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS) {
+    if (layer >= MAX_LAYER || key.col >= MATRIX_COLS || key.row >= MATRIX_ROWS) {
         action_t action = AC_NO;
         return action;
     }
@@ -127,6 +127,7 @@ const macro_t* action_get_macro(keyrecord_t* record, uint8_t id, uint8_t opt)
 {
     if (!record->event.pressed)
         return MACRO_NONE;
+    macro_block[MAX_MACRO_SIZE - 1] = END;
     if (id == 0)
         return macro_block;
 
@@ -135,10 +136,12 @@ const macro_t* action_get_macro(keyrecord_t* record, uint8_t id, uint8_t opt)
         uint8_t code = macro_block[index++];
         if (code == END && --id == 0) {
             // 到达目标位置
-            return &macro_block[index];
+            return (index < MAX_MACRO_SIZE) ? &macro_block[index] : MACRO_NONE;
         }
-        if (code == KEY_DOWN || code == KEY_UP || code == WAIT || code == INTERVAL)
-            index++; // 2 byte command
+        if (code == KEY_DOWN || code == KEY_UP || code == WAIT || code == INTERVAL) {
+            if (index < MAX_MACRO_SIZE)
+                index++; // 2 byte command
+        }
     }
 
     return MACRO_NONE;

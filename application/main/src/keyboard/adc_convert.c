@@ -29,7 +29,7 @@ NRF_SECTION_DEF(adc_channel, struct adc_channel_config*);
 #define SAMPLES_IN_BUFFER (SINGLE_CHANNEL_BUFFER_LEN * ADC_CONFIG_COUNT)
 static nrf_saadc_value_t m_buffer_pool[2][TOTAL_SAMPLES_BUFFER];
 
-#define ADC_TIMER_PERIOD 10
+#define ADC_TIMER_PERIOD 1000
 #define ADC_TIMER_INTERVAL APP_TIMER_TICKS(ADC_TIMER_PERIOD)
 APP_TIMER_DEF(adc_timer);
 

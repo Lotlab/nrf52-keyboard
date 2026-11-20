@@ -57,10 +57,13 @@ void macro_cancle()
 
 void action_macro_play(const macro_t* macro_p)
 {
+    if (macro_p == MACRO_NONE)
+        return;
+
     // 处理循环宏
     if (macro_repeaet) {
         // 按下了同一个宏按键，则取消宏
-        if (macro_p == *macro_queue_peek()) {
+        if (!macro_queue_empty() && macro_p == *macro_queue_peek()) {
             macro_cancle();
         }
         return;
@@ -131,8 +134,13 @@ static void action_macro_replay(void* p_context)
         return;
     case REPEAT:
         // 重复宏：直接重放这个宏
-        current_macro = *macro_queue_peek();
-        macro_repeaet = true;
+        if (!macro_queue_empty()) {
+            current_macro = *macro_queue_peek();
+            macro_repeaet = true;
+        } else {
+            current_macro = 0;
+            macro_repeaet = false;
+        }
         return;
     case END:
         // 出队，重置当前宏的设置

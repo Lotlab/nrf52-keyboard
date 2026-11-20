@@ -77,7 +77,7 @@ static nrf_saadc_channel_config_t channel_config = {
 static struct adc_channel_config batt_channel = {
     .adc_start = 0,
     .adc_finish = &adc_result_handler,
-    .period = 2000,
+    .period = 10000,
     .config = &channel_config,
 };
 
