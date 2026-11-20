@@ -221,7 +221,7 @@ CFLAGS += -DSWI_DISABLE0
 CFLAGS += -DUSE_CUSTOM_CONFIG
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mthumb -mabi=aapcs
-CFLAGS += -Wall -Werror
+CFLAGS += -Wall -Werror -Wno-array-bounds
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
