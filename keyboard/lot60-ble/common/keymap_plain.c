@@ -46,3 +46,6 @@ const action_t fn_actions[] = {
     ACTION_FUNCTION_OPT(SWITCH_DEVICE, SWITCH_DEVICE_BLE_2),
 };
 
+const uint8_t keymaps_count = sizeof(keymaps) / sizeof(keymaps[0]);
+const uint8_t fn_actions_count = sizeof(fn_actions) / sizeof(fn_actions[0]);
+

@@ -65,4 +65,19 @@ uint16_t get_led_powersave_timeout(void)
     return data > 0 ? data : LED_AUTOOFF_TIME;
 }
 
+static void write_u16_if_zero(uint8_t* ptr, uint16_t default_val)
+{
+    if (ptr != 0 && UINT16_READ(ptr, 0) == 0 && default_val > 0) {
+        ptr[0] = (uint8_t)(default_val & 0xFF);
+        ptr[1] = (uint8_t)((default_val >> 8) & 0xFF);
+    }
+}
+
+void store_config_load_defaults(void)
+{
+    write_u16_if_zero(config_slow_scan.data, SLEEP_SLOW_TIMEOUT);
+    write_u16_if_zero(config_sleep_timeout.data, SLEEP_OFF_TIMEOUT);
+    write_u16_if_zero(config_powersave_timeout.data, LED_AUTOOFF_TIME);
+}
+
 #endif

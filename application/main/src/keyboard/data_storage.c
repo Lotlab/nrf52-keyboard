@@ -58,6 +58,10 @@ REGISTER_FDS_BLOCK(keymap, KEYMAP_SIZE_WORD, KEYMAP_RECORD_KEY)
 
 static bool keymap_valid = true;
 static bool volatile s_fds_initialized;
+__attribute__((weak)) const uint8_t keymaps_count = 2;
+__attribute__((weak)) const uint8_t fn_actions_count = 8;
+__attribute__((weak)) void store_config_load_defaults(void) { }
+
 static void check_keymap()
 {
     bool flag = false;
@@ -344,15 +348,33 @@ static void storage_read_inner(fds_record_t const* record, fds_record_desc_t* re
  */
 void storage_read(uint8_t mask)
 {
+    bool loaded_default_keymap = false;
 #ifdef KEYMAP_STORAGE
     if (mask & 0x01) {
         storage_read_inner(&keymap_record, &keymap_record_desc);
         check_keymap();
+#ifndef ACTIONMAP_ENABLE
+        if (!keymap_valid) {
+            uint8_t layers = keymaps_count > MAX_LAYER ? MAX_LAYER : keymaps_count;
+            memcpy(keymap_block, keymaps, (size_t)layers * KEYMAP_LAYER_SIZE);
+            check_keymap();
+            loaded_default_keymap = true;
+        }
+#endif
     }
 #endif
 #if defined(KEYMAP_STORAGE) && !defined(ACTIONMAP_ENABLE)
     if (mask & 0x02) {
         storage_read_inner(&fn_record, &fn_record_desc);
+        if (loaded_default_keymap) {
+            uint8_t cnt = fn_actions_count > MAX_FN_KEYS ? MAX_FN_KEYS : fn_actions_count;
+            memset(fn_block, 0, sizeof(fn_block));
+            for (uint8_t i = 0; i < cnt; i++) {
+                uint16_t code = fn_actions[i].code;
+                fn_block[i * 2] = (uint8_t)(code & 0xFF);
+                fn_block[i * 2 + 1] = (uint8_t)((code >> 8) & 0xFF);
+            }
+        }
     }
 #endif
 #ifdef MACRO_STORAGE
@@ -363,6 +385,7 @@ void storage_read(uint8_t mask)
 #ifdef CONFIG_STORAGE
     if (mask & 0x08) {
         storage_read_inner(&config_record, &config_record_desc);
+        store_config_load_defaults();
     }
 #endif
 }
