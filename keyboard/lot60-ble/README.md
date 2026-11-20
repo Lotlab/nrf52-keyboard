@@ -32,3 +32,29 @@
 - 黄色<span style="color: #FFFF00">■</span>：输入配对密码
 - 紫红色<span style="color: #FF0080">■</span>：配对密码输入完毕
 - 紫色<span style="color: #FF00FF">■</span>：休眠
+
+---
+
+## v1.2.1.0 Fork Notes (English)
+
+### Default BLE Multi-Device Shortcuts (`keymap_plain.c`)
+- `Fn + Tab`: Toggle USB / BLE mode (`0xF001`)
+- `Fn + CapsLock`: Manual deep sleep (`0xF000`)
+- `Fn + X`: Toggle NKRO (`0xF100`)
+- `Fn + R`: Clear / Re-bond current BLE slot (`0xF701`)
+- `Fn + T` / `Fn + Y` / `Fn + U`: Switch BLE Host Profile `0` / `1` / `2` (`0xF801` / `0xF901` / `0xFA01`)
+
+### Optimizations & Fixes in `v1.2.1.0` (`nRF52810` / `rev_g`)
+- **RAM Safety & Headroom**:
+  - Fixed UART packet buffer overflow (`recv_buf[64]`) and `recv_len - 4` underflow in `usb_comm.c`.
+  - Fixed keymap layer bounds check (`layer >= MAX_LAYER`) and macro boundary guards in `data_storage.c` / `macro_player.c`.
+  - Set `HEAP_SIZE := 0` in `nrf52810.mk` (reclaiming 2 KB RAM on nRF52810).
+- **Battery & BLE Power**:
+  - Reduced `ADC_TIMER_PERIOD` from `10 ms` to `1000 ms` (-99 CPU wakeups/sec) and battery polling period from `2 s` to `10 s`.
+  - Enabled `DYNAMIC_TX_POWER` (disabling fixed +4 dBm `HIGH_TX_POWER`) and fixed `m_conn_handle` ordering in `BLE_GAP_EVT_CONNECTED`.
+  - Tuned BLE connection parameters (`MIN_CONN_INTERVAL=15 ms`, `MAX_CONN_INTERVAL=30 ms`, `SLAVE_LATENCY=15`, `CONN_SUP_TIMEOUT=4000 ms`).
+  - Configured matrix row GPIOs once in `matrix_init()` with standard drive (`NRF_GPIO_PIN_S0S1`) and single-register `NRF_P0->IN` reads in `keyboard_matrix.c`.
+- **Fresh-Flash Default Auto-Load**:
+  - When FDS EEPROM is empty (after SWD flash or factory reset), `storage_read()` automatically loads `keymap_plain.c` defaults and `config.h` timeouts (`600 s` sleep, `15 s` slow-scan, `5 s` LED auto-off) so HID configurators immediately read a valid default profile.
+- **GCC 12+ Compatibility**:
+  - Added `-Wno-array-bounds` in `app.mk` for Nordic nRF5 SDK 15.3 `nrf_section.h` compatibility with modern `arm-none-eabi-gcc`.

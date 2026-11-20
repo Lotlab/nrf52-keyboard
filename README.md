@@ -163,6 +163,12 @@ make bootloader # 编译bootloader
 ## 硬件移植
 请参考Keyboard目录下的template移植模板，并查看doc目录下的对应说明。
 
+## Fork Release `v1.2.1.0` (`Lot60-BLE Rev.G`)
+- Added RAM overflow protection (`usb_comm.c`, `data_storage.c`, `macro_player.c`) and reclaimed 2 KB unused heap (`HEAP_SIZE := 0`) on `nRF52810`.
+- Reduced idle CPU wakeups (`ADC_TIMER_PERIOD = 1000 ms`, battery poll `10 s`), enabled `DYNAMIC_TX_POWER`, tuned BLE `SLAVE_LATENCY = 15` / `CONN_SUP_TIMEOUT = 4000 ms`, and optimized matrix scanning (`NRF_P0->IN` single-register read).
+- Auto-loads compiled factory default keymap, Fn table, and FDS timeouts (`600 / 15 / 5 s`) when FDS storage is empty after a fresh flash.
+- Compatible with GCC 12+ (`arm-none-eabi-gcc` 15.x) via `-Wno-array-bounds` in `application/main/project/app.mk`. See `keyboard/lot60-ble/README.md` for full details.
+
 ## 捐助
 
 如果你觉得这个工程有帮助到你，为何不请我喝一杯奶茶呢？
